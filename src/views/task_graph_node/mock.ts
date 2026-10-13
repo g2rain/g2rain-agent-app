@@ -19,10 +19,10 @@ function createResult<T>(data: T, status: number = 200): Result<T> {
     errorCode: status === 200 ? '' : '@word(5,10)',
     errorMessage: status === 200 ? '' : '@cword(5,15)',
   }) as Result<T>;
-  
+
   // 直接设置 data，不经过 Mock.mock 处理
   result.data = data;
-  
+
   return result;
 }
 
@@ -32,25 +32,25 @@ function createResult<T>(data: T, status: number = 200): Result<T> {
 function getTaskGraphNodeTemplate(overrides: Partial<any> = {}): any {
   return {
     'id|+1': 1,
-        'organId': '@integer(1, 100)',
-            'taskId|1': ['@word(3,10)', '@word(3,10)'],
-            'nodeId|1': ['@word(3,10)', '@word(3,10)'],
-            'title|1': ['@word(3,10)', null],
-            'objective|1': ['@word(3,10)', null],
-            'skillKey|1': ['@word(3,10)', null],
-            'target|1': ['@word(3,10)', null],
-            'targetClaimed': '@integer(1, 100)',
-            'delegateDepth': '@integer(1, 100)',
-            'status|1': ['@word(3,10)', '@word(3,10)'],
-            'result|1': ['@word(3,10)', null],
-            'inputs|1': ['@word(3,10)', null],
-            'outputs|1': ['@word(3,10)', null],
-            'state|1': ['@word(3,10)', null],
-            'errorCode|1': ['@word(3,10)', null],
-            'errorMessage|1': ['@word(3,10)', null],
-            'startedTime|1': ['@word(3,10)', null],
-            'finishedTime|1': ['@word(3,10)', null],
-        version: '@integer(1, 100)',
+    'organId': '@integer(1, 100)',
+    'taskId|1': ['@word(3,10)', '@word(3,10)'],
+    'nodeId|1': ['@word(3,10)', '@word(3,10)'],
+    'title|1': ['@word(3,10)', null],
+    'objective|1': ['@word(3,10)', null],
+    'skillKey|1': ['@word(3,10)', null],
+    'target|1': ['@word(3,10)', null],
+    'targetClaimed': '@integer(1, 100)',
+    'delegateDepth': '@integer(1, 100)',
+    'status|1': ['@word(3,10)', '@word(3,10)'],
+    'result|1': ['@word(3,10)', null],
+    'inputs|1': ['@word(3,10)', null],
+    'outputs|1': ['@word(3,10)', null],
+    'state|1': ['@word(3,10)', null],
+    'errorCode|1': ['@word(3,10)', null],
+    'errorMessage|1': ['@word(3,10)', null],
+    'startedTime|1': ['@word(3,10)', null],
+    'finishedTime|1': ['@word(3,10)', null],
+    version: '@integer(1, 100)',
     createTime: '@datetime("yyyy-MM-dd HH:mm:ss")',
     updateTime: '@datetime("yyyy-MM-dd HH:mm:ss")',
     ...overrides,
@@ -98,93 +98,93 @@ export const TaskGraphNodeMockDataMap: MockDataMap = {
     let filteredList = list;
     if (organId) {
       filteredList = filteredList.filter((item: any) => {
-                return item.organId === organId;
-              });
+        return item.organId === organId;
+      });
     }
     if (taskId) {
       filteredList = filteredList.filter((item: any) => {
-                return item.taskId && item.taskId.includes(taskId);
-              });
+        return item.taskId && item.taskId.includes(taskId);
+      });
     }
     if (nodeId) {
       filteredList = filteredList.filter((item: any) => {
-                return item.nodeId && item.nodeId.includes(nodeId);
-              });
+        return item.nodeId && item.nodeId.includes(nodeId);
+      });
     }
     if (title) {
       filteredList = filteredList.filter((item: any) => {
-                return item.title && item.title.includes(title);
-              });
+        return item.title && item.title.includes(title);
+      });
     }
     if (objective) {
       filteredList = filteredList.filter((item: any) => {
-                return item.objective && item.objective.includes(objective);
-              });
+        return item.objective && item.objective.includes(objective);
+      });
     }
     if (skillKey) {
       filteredList = filteredList.filter((item: any) => {
-                return item.skillKey && item.skillKey.includes(skillKey);
-              });
+        return item.skillKey && item.skillKey.includes(skillKey);
+      });
     }
     if (target) {
       filteredList = filteredList.filter((item: any) => {
-                return item.target && item.target.includes(target);
-              });
+        return item.target && item.target.includes(target);
+      });
     }
     if (targetClaimed) {
       filteredList = filteredList.filter((item: any) => {
-                return item.targetClaimed === targetClaimed;
-              });
+        return item.targetClaimed === targetClaimed;
+      });
     }
     if (delegateDepth) {
       filteredList = filteredList.filter((item: any) => {
-                return item.delegateDepth === delegateDepth;
-              });
+        return item.delegateDepth === delegateDepth;
+      });
     }
     if (status) {
       filteredList = filteredList.filter((item: any) => {
-                return item.status && item.status.includes(status);
-              });
+        return item.status && item.status.includes(status);
+      });
     }
     if (result) {
       filteredList = filteredList.filter((item: any) => {
-                return item.result && item.result.includes(result);
-              });
+        return item.result && item.result.includes(result);
+      });
     }
     if (inputs) {
       filteredList = filteredList.filter((item: any) => {
-                return item.inputs && item.inputs.includes(inputs);
-              });
+        return item.inputs && item.inputs.includes(inputs);
+      });
     }
     if (outputs) {
       filteredList = filteredList.filter((item: any) => {
-                return item.outputs && item.outputs.includes(outputs);
-              });
+        return item.outputs && item.outputs.includes(outputs);
+      });
     }
     if (state) {
       filteredList = filteredList.filter((item: any) => {
-                return item.state && item.state.includes(state);
-              });
+        return item.state && item.state.includes(state);
+      });
     }
     if (errorCode) {
       filteredList = filteredList.filter((item: any) => {
-                return item.errorCode && item.errorCode.includes(errorCode);
-              });
+        return item.errorCode && item.errorCode.includes(errorCode);
+      });
     }
     if (errorMessage) {
       filteredList = filteredList.filter((item: any) => {
-                return item.errorMessage && item.errorMessage.includes(errorMessage);
-              });
+        return item.errorMessage && item.errorMessage.includes(errorMessage);
+      });
     }
     if (startedTime) {
       filteredList = filteredList.filter((item: any) => {
-                return item.startedTime && item.startedTime.includes(startedTime);
-              });
+        return item.startedTime && item.startedTime.includes(startedTime);
+      });
     }
     if (finishedTime) {
       filteredList = filteredList.filter((item: any) => {
-                return item.finishedTime && item.finishedTime.includes(finishedTime);
-              });
+        return item.finishedTime && item.finishedTime.includes(finishedTime);
+      });
     }
 
     return createResult(filteredList);
@@ -227,93 +227,93 @@ export const TaskGraphNodeMockDataMap: MockDataMap = {
     let filteredList = list;
     if (organId) {
       filteredList = filteredList.filter((item: any) => {
-                return item.organId === organId;
-              });
+        return item.organId === organId;
+      });
     }
     if (taskId) {
       filteredList = filteredList.filter((item: any) => {
-                return item.taskId && item.taskId.includes(taskId);
-              });
+        return item.taskId && item.taskId.includes(taskId);
+      });
     }
     if (nodeId) {
       filteredList = filteredList.filter((item: any) => {
-                return item.nodeId && item.nodeId.includes(nodeId);
-              });
+        return item.nodeId && item.nodeId.includes(nodeId);
+      });
     }
     if (title) {
       filteredList = filteredList.filter((item: any) => {
-                return item.title && item.title.includes(title);
-              });
+        return item.title && item.title.includes(title);
+      });
     }
     if (objective) {
       filteredList = filteredList.filter((item: any) => {
-                return item.objective && item.objective.includes(objective);
-              });
+        return item.objective && item.objective.includes(objective);
+      });
     }
     if (skillKey) {
       filteredList = filteredList.filter((item: any) => {
-                return item.skillKey && item.skillKey.includes(skillKey);
-              });
+        return item.skillKey && item.skillKey.includes(skillKey);
+      });
     }
     if (target) {
       filteredList = filteredList.filter((item: any) => {
-                return item.target && item.target.includes(target);
-              });
+        return item.target && item.target.includes(target);
+      });
     }
     if (targetClaimed) {
       filteredList = filteredList.filter((item: any) => {
-                return item.targetClaimed === targetClaimed;
-              });
+        return item.targetClaimed === targetClaimed;
+      });
     }
     if (delegateDepth) {
       filteredList = filteredList.filter((item: any) => {
-                return item.delegateDepth === delegateDepth;
-              });
+        return item.delegateDepth === delegateDepth;
+      });
     }
     if (status) {
       filteredList = filteredList.filter((item: any) => {
-                return item.status && item.status.includes(status);
-              });
+        return item.status && item.status.includes(status);
+      });
     }
     if (result) {
       filteredList = filteredList.filter((item: any) => {
-                return item.result && item.result.includes(result);
-              });
+        return item.result && item.result.includes(result);
+      });
     }
     if (inputs) {
       filteredList = filteredList.filter((item: any) => {
-                return item.inputs && item.inputs.includes(inputs);
-              });
+        return item.inputs && item.inputs.includes(inputs);
+      });
     }
     if (outputs) {
       filteredList = filteredList.filter((item: any) => {
-                return item.outputs && item.outputs.includes(outputs);
-              });
+        return item.outputs && item.outputs.includes(outputs);
+      });
     }
     if (state) {
       filteredList = filteredList.filter((item: any) => {
-                return item.state && item.state.includes(state);
-              });
+        return item.state && item.state.includes(state);
+      });
     }
     if (errorCode) {
       filteredList = filteredList.filter((item: any) => {
-                return item.errorCode && item.errorCode.includes(errorCode);
-              });
+        return item.errorCode && item.errorCode.includes(errorCode);
+      });
     }
     if (errorMessage) {
       filteredList = filteredList.filter((item: any) => {
-                return item.errorMessage && item.errorMessage.includes(errorMessage);
-              });
+        return item.errorMessage && item.errorMessage.includes(errorMessage);
+      });
     }
     if (startedTime) {
       filteredList = filteredList.filter((item: any) => {
-                return item.startedTime && item.startedTime.includes(startedTime);
-              });
+        return item.startedTime && item.startedTime.includes(startedTime);
+      });
     }
     if (finishedTime) {
       filteredList = filteredList.filter((item: any) => {
-                return item.finishedTime && item.finishedTime.includes(finishedTime);
-              });
+        return item.finishedTime && item.finishedTime.includes(finishedTime);
+      });
     }
 
     return createResult(filteredList);
@@ -349,7 +349,7 @@ export const TaskGraphNodeMockDataMap: MockDataMap = {
       [`records|${count}`]: [getTaskGraphNodeTemplate()],
     };
 
-    const result = Mock.mock(template);
+    const mockResult = Mock.mock(template);
 
     // 计算总页数
     const totalPages = Math.ceil(total / pageSize);
@@ -359,7 +359,7 @@ export const TaskGraphNodeMockDataMap: MockDataMap = {
       pageSize,
       total,
       totalPages,
-      records: result.records,
+      records: mockResult.records,
     };
 
     return createResult(pageData);
@@ -369,10 +369,10 @@ export const TaskGraphNodeMockDataMap: MockDataMap = {
   '/task_graph_node/save': (config: AxiosRequestConfig) => {
     const payload = config.data || {};
     const isUpdate = payload.id !== undefined && payload.id !== null;
-    
+
     // 如果是更新，使用传入的 id；如果是新增，生成新 id
     const id = isUpdate ? payload.id : Mock.Random.integer(1000, 9999);
-    
+
     // 生成完整的任务图步骤表数据
     const TaskGraphNodeItem = Mock.mock(
       getTaskGraphNodeTemplate({
@@ -399,7 +399,7 @@ export const TaskGraphNodeMockDataMap: MockDataMap = {
         createTime: isUpdate ? '@datetime("yyyy-MM-dd HH:mm:ss")' : '@datetime("yyyy-MM-dd HH:mm:ss")',
       }),
     );
-    
+
     return createResult(TaskGraphNodeItem);
   },
 
