@@ -145,6 +145,62 @@
   },
   {
     "parentId": null,
+    "pageElementName": "新增",
+    "pageElementCode": "model_catalog:add",
+    "pageElementType": "button",
+    "pageCode": "model_catalog",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
+    "pageElementName": "删除",
+    "pageElementCode": "model_catalog:delete",
+    "pageElementType": "button",
+    "pageCode": "model_catalog",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
+    "pageElementName": "编辑",
+    "pageElementCode": "model_catalog:edit",
+    "pageElementType": "button",
+    "pageCode": "model_catalog",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
+    "pageElementName": "新增",
+    "pageElementCode": "model_profile:add",
+    "pageElementType": "button",
+    "pageCode": "model_profile",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
+    "pageElementName": "删除",
+    "pageElementCode": "model_profile:delete",
+    "pageElementType": "button",
+    "pageCode": "model_profile",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
+    "pageElementName": "编辑",
+    "pageElementCode": "model_profile:edit",
+    "pageElementType": "button",
+    "pageCode": "model_profile",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
+    "pageElementName": "试一试",
+    "pageElementCode": "model_profile:test",
+    "pageElementType": "button",
+    "pageCode": "model_profile",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
     "pageElementName": "platform",
     "pageElementCode": "agent:platform",
     "pageElementType": "button",

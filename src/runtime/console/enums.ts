@@ -85,6 +85,20 @@ export enum ResourceType {
   CUSTOMER = 'CUSTOMER',
 }
 
+/** 模型类型（model_service_catalog.model_type） */
+export enum ModelType {
+  LLM = 'LLM',
+  VECTOR = 'VECTOR',
+  RERANK = 'RERANK',
+}
+
+/** 模型协议（model_service_catalog.protocol） */
+export enum ModelProtocol {
+  OPENAI = 'OPENAI',
+  ANTHROPIC = 'ANTHROPIC',
+  GEMINI = 'GEMINI',
+}
+
 /** 任务、节点已结束（不再变化）的状态 */
 export const TERMINAL_TASK_STATUSES: ReadonlySet<string> = new Set([
   TaskStatus.SUCCEEDED,

@@ -16,6 +16,21 @@
       "linkPath": "/mcp_service"
     },
     {
+      "pageName": "模型目录",
+      "pageCode": "model_catalog",
+      "linkPath": "/model_catalog"
+    },
+    {
+      "pageName": "模型配置",
+      "pageCode": "model_profile",
+      "linkPath": "/model_profile"
+    },
+    {
+      "pageName": "用量统计",
+      "pageCode": "model_usage",
+      "linkPath": "/model_usage"
+    },
+    {
       "pageName": "智能体详情",
       "pageCode": "agent_detail",
       "linkPath": "/agent_detail"
@@ -269,6 +284,62 @@
       "pageElementCode": "mcp_service:import",
       "pageElementType": "button",
       "pageCode": "mcp_service",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "model_catalog:add",
+      "pageElementType": "button",
+      "pageCode": "model_catalog",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "model_catalog:delete",
+      "pageElementType": "button",
+      "pageCode": "model_catalog",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "model_catalog:edit",
+      "pageElementType": "button",
+      "pageCode": "model_catalog",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "model_profile:add",
+      "pageElementType": "button",
+      "pageCode": "model_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "model_profile:delete",
+      "pageElementType": "button",
+      "pageCode": "model_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "model_profile:edit",
+      "pageElementType": "button",
+      "pageCode": "model_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "试一试",
+      "pageElementCode": "model_profile:test",
+      "pageElementType": "button",
+      "pageCode": "model_profile",
       "status": "ENABLED"
     },
     {

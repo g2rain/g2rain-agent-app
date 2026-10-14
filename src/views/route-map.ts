@@ -35,6 +35,21 @@ export const routeMap: Record<string, ViewRouteConfig> = {
             name: 'McpService',
             meta: { title: '服务接入', requiresAuth: true, showInHome: true },
         },
+    '/model_catalog': {
+            component: () => import('@/views/model_catalog/index.vue'),
+            name: 'ModelCatalog',
+            meta: { title: '模型目录', requiresAuth: true, showInHome: true },
+        },
+    '/model_profile': {
+            component: () => import('@/views/model_profile/index.vue'),
+            name: 'ModelProfile',
+            meta: { title: '模型配置', requiresAuth: true, showInHome: true },
+        },
+    '/model_usage': {
+            component: () => import('@/views/model_usage/index.vue'),
+            name: 'ModelUsage',
+            meta: { title: '用量统计', requiresAuth: true, showInHome: true },
+        },
     '/agent_detail': {
             component: () => import('@/views/agent_detail/index.vue'),
             name: 'AgentDetail',
