@@ -1,6 +1,11 @@
 {
   "pages": [
     {
+      "pageName": "智能体列表",
+      "pageCode": "agent",
+      "linkPath": "/agents"
+    },
+    {
       "pageName": "智能体详情",
       "pageCode": "agent_detail",
       "linkPath": "/agent_detail"
@@ -158,6 +163,46 @@
       "pageElementCode": "agent_skill_binding:edit",
       "pageElementType": "button",
       "pageCode": "agent_skill_binding",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "agent:add",
+      "pageElementType": "button",
+      "pageCode": "agent",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "copy",
+      "pageElementCode": "agent:copy",
+      "pageElementType": "button",
+      "pageCode": "agent",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "agent:delete",
+      "pageElementType": "button",
+      "pageCode": "agent",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "agent:edit",
+      "pageElementType": "button",
+      "pageCode": "agent",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "platform",
+      "pageElementCode": "agent:platform",
+      "pageElementType": "button",
+      "pageCode": "agent_detail",
       "status": "ENABLED"
     },
     {
@@ -379,6 +424,30 @@
     {
       "parentId": null,
       "pageElementName": "新增",
+      "pageElementCode": "skill:add",
+      "pageElementType": "button",
+      "pageCode": "agent_detail",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "skill:edit",
+      "pageElementType": "button",
+      "pageCode": "agent_detail",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "platform",
+      "pageElementCode": "skill:platform",
+      "pageElementType": "button",
+      "pageCode": "agent_detail",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
       "pageElementCode": "task_checkpoint:add",
       "pageElementType": "button",
       "pageCode": "task_checkpoint",
@@ -542,46 +611,6 @@
       "pageElementCode": "tool_call_record:edit",
       "pageElementType": "button",
       "pageCode": "tool_call_record",
-      "status": "ENABLED"
-    },
-    {
-      "parentId": null,
-      "pageElementName": "编辑",
-      "pageElementCode": "agent:edit",
-      "pageElementType": "button",
-      "pageCode": "agent_detail",
-      "status": "ENABLED"
-    },
-    {
-      "parentId": null,
-      "pageElementName": "平台智能体编辑",
-      "pageElementCode": "agent:platform",
-      "pageElementType": "button",
-      "pageCode": "agent_detail",
-      "status": "ENABLED"
-    },
-    {
-      "parentId": null,
-      "pageElementName": "新建技能",
-      "pageElementCode": "skill:add",
-      "pageElementType": "button",
-      "pageCode": "agent_detail",
-      "status": "ENABLED"
-    },
-    {
-      "parentId": null,
-      "pageElementName": "编辑技能",
-      "pageElementCode": "skill:edit",
-      "pageElementType": "button",
-      "pageCode": "agent_detail",
-      "status": "ENABLED"
-    },
-    {
-      "parentId": null,
-      "pageElementName": "平台技能编辑",
-      "pageElementCode": "skill:platform",
-      "pageElementType": "button",
-      "pageCode": "agent_detail",
       "status": "ENABLED"
     }
   ],

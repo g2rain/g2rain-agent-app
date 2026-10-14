@@ -85,7 +85,7 @@
 │   ├── 服务接入      /mcp_service
 │   └── 工具目录      /mcp_tool
 ├── 智能体中心
-│   ├── 智能体列表    /agent
+│   ├── 智能体列表    /agents
 │   │   ├── [配置]   → 智能体配置 /agent_config?agentId=             嵌入页
 │   │   └── [技能 N] → 智能体配置 /agent_config?agentId=&tab=skill   嵌入页
 │   │                    └── 技能行 [配置] → 技能配置                抽屉
@@ -120,7 +120,7 @@
 | P03 | 用量统计 | `/model_usage` | 菜单页 | 列表页 | 菜单 |
 | P04 | 服务接入 | `/mcp_service` | 菜单页 | 列表页 | 菜单 |
 | P05 | 工具目录 | `/mcp_tool` | 菜单页 | 列表页 | 菜单 |
-| P06 | 智能体列表 | `/agent` | 菜单页 | 目录页 | 菜单 |
+| P06 | 智能体列表 | `/agents` | 菜单页 | 目录页 | 菜单 |
 | P07 | 智能体配置 | `/agent_config` | 嵌入页 | 工作台 | 智能体列表卡片「配置」「技能 N」 |
 | P08 | 会话列表 | `/conversation` | 菜单页 | 列表页 | 菜单 |
 | P09 | 会话详情 | `/conversation_detail` | 嵌入页 | 追踪页 | 会话列表、chat-shell |
@@ -419,7 +419,7 @@
 
 | 项 | 内容 |
 |---|---|
-| linkPath | `/agent` |
+| linkPath | `/agents` |
 | 页面模板 | 目录页 |
 | 可见角色 | 运营方、租户 |
 | 权限点 | `agent:add` `agent:edit` `agent:delete` `agent:copy` |

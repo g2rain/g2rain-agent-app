@@ -10,7 +10,7 @@
 import type { AxiosRequestConfig } from 'axios';
 import type { Result } from '@g2rain/http';
 import { mockManager, type MockDataMap } from '@runtime/http';
-import { Gateway, RecordStatus } from '@runtime/console';
+import { Gateway, RecordStatus, ResourceType } from '@runtime/console';
 import { STUDIO_SAMPLE, type SampleRow } from './data';
 
 /** list / page 接口支持的精确过滤字段 */
@@ -44,9 +44,19 @@ function body(config: AxiosRequestConfig): SampleRow {
 }
 
 function filterRows(rows: readonly SampleRow[], query: Record<string, unknown>): SampleRow[] {
-  return rows.filter((row) =>
-    FILTER_KEYS.every((key) => query[key] === undefined || query[key] === '' || String(row[key]) === String(query[key])),
-  );
+  return rows.filter((row) => {
+    if (!FILTER_KEYS.every((key) => query[key] === undefined || query[key] === '' || String(row[key]) === String(query[key]))) {
+      return false;
+    }
+    // 名称关键字：匹配 agentName / agentCode（智能体列表搜索）
+    const name = query.agentName;
+    if (name !== undefined && name !== '') {
+      const keyword = String(name).toLowerCase();
+      const hay = `${row.agentName ?? ''} ${row.agentCode ?? ''}`.toLowerCase();
+      if (!hay.includes(keyword)) return false;
+    }
+    return true;
+  });
 }
 
 function now(): string {
@@ -79,7 +89,16 @@ function crud(prefix: string, table: string): MockDataMap {
         return ok(existing.id);
       }
       const id = nextId++;
-      rows().push({ ...payload, id, createTime: now(), updateTime: now() });
+      // 新建未传 resourceType 时由 Mock 补 CUSTOM，真实后端按机构是否运营方落 PLATFORM / CUSTOM
+      const created: SampleRow = {
+        ...payload,
+        id,
+        status: payload.status ?? RecordStatus.ACTIVE,
+        ...(payload.resourceType ? {} : { resourceType: ResourceType.CUSTOM }),
+        createTime: now(),
+        updateTime: now(),
+      };
+      rows().push(created);
       return ok(id);
     },
     [`${prefix}/*`]: (config: AxiosRequestConfig) => {

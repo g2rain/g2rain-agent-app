@@ -108,7 +108,7 @@ import type {
   SkillToolBindingVo,
 } from './type';
 
-const AGENT_LIST_PATH = '/agent';
+const AGENT_LIST_PATH = '/agents';
 const TABS: AgentDetailTab[] = ['profile', 'skill', 'preview'];
 
 const route = useRoute();

@@ -1,5 +1,10 @@
 [
   {
+    "pageName": "智能体列表",
+    "pageCode": "agent",
+    "linkPath": "/agents"
+  },
+  {
     "pageName": "智能体详情",
     "pageCode": "agent_detail",
     "linkPath": "/agent_detail"

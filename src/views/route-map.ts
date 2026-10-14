@@ -20,6 +20,11 @@ export interface ViewRouteConfig {
  * 你可以在子应用生成后按需补充 `views/*` 并在这里注册。
  */
 export const routeMap: Record<string, ViewRouteConfig> = {
+    '/agents': {
+            component: () => import('@/views/agent/index.vue'),
+            name: 'Agent',
+            meta: { title: '智能体列表', requiresAuth: true, showInHome: true },
+        },
     '/agent_detail': {
             component: () => import('@/views/agent_detail/index.vue'),
             name: 'AgentDetail',
