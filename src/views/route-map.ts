@@ -30,6 +30,11 @@ export const routeMap: Record<string, ViewRouteConfig> = {
             name: 'McpTool',
             meta: { title: '工具目录', requiresAuth: true, showInHome: true },
         },
+    '/mcp_service': {
+            component: () => import('@/views/mcp_service/index.vue'),
+            name: 'McpService',
+            meta: { title: '服务接入', requiresAuth: true, showInHome: true },
+        },
     '/agent_detail': {
             component: () => import('@/views/agent_detail/index.vue'),
             name: 'AgentDetail',

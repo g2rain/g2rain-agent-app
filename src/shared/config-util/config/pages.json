@@ -10,6 +10,11 @@
     "linkPath": "/mcp_tool"
   },
   {
+    "pageName": "服务接入",
+    "pageCode": "mcp_service",
+    "linkPath": "/mcp_service"
+  },
+  {
     "pageName": "智能体详情",
     "pageCode": "agent_detail",
     "linkPath": "/agent_detail"

@@ -55,11 +55,11 @@ function filterRows(rows: readonly SampleRow[], query: Record<string, unknown>):
       const hay = `${row.agentName ?? ''} ${row.agentCode ?? ''}`.toLowerCase();
       if (!hay.includes(keyword)) return false;
     }
-    // 工具名称 / 标题关键字
-    const toolName = query.name;
-    if (toolName !== undefined && toolName !== '') {
-      const keyword = String(toolName).toLowerCase();
-      const hay = `${row.name ?? ''} ${row.title ?? ''}`.toLowerCase();
+    // 名称关键字：工具 name/title，或服务 name/code
+    const name = query.name;
+    if (name !== undefined && name !== '') {
+      const keyword = String(name).toLowerCase();
+      const hay = `${row.name ?? ''} ${row.title ?? ''} ${row.code ?? ''}`.toLowerCase();
       if (!hay.includes(keyword)) return false;
     }
     return true;
@@ -158,5 +158,6 @@ export function registerStudioSample(): void {
     ...crud(`${studio}/agent_skill_binding`, 'agentSkills'),
     ...crud(`${studio}/skill_tool_binding`, 'skillTools'),
     ...crud(`${Gateway.MCP}/mcp_tool_profile`, 'tools'),
+    ...crud(`${Gateway.MCP}/mcp_external_service`, 'services'),
   });
 }

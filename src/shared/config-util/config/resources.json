@@ -11,6 +11,11 @@
       "linkPath": "/mcp_tool"
     },
     {
+      "pageName": "服务接入",
+      "pageCode": "mcp_service",
+      "linkPath": "/mcp_service"
+    },
+    {
       "pageName": "智能体详情",
       "pageCode": "agent_detail",
       "linkPath": "/agent_detail"
@@ -232,6 +237,38 @@
       "pageElementCode": "mcp_tool:sync",
       "pageElementType": "button",
       "pageCode": "mcp_tool",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "mcp_service:add",
+      "pageElementType": "button",
+      "pageCode": "mcp_service",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "mcp_service:delete",
+      "pageElementType": "button",
+      "pageCode": "mcp_service",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "mcp_service:edit",
+      "pageElementType": "button",
+      "pageCode": "mcp_service",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "导入接口",
+      "pageElementCode": "mcp_service:import",
+      "pageElementType": "button",
+      "pageCode": "mcp_service",
       "status": "ENABLED"
     },
     {

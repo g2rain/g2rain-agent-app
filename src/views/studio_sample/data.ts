@@ -1218,5 +1218,33 @@ export const STUDIO_SAMPLE: Record<string, SampleRow[]> = {
       "status": "ACTIVE",
       "description": "客户私有：向租户 webhook 推送事件"
     }
+  ],
+  "services": [
+    {
+      "id": 40001,
+      "code": "crm-extension",
+      "name": "CRM 扩展系统",
+      "endpoint": "https://crm.example.com",
+      "contextPath": "/api",
+      "resourceType": "EXTENSION",
+      "status": "ACTIVE",
+      "description": "运营方接入的 CRM OpenAPI",
+      "version": 0,
+      "createTime": "2026-10-12 09:00:00",
+      "updateTime": "2026-10-12 09:00:00"
+    },
+    {
+      "id": 40002,
+      "code": "tenant-webhook",
+      "name": "租户回调服务",
+      "endpoint": "https://hooks.tenant.local",
+      "contextPath": "",
+      "resourceType": "CUSTOMER",
+      "status": "ACTIVE",
+      "description": "租户私有 webhook",
+      "version": 0,
+      "createTime": "2026-10-12 09:00:00",
+      "updateTime": "2026-10-12 09:00:00"
+    }
   ]
 };
