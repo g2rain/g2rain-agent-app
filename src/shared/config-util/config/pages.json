@@ -5,6 +5,11 @@
     "linkPath": "/agents"
   },
   {
+    "pageName": "工具目录",
+    "pageCode": "mcp_tool",
+    "linkPath": "/mcp_tool"
+  },
+  {
     "pageName": "智能体详情",
     "pageCode": "agent_detail",
     "linkPath": "/agent_detail"

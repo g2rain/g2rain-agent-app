@@ -1178,6 +1178,45 @@ export const STUDIO_SAMPLE: Record<string, SampleRow[]> = {
       "inputSchema": "{\"type\": \"object\", \"properties\": {}, \"required\": []}",
       "status": "ACTIVE",
       "description": null
+    },
+    {
+      "id": 31001,
+      "name": "get_crm_customer_list",
+      "title": "查询客户列表",
+      "resourceType": "EXTENSION",
+      "serviceCode": "crm-extension",
+      "method": "GET",
+      "path": "/crm/customer/list",
+      "inputSchema": "{\"type\": \"object\", \"properties\": {\"keyword\": {\"type\": \"string\", \"description\": \"客户名称关键字\"}}, \"required\": []}",
+      "openapiOperation": "{\"operationId\": \"listCustomers\", \"summary\": \"查询客户列表\", \"parameters\": []}",
+      "status": "ACTIVE",
+      "description": "扩展系统：查询 CRM 客户"
+    },
+    {
+      "id": 31002,
+      "name": "post_crm_opportunity_save",
+      "title": "保存商机",
+      "resourceType": "EXTENSION",
+      "serviceCode": "crm-extension",
+      "method": "POST",
+      "path": "/crm/opportunity/save",
+      "inputSchema": "{\"type\": \"object\", \"properties\": {\"customerId\": {\"type\": \"string\", \"description\": \"客户 ID\"}, \"title\": {\"type\": \"string\", \"description\": \"商机标题\"}}, \"required\": [\"customerId\", \"title\"]}",
+      "openapiOperation": "{\"operationId\": \"saveOpportunity\", \"summary\": \"保存商机\"}",
+      "status": "ACTIVE",
+      "description": "扩展系统：保存 CRM 商机"
+    },
+    {
+      "id": 32001,
+      "name": "post_tenant_webhook_notify",
+      "title": "租户回调通知",
+      "resourceType": "CUSTOMER",
+      "serviceCode": "tenant-webhook",
+      "method": "POST",
+      "path": "/hooks/notify",
+      "inputSchema": "{\"type\": \"object\", \"properties\": {\"event\": {\"type\": \"string\", \"description\": \"事件名\"}, \"payload\": {\"type\": \"object\", \"description\": \"事件载荷\"}}, \"required\": [\"event\"]}",
+      "openapiOperation": null,
+      "status": "ACTIVE",
+      "description": "客户私有：向租户 webhook 推送事件"
     }
   ]
 };

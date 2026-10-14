@@ -81,6 +81,38 @@
   },
   {
     "parentId": null,
+    "pageElementName": "新增",
+    "pageElementCode": "mcp_tool:add",
+    "pageElementType": "button",
+    "pageCode": "mcp_tool",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
+    "pageElementName": "删除",
+    "pageElementCode": "mcp_tool:delete",
+    "pageElementType": "button",
+    "pageCode": "mcp_tool",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
+    "pageElementName": "编辑",
+    "pageElementCode": "mcp_tool:edit",
+    "pageElementType": "button",
+    "pageCode": "mcp_tool",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
+    "pageElementName": "同步平台接口",
+    "pageElementCode": "mcp_tool:sync",
+    "pageElementType": "button",
+    "pageCode": "mcp_tool",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
     "pageElementName": "platform",
     "pageElementCode": "agent:platform",
     "pageElementType": "button",

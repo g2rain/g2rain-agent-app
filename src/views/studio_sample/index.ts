@@ -14,7 +14,7 @@ import { Gateway, RecordStatus, ResourceType } from '@runtime/console';
 import { STUDIO_SAMPLE, type SampleRow } from './data';
 
 /** list / page 接口支持的精确过滤字段 */
-const FILTER_KEYS = ['id', 'agentId', 'skillId', 'toolName', 'resourceType', 'status', 'serviceCode'] as const;
+const FILTER_KEYS = ['id', 'agentId', 'skillId', 'toolName', 'resourceType', 'status', 'serviceCode', 'method'] as const;
 
 /** 各表的内存副本，保存与删除直接作用于此 */
 const tables: Record<string, SampleRow[]> = Object.fromEntries(
@@ -48,11 +48,18 @@ function filterRows(rows: readonly SampleRow[], query: Record<string, unknown>):
     if (!FILTER_KEYS.every((key) => query[key] === undefined || query[key] === '' || String(row[key]) === String(query[key]))) {
       return false;
     }
-    // 名称关键字：匹配 agentName / agentCode（智能体列表搜索）
-    const name = query.agentName;
-    if (name !== undefined && name !== '') {
-      const keyword = String(name).toLowerCase();
+    // 智能体名称关键字
+    const agentName = query.agentName;
+    if (agentName !== undefined && agentName !== '') {
+      const keyword = String(agentName).toLowerCase();
       const hay = `${row.agentName ?? ''} ${row.agentCode ?? ''}`.toLowerCase();
+      if (!hay.includes(keyword)) return false;
+    }
+    // 工具名称 / 标题关键字
+    const toolName = query.name;
+    if (toolName !== undefined && toolName !== '') {
+      const keyword = String(toolName).toLowerCase();
+      const hay = `${row.name ?? ''} ${row.title ?? ''}`.toLowerCase();
       if (!hay.includes(keyword)) return false;
     }
     return true;
