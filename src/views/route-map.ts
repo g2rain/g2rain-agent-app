@@ -20,6 +20,26 @@ export interface ViewRouteConfig {
  * 你可以在子应用生成后按需补充 `views/*` 并在这里注册。
  */
 export const routeMap: Record<string, ViewRouteConfig> = {
+    '/agent_detail': {
+            component: () => import('@/views/agent_detail/index.vue'),
+            name: 'AgentDetail',
+            meta: { title: '智能体详情', requiresAuth: true, showInHome: false },
+        },
+    '/conversation': {
+            component: () => import('@/views/conversation/index.vue'),
+            name: 'Conversation',
+            meta: { title: '会话观测', requiresAuth: true, showInHome: true },
+        },
+    '/conversation_detail': {
+            component: () => import('@/views/conversation_detail/index.vue'),
+            name: 'ConversationDetail',
+            meta: { title: '会话详情', requiresAuth: true, showInHome: false },
+        },
+    '/task_trace': {
+            component: () => import('@/views/task_trace/index.vue'),
+            name: 'TaskTrace',
+            meta: { title: '执行追踪', requiresAuth: true, showInHome: false },
+        },
     '/chat_conversation': {
             component: () => import('@/views/chat_conversation/index.vue'),
             name: 'ChatConversation',

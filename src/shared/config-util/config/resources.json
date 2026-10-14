@@ -1,11 +1,589 @@
 {
   "pages": [
-    
+    {
+      "pageName": "智能体详情",
+      "pageCode": "agent_detail",
+      "linkPath": "/agent_detail"
+    },
+    {
+      "pageName": "会话观测",
+      "pageCode": "conversation",
+      "linkPath": "/conversation"
+    },
+    {
+      "pageName": "会话详情",
+      "pageCode": "conversation_detail",
+      "linkPath": "/conversation_detail"
+    },
+    {
+      "pageName": "执行追踪",
+      "pageCode": "task_trace",
+      "linkPath": "/task_trace"
+    },
+    {
+      "pageName": "聊天会话表",
+      "pageCode": "chat_conversation",
+      "linkPath": "/chat_conversation"
+    },
+    {
+      "pageName": "聊天消息表",
+      "pageCode": "chat_message",
+      "linkPath": "/chat_message"
+    },
+    {
+      "pageName": "任务实例表",
+      "pageCode": "task_instance",
+      "linkPath": "/task_instance"
+    },
+    {
+      "pageName": "任务图步骤表",
+      "pageCode": "task_graph_node",
+      "linkPath": "/task_graph_node"
+    },
+    {
+      "pageName": "任务图依赖边表",
+      "pageCode": "task_graph_edge",
+      "linkPath": "/task_graph_edge"
+    },
+    {
+      "pageName": "大报文溢出表",
+      "pageCode": "task_node_payload",
+      "linkPath": "/task_node_payload"
+    },
+    {
+      "pageName": "任务检查点表",
+      "pageCode": "task_checkpoint",
+      "linkPath": "/task_checkpoint"
+    },
+    {
+      "pageName": "工具调用记录表",
+      "pageCode": "tool_call_record",
+      "linkPath": "/tool_call_record"
+    },
+    {
+      "pageName": "任务恢复动作审计表",
+      "pageCode": "task_resume_record",
+      "linkPath": "/task_resume_record"
+    },
+    {
+      "pageName": "数字员工画像表",
+      "pageCode": "agent_profile",
+      "linkPath": "/agent_profile"
+    },
+    {
+      "pageName": "定义表",
+      "pageCode": "skill_profile",
+      "linkPath": "/skill_profile"
+    },
+    {
+      "pageName": "数字员工",
+      "pageCode": "agent_skill_binding",
+      "linkPath": "/agent_skill_binding"
+    },
+    {
+      "pageName": "绑定表",
+      "pageCode": "skill_tool_binding",
+      "linkPath": "/skill_tool_binding"
+    },
+    {
+      "pageName": "外部服务表",
+      "pageCode": "mcp_external_service",
+      "linkPath": "/mcp_external_service"
+    },
+    {
+      "pageName": "暴露档案表",
+      "pageCode": "mcp_tool_profile",
+      "linkPath": "/mcp_tool_profile"
+    },
+    {
+      "pageName": "模型服务目录",
+      "pageCode": "model_service_catalog",
+      "linkPath": "/model_service_catalog"
+    },
+    {
+      "pageName": "模型服务配置",
+      "pageCode": "model_service_profile",
+      "linkPath": "/model_service_profile"
+    },
+    {
+      "pageName": "模型用量记录",
+      "pageCode": "model_usage_record",
+      "linkPath": "/model_usage_record"
+    }
   ],
   "pageElements": [
-    
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "agent_profile:add",
+      "pageElementType": "button",
+      "pageCode": "agent_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "agent_profile:delete",
+      "pageElementType": "button",
+      "pageCode": "agent_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "agent_profile:edit",
+      "pageElementType": "button",
+      "pageCode": "agent_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "agent_skill_binding:add",
+      "pageElementType": "button",
+      "pageCode": "agent_skill_binding",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "agent_skill_binding:delete",
+      "pageElementType": "button",
+      "pageCode": "agent_skill_binding",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "agent_skill_binding:edit",
+      "pageElementType": "button",
+      "pageCode": "agent_skill_binding",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "chat_conversation:add",
+      "pageElementType": "button",
+      "pageCode": "chat_conversation",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "chat_conversation:delete",
+      "pageElementType": "button",
+      "pageCode": "chat_conversation",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "chat_conversation:edit",
+      "pageElementType": "button",
+      "pageCode": "chat_conversation",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "chat_message:add",
+      "pageElementType": "button",
+      "pageCode": "chat_message",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "chat_message:delete",
+      "pageElementType": "button",
+      "pageCode": "chat_message",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "chat_message:edit",
+      "pageElementType": "button",
+      "pageCode": "chat_message",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "mcp_external_service:add",
+      "pageElementType": "button",
+      "pageCode": "mcp_external_service",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "mcp_external_service:delete",
+      "pageElementType": "button",
+      "pageCode": "mcp_external_service",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "mcp_external_service:edit",
+      "pageElementType": "button",
+      "pageCode": "mcp_external_service",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "mcp_tool_profile:add",
+      "pageElementType": "button",
+      "pageCode": "mcp_tool_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "mcp_tool_profile:delete",
+      "pageElementType": "button",
+      "pageCode": "mcp_tool_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "mcp_tool_profile:edit",
+      "pageElementType": "button",
+      "pageCode": "mcp_tool_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "model_service_catalog:add",
+      "pageElementType": "button",
+      "pageCode": "model_service_catalog",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "model_service_catalog:delete",
+      "pageElementType": "button",
+      "pageCode": "model_service_catalog",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "model_service_catalog:edit",
+      "pageElementType": "button",
+      "pageCode": "model_service_catalog",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "model_service_profile:add",
+      "pageElementType": "button",
+      "pageCode": "model_service_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "model_service_profile:delete",
+      "pageElementType": "button",
+      "pageCode": "model_service_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "model_service_profile:edit",
+      "pageElementType": "button",
+      "pageCode": "model_service_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "model_usage_record:add",
+      "pageElementType": "button",
+      "pageCode": "model_usage_record",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "model_usage_record:delete",
+      "pageElementType": "button",
+      "pageCode": "model_usage_record",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "model_usage_record:edit",
+      "pageElementType": "button",
+      "pageCode": "model_usage_record",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "skill_profile:add",
+      "pageElementType": "button",
+      "pageCode": "skill_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "skill_profile:delete",
+      "pageElementType": "button",
+      "pageCode": "skill_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "skill_profile:edit",
+      "pageElementType": "button",
+      "pageCode": "skill_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "skill_tool_binding:add",
+      "pageElementType": "button",
+      "pageCode": "skill_tool_binding",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "skill_tool_binding:delete",
+      "pageElementType": "button",
+      "pageCode": "skill_tool_binding",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "skill_tool_binding:edit",
+      "pageElementType": "button",
+      "pageCode": "skill_tool_binding",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "task_checkpoint:add",
+      "pageElementType": "button",
+      "pageCode": "task_checkpoint",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "task_checkpoint:delete",
+      "pageElementType": "button",
+      "pageCode": "task_checkpoint",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "task_checkpoint:edit",
+      "pageElementType": "button",
+      "pageCode": "task_checkpoint",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "task_graph_edge:add",
+      "pageElementType": "button",
+      "pageCode": "task_graph_edge",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "task_graph_edge:delete",
+      "pageElementType": "button",
+      "pageCode": "task_graph_edge",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "task_graph_edge:edit",
+      "pageElementType": "button",
+      "pageCode": "task_graph_edge",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "task_graph_node:add",
+      "pageElementType": "button",
+      "pageCode": "task_graph_node",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "task_graph_node:delete",
+      "pageElementType": "button",
+      "pageCode": "task_graph_node",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "task_graph_node:edit",
+      "pageElementType": "button",
+      "pageCode": "task_graph_node",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "task_instance:add",
+      "pageElementType": "button",
+      "pageCode": "task_instance",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "task_instance:delete",
+      "pageElementType": "button",
+      "pageCode": "task_instance",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "task_instance:edit",
+      "pageElementType": "button",
+      "pageCode": "task_instance",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "task_node_payload:add",
+      "pageElementType": "button",
+      "pageCode": "task_node_payload",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "task_node_payload:delete",
+      "pageElementType": "button",
+      "pageCode": "task_node_payload",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "task_node_payload:edit",
+      "pageElementType": "button",
+      "pageCode": "task_node_payload",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "task_resume_record:add",
+      "pageElementType": "button",
+      "pageCode": "task_resume_record",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "task_resume_record:delete",
+      "pageElementType": "button",
+      "pageCode": "task_resume_record",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "task_resume_record:edit",
+      "pageElementType": "button",
+      "pageCode": "task_resume_record",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "tool_call_record:add",
+      "pageElementType": "button",
+      "pageCode": "tool_call_record",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "tool_call_record:delete",
+      "pageElementType": "button",
+      "pageCode": "tool_call_record",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "tool_call_record:edit",
+      "pageElementType": "button",
+      "pageCode": "tool_call_record",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "agent:edit",
+      "pageElementType": "button",
+      "pageCode": "agent_detail",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "平台智能体编辑",
+      "pageElementCode": "agent:platform",
+      "pageElementType": "button",
+      "pageCode": "agent_detail",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新建技能",
+      "pageElementCode": "skill:add",
+      "pageElementType": "button",
+      "pageCode": "agent_detail",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑技能",
+      "pageElementCode": "skill:edit",
+      "pageElementType": "button",
+      "pageCode": "agent_detail",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "平台技能编辑",
+      "pageElementCode": "skill:platform",
+      "pageElementType": "button",
+      "pageCode": "agent_detail",
+      "status": "ENABLED"
+    }
   ],
-  "apiEndpoints": [
-    
-  ]
+  "apiEndpoints": []
 }

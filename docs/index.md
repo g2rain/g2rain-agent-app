@@ -36,6 +36,8 @@
 
 ## 需求与决策
 
+- [数字员工控制台功能需求](requirements/20261014-agent-console.md)
+- [数字员工控制台开发指导](design/agent-console.md)
 - [Requirements 使用说明](requirements/README.md)
 - [项目级 ADR](decisions/README.md)
 - [社区与联系](community.md)
