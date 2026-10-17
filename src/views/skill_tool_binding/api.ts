@@ -7,9 +7,6 @@ import { getHttpClient } from '@runtime/http';
 import type { SkillToolBinding, SkillToolBindingPayload, SkillToolBindingQuery } from './type';
 import type { PageData, PageSelectListDto } from '@platform/types/api.type';
 
-// 导入 mock 数据以触发自动注册（副作用导入）
-import './mock';
-
 /**
  * 绑定表 API 服务类
  */

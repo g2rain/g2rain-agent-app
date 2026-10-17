@@ -9,6 +9,7 @@ import type { BaseSelectListDto, BaseVo } from '@platform/types/api.type';
  */
 export interface SkillProfile extends BaseVo {
   organId: number;
+  agentId: number;
   skillKey: string;
   skillName: string;
   resourceType: string;
@@ -25,6 +26,7 @@ export interface SkillProfile extends BaseVo {
 export interface SkillProfilePayload {
   id?: number; // 更新时传入 ID，新增时不传
   organId?: number;
+  agentId?: number;
   skillKey?: string;
   skillName?: string;
   resourceType?: string;
@@ -43,6 +45,7 @@ export interface SkillProfilePayload {
 export interface SkillProfileQuery extends BaseSelectListDto {
   // 业务查询字段
   organId?: number;
+  agentId?: number;
   skillKey?: string;
   skillName?: string;
   resourceType?: string;

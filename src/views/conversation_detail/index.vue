@@ -24,7 +24,10 @@
           <span v-if="span">{{ span }}</span>
           <span>{{ fill($t('AGENT_CONVERSATION_TASK_COUNT', '{n} 个任务'), { n: bundle.tasks.length }) }}</span>
           <span class="conversation-detail__spacer" />
-          <el-button size="small" :loading="loading" @click="load(true)">{{ $t('G2_BTN_REFRESH', '刷新') }}</el-button>
+          <div class="conversation-detail__actions">
+            <el-button v-if="!embed" size="small" @click="goBack">{{ $t('G2_BTN_BACK', '返回') }}</el-button>
+            <el-button size="small" :loading="loading" @click="load(true)">{{ $t('G2_BTN_REFRESH', '刷新') }}</el-button>
+          </div>
         </div>
         <div v-if="statusCounts.length > 0" class="conversation-detail__filters">
           <button
@@ -79,7 +82,7 @@ import { ConversationDetailApi } from './api';
 import { buildTurns } from './turns';
 import type { ConversationBundle, TaskGraphNodeVo } from './type';
 
-const CONVERSATION_PATH = '/conversation';
+const CONVERSATION_PATH = '/chat_conversation';
 
 const route = useRoute();
 const router = useRouter();
@@ -130,6 +133,10 @@ function hasRoute(path: string): boolean {
   return router.resolve(path).matched.length > 0;
 }
 
+function goBack(): void {
+  void router.push({ path: CONVERSATION_PATH });
+}
+
 async function selectTask(taskId: string): Promise<void> {
   selectedTaskId.value = taskId;
   if (nodeCache[taskId]) return;
@@ -178,6 +185,8 @@ watch(conversationId, () => {
 .conversation-detail__title { margin: 0 0 8px; font-size: 18px; font-weight: 600; color: var(--g2-text-primary); }
 .conversation-detail__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; color: var(--g2-text-secondary); font-size: var(--g2-font-size-sm); }
 .conversation-detail__spacer { flex: 1; }
+.conversation-detail__actions { display: inline-flex; align-items: center; gap: 8px; }
+.conversation-detail__actions :deep(.el-button + .el-button) { margin-left: 0; }
 .conversation-detail__filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .conversation-detail__chip {
   padding: 4px 10px;

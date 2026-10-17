@@ -10,13 +10,14 @@ import type { BaseSelectListDto, BaseVo } from '@platform/types/api.type';
 export interface ModelServiceCatalog extends BaseVo {
   modelName: string;
   modelType: string;
-  resourceType: string;
+  resourceType?: string;
   provider: string;
   protocol: string;
   baseUrl: string;
-  apiKey: string;
+  /** 是否已配置访问密钥（不回传明文） */
+  apiKeyConfigured?: boolean;
   status: string;
-  description: string;
+  description?: string | null;
 }
 
 /**
@@ -41,15 +42,11 @@ export interface ModelServiceCatalogPayload {
  * 包含业务查询字段和基础查询字段（BaseSelectListDto）
  */
 export interface ModelServiceCatalogQuery extends BaseSelectListDto {
-  // 业务查询字段
+  // 业务查询字段（不含 apiKey / baseUrl / description；resourceType 由后端固定 MARKET）
   modelName?: string;
   modelType?: string;
-  resourceType?: string;
   provider?: string;
   protocol?: string;
-  baseUrl?: string;
-  apiKey?: string;
   status?: string;
-  description?: string;
 }
 

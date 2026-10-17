@@ -4,11 +4,11 @@
  */
 
 import { getHttpClient } from '@runtime/http';
+import { Gateway } from '@runtime/console';
 import type { TaskInstance, TaskInstancePayload, TaskInstanceQuery } from './type';
 import type { PageData, PageSelectListDto } from '@platform/types/api.type';
 
-// 导入 mock 数据以触发自动注册（副作用导入）
-import './mock';
+const base = Gateway.HARNESS;
 
 /**
  * 任务实例表 API 服务类
@@ -21,7 +21,7 @@ export class TaskInstanceApi {
    */
   static async list(params?: TaskInstanceQuery): Promise<TaskInstance[]> {
     const http = getHttpClient('default');
-    const res = await http.get<TaskInstance[]>('/task_instance/list', params);
+    const res = await http.get<TaskInstance[]>(`${base}/task_instance/list`, params);
     return res.data || [];
   }
 
@@ -32,7 +32,7 @@ export class TaskInstanceApi {
    */
   static async page(params: TaskInstanceQuery & PageSelectListDto): Promise<PageData<TaskInstance>> {
     const http = getHttpClient('default');
-    const res = await http.get<PageData<TaskInstance>>('/task_instance/page', params);
+    const res = await http.get<PageData<TaskInstance>>(`${base}/task_instance/page`, params);
     return res.data;
   }
 
@@ -43,8 +43,15 @@ export class TaskInstanceApi {
    */
   static async getById(id: number): Promise<TaskInstance> {
     const http = getHttpClient('default');
-    const res = await http.get<TaskInstance>(`/task_instance/${id}`);
+    const res = await http.get<TaskInstance>(`${base}/task_instance/${id}`);
     return res.data;
+  }
+
+  /** 按任务业务标识查完整任务（含大字段） */
+  static async getByTaskId(taskId: string): Promise<TaskInstance | null> {
+    const http = getHttpClient('default');
+    const res = await http.get<TaskInstance>(`${base}/task_instance/by_task/${encodeURIComponent(taskId)}`);
+    return res.data ?? null;
   }
 
   /**
@@ -55,7 +62,7 @@ export class TaskInstanceApi {
    */
   static async save(payload: TaskInstancePayload): Promise<TaskInstance> {
     const http = getHttpClient('default');
-    const res = await http.post<TaskInstance>('/task_instance/save', payload);
+    const res = await http.post<TaskInstance>(`${base}/task_instance/save`, payload);
     return res.data;
   }
 
@@ -65,7 +72,7 @@ export class TaskInstanceApi {
    */
   static async remove(id: number): Promise<void> {
     const http = getHttpClient('default');
-    await http.delete(`/task_instance/${id}`);
+    await http.delete(`${base}/task_instance/${id}`);
   }
 }
 

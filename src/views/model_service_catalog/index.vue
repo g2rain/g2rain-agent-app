@@ -1,4 +1,3 @@
-
 <template>
   <div class="model_service_catalog-page">
     <!-- 查询表单 -->
@@ -6,32 +5,26 @@
       <!-- 基础查询表单（BaseSelectListDto） -->
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
         <!-- 业务特定查询字段 -->
-        <el-form-item label="模型调用ID">
-          <el-input v-model="queryForm.modelName" placeholder="请输入模型调用ID" clearable style="width: 200px" />
+        <el-form-item label="模型名称">
+          <el-input v-model="queryForm.modelName" placeholder="请输入模型名称" clearable style="width: 200px" />
         </el-form-item>
         <el-form-item label="模型类型">
-          <el-input v-model="queryForm.modelType" placeholder="请输入模型类型" clearable style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="资源类型">
-          <el-input v-model="queryForm.resourceType" placeholder="请输入资源类型" clearable style="width: 200px" />
+          <el-select v-model="queryForm.modelType" placeholder="请选择模型类型" clearable style="width: 200px">
+            <el-option v-for="item in MODEL_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
         </el-form-item>
         <el-form-item label="模型供应商">
           <el-input v-model="queryForm.provider" placeholder="请输入模型供应商" clearable style="width: 200px" />
         </el-form-item>
-        <el-form-item label="模型协议类型">
-          <el-input v-model="queryForm.protocol" placeholder="请输入模型协议类型" clearable style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="模型服务地址">
-          <el-input v-model="queryForm.baseUrl" placeholder="请输入模型服务地址" clearable style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="访问密钥">
-          <el-input v-model="queryForm.apiKey" placeholder="请输入访问密钥" clearable style="width: 200px" />
+        <el-form-item label="模型协议">
+          <el-select v-model="queryForm.protocol" placeholder="请选择模型协议" clearable style="width: 200px">
+            <el-option v-for="item in PROTOCOL_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
         </el-form-item>
         <el-form-item label="状态">
-          <el-input v-model="queryForm.status" placeholder="请输入状态" clearable style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="说明">
-          <el-input v-model="queryForm.description" placeholder="请输入说明" clearable style="width: 200px" />
+          <el-select v-model="queryForm.status" placeholder="请选择状态" clearable style="width: 200px">
+            <el-option v-for="item in STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
         </el-form-item>
 
         <!-- 操作按钮 -->
@@ -47,27 +40,41 @@
     <!-- 标题和操作按钮 -->
     <div class="model_service_catalog-page__header">
       <div class="model_service_catalog-page__title-group">
-        <h2>管理模型服务目录数据</h2>
+        <h2>管理模型广场</h2>
       </div>
-      <el-button type="primary" v-permission="'model_service_catalog:add'" @click="handleCreate">新增模型服务目录</el-button>
+      <el-button type="primary" v-permission="'model_service_catalog:add'" @click="handleCreate">新增模型</el-button>
     </div>
 
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="120" />
-      <el-table-column prop="modelName" label="模型调用ID" width="180" />
-      <el-table-column prop="modelType" label="模型类型" width="180" />
-      <el-table-column prop="resourceType" label="资源类型" width="180" />
+      <el-table-column prop="modelName" label="模型名称" width="180" />
+      <el-table-column prop="modelType" label="模型类型" width="120">
+        <template #default="{ row }">{{ optionLabel(MODEL_TYPE_OPTIONS, row.modelType) }}</template>
+      </el-table-column>
       <el-table-column prop="provider" label="模型供应商" width="180" />
-      <el-table-column prop="protocol" label="模型协议类型" width="180" />
-      <el-table-column prop="baseUrl" label="模型服务地址" width="180" />
-      <el-table-column prop="apiKey" label="访问密钥" width="180" />
-      <el-table-column prop="status" label="状态" width="180" />
-      <el-table-column prop="description" label="说明" width="180" />
+      <el-table-column prop="protocol" label="模型协议" width="120">
+        <template #default="{ row }">{{ optionLabel(PROTOCOL_OPTIONS, row.protocol) }}</template>
+      </el-table-column>
+      <el-table-column prop="baseUrl" label="模型服务地址" min-width="200" />
+      <el-table-column prop="status" label="状态" width="140">
+        <template #default="{ row }">
+          <StatusSwitch
+            v-model="row.status"
+            v-permission="'model_service_catalog:status_update'"
+            active-value="ACTIVE"
+            inactive-value="INACTIVE"
+            :options="STATUS_OPTIONS"
+            :api-method="({ nextValue }) => ModelServiceCatalogApi.updateStatus(row.id, String(nextValue))"
+            @success="notifyStatusSwitchSuccess"
+            @error="(p) => notifyStatusSwitchError(p)"
+          />
+        </template>
+      </el-table-column>
       <TableColumn prop="createTime" :label="$t('G2_FIELD_CREATE_TIME', '创建时间')" width="180" sortable="custom" />
       <TableColumn prop="updateTime" :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')" width="180" sortable="custom" />
       <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="280">
         <template #default="{ row }">
-          <el-button type="primary" link size="small" @click="handleView(row)">{{ $t('G2_BTN_DETAIL', '明细') }}</el-button>
+          <el-button type="primary" link size="small" @click="handleView(row)">{{ $t('G2_BTN_DETAIL', '详情') }}</el-button>
           <el-button type="primary" v-permission="'model_service_catalog:edit'" link size="small" @click="handleEdit(row)">{{ $t('G2_BTN_EDIT', '编辑') }}</el-button>
           <el-button type="danger" v-permission="'model_service_catalog:delete'" link size="small" @click="handleDelete(row)">{{ $t('G2_BTN_DELETE', '删除') }}</el-button>
         </template>
@@ -94,34 +101,37 @@
     </div>
 
     <!-- 新增 / 编辑弹窗 -->
-    <el-dialog v-model="editDialogVisible" :title="isEdit ? '编辑模型服务目录' : '新增模型服务目录'" width="520px">
-      <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="100px">
-        <el-form-item label="模型调用ID" prop="modelName">
-          <el-input v-model="editForm.modelName" placeholder="请输入模型调用ID" />
+    <el-dialog v-model="editDialogVisible" :title="isEdit ? '编辑模型' : '新增模型'" width="520px">
+      <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="130px">
+        <el-form-item label="模型名称" prop="modelName">
+          <el-input v-model="editForm.modelName" placeholder="请输入模型名称" />
         </el-form-item>
         <el-form-item label="模型类型" prop="modelType">
-          <el-input v-model="editForm.modelType" placeholder="请输入模型类型" />
-        </el-form-item>
-        <el-form-item label="资源类型" prop="resourceType">
-          <el-input v-model="editForm.resourceType" placeholder="请输入资源类型" />
+          <el-select v-model="editForm.modelType" placeholder="请选择模型类型" style="width: 100%">
+            <el-option v-for="item in MODEL_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
         </el-form-item>
         <el-form-item label="模型供应商" prop="provider">
           <el-input v-model="editForm.provider" placeholder="请输入模型供应商" />
         </el-form-item>
-        <el-form-item label="模型协议类型" prop="protocol">
-          <el-input v-model="editForm.protocol" placeholder="请输入模型协议类型" />
+        <el-form-item label="模型协议" prop="protocol">
+          <el-select v-model="editForm.protocol" placeholder="请选择模型协议" style="width: 100%">
+            <el-option v-for="item in PROTOCOL_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
         </el-form-item>
         <el-form-item label="模型服务地址" prop="baseUrl">
           <el-input v-model="editForm.baseUrl" placeholder="请输入模型服务地址" />
         </el-form-item>
         <el-form-item label="访问密钥" prop="apiKey">
-          <el-input v-model="editForm.apiKey" placeholder="请输入访问密钥" />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-input v-model="editForm.status" placeholder="请输入状态" />
+          <el-input
+            v-model="editForm.apiKey"
+            type="password"
+            show-password
+            :placeholder="apiKeyPlaceholder"
+          />
         </el-form-item>
         <el-form-item label="说明" prop="description">
-          <el-input v-model="editForm.description" placeholder="请输入说明" />
+          <el-input v-model="editForm.description" type="textarea" :rows="3" placeholder="请输入说明" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -133,17 +143,16 @@
     </el-dialog>
 
     <!-- 明细弹窗 -->
-    <el-dialog v-model="detailDialogVisible" title="模型服务目录明细" width="520px">
+    <el-dialog v-model="detailDialogVisible" title="模型明细" width="520px">
       <el-descriptions :column="1" border>
         <el-descriptions-item :label="$t('G2_FIELD_ID', 'ID')">{{ currentRow?.id }}</el-descriptions-item>
-        <el-descriptions-item label="模型调用ID">{{ currentRow?.modelName }}</el-descriptions-item>
-        <el-descriptions-item label="模型类型">{{ currentRow?.modelType }}</el-descriptions-item>
-        <el-descriptions-item label="资源类型">{{ currentRow?.resourceType }}</el-descriptions-item>
+        <el-descriptions-item label="模型名称">{{ currentRow?.modelName }}</el-descriptions-item>
+        <el-descriptions-item label="模型类型">{{ optionLabel(MODEL_TYPE_OPTIONS, currentRow?.modelType) }}</el-descriptions-item>
         <el-descriptions-item label="模型供应商">{{ currentRow?.provider }}</el-descriptions-item>
-        <el-descriptions-item label="模型协议类型">{{ currentRow?.protocol }}</el-descriptions-item>
+        <el-descriptions-item label="模型协议">{{ optionLabel(PROTOCOL_OPTIONS, currentRow?.protocol) }}</el-descriptions-item>
         <el-descriptions-item label="模型服务地址">{{ currentRow?.baseUrl }}</el-descriptions-item>
-        <el-descriptions-item label="访问密钥">{{ currentRow?.apiKey }}</el-descriptions-item>
-        <el-descriptions-item label="状态">{{ currentRow?.status }}</el-descriptions-item>
+        <el-descriptions-item label="访问密钥">{{ currentRow?.apiKeyConfigured ? '已配置' : '未配置' }}</el-descriptions-item>
+        <el-descriptions-item label="状态">{{ optionLabel(STATUS_OPTIONS, currentRow?.status) }}</el-descriptions-item>
         <el-descriptions-item label="说明">{{ currentRow?.description }}</el-descriptions-item>
         <el-descriptions-item :label="$t('G2_FIELD_CREATE_TIME', '创建时间')">{{ currentRow?.createTime }}</el-descriptions-item>
         <el-descriptions-item :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')">{{ currentRow?.updateTime }}</el-descriptions-item>
@@ -158,7 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { t } from '@platform/i18n';
@@ -167,8 +176,33 @@ import type { ModelServiceCatalog, ModelServiceCatalogPayload, ModelServiceCatal
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 
 import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
-import { showErrorMessage } from '@/components';
+import { StatusSwitch } from '@g2rain/ui/platform';
+import { showErrorMessage, notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
 
+/** 枚举选项（后期改为字典查询） */
+type EnumOption = { value: string; label: string };
+
+const MODEL_TYPE_OPTIONS: EnumOption[] = [
+  { value: 'LLM', label: '大语言模型' },
+  { value: 'VECTOR', label: '向量模型' },
+  { value: 'RERANK', label: '重排序模型' },
+];
+
+const PROTOCOL_OPTIONS: EnumOption[] = [
+  { value: 'OPENAI', label: 'OpenAI' },
+  { value: 'ANTHROPIC', label: 'Anthropic' },
+  { value: 'GEMINI', label: 'Gemini' },
+];
+
+const STATUS_OPTIONS: EnumOption[] = [
+  { value: 'ACTIVE', label: '启用' },
+  { value: 'INACTIVE', label: '禁用' },
+];
+
+const optionLabel = (options: EnumOption[], value?: string | null): string => {
+  if (!value) return '';
+  return options.find((item) => item.value === value)?.label ?? value;
+};
 
 // 组件引用
 const queryFormRef = ref<InstanceType<typeof QueryForm> | null>(null);
@@ -181,17 +215,13 @@ const baseQueryForm = ref<BaseSelectListDto>({
   sorts: undefined,
 });
 
-// 业务查询状态
+// 业务查询状态（resourceType / apiKey 不作为查询条件：后端 list/page 固定 MARKET，密钥不回传）
 const queryForm = reactive({
   modelName: '',
   modelType: '',
-  resourceType: '',
   provider: '',
   protocol: '',
-  baseUrl: '',
-  apiKey: '',
   status: '',
-  description: '',
 });
 
 // 分页相关状态
@@ -251,13 +281,9 @@ const handleReset = () => {
   // 重置业务特定查询表单
   queryForm.modelName = '';
   queryForm.modelType = '';
-  queryForm.resourceType = '';
   queryForm.provider = '';
   queryForm.protocol = '';
-  queryForm.baseUrl = '';
-  queryForm.apiKey = '';
   queryForm.status = '';
-  queryForm.description = '';
 
   pagination.pageNum = 1; // 重置到第一页
   loadData();
@@ -289,7 +315,7 @@ const handleView = (row: ModelServiceCatalog) => {
 
 // 删除数据记录
 const handleDelete = (row: ModelServiceCatalog) => {
-  ElMessageBox.confirm(`确认删除模型服务目录「${row.id}」吗？`, t('G2_LBL_TIP', '提示'), {
+  ElMessageBox.confirm(`确认删除模型「${row.modelName || row.id}」吗？`, t('G2_LBL_TIP', '提示'), {
     type: 'warning',
   })
     .then(async () => {
@@ -318,29 +344,31 @@ const isEdit = ref(false);
 // 修改组件引用
 const editFormRef = ref<FormInstance | null>(null);
 
-// 保存表单状态
+// 保存表单状态（resourceType 由后端 catalog/save 强制 MARKET，页面不传）
 const editForm = reactive({
   id: undefined as number | undefined,
   modelName: '',
   modelType: '',
-  resourceType: '',
   provider: '',
   protocol: '',
   baseUrl: '',
   apiKey: '',
-  status: '',
+  apiKeyConfigured: false,
   description: '',
+});
+
+const apiKeyPlaceholder = computed(() => {
+  if (!isEdit.value) return '请输入访问密钥';
+  return editForm.apiKeyConfigured ? '已配置，留空表示不修改' : '未配置，请输入访问密钥';
 });
 
 // 表单校验规则
 const editRules: FormRules = {
-  modelName: [{ required: true, message: '请输入模型调用标识', trigger: 'blur' }],
-  modelType: [{ required: true, message: '请输入模型类型[LLM,VECTOR,RERANK]', trigger: 'blur' }],
-  resourceType: [{ required: true, message: '请输入资源类型[MARKET:模型广场资源,CUSTOM:自定义资源]', trigger: 'blur' }],
+  modelName: [{ required: true, message: '请输入模型名称', trigger: 'blur' }],
+  modelType: [{ required: true, message: '请选择模型类型', trigger: 'change' }],
   provider: [{ required: true, message: '请输入模型供应商', trigger: 'blur' }],
-  protocol: [{ required: true, message: '请输入模型协议类型', trigger: 'blur' }],
+  protocol: [{ required: true, message: '请选择模型协议', trigger: 'change' }],
   baseUrl: [{ required: true, message: '请输入模型服务地址', trigger: 'blur' }],
-  status: [{ required: true, message: '请输入状态[ACTIVE:启用,INACTIVE:禁用]', trigger: 'blur' }],
 };
 
 // 打开创建弹窗
@@ -348,19 +376,19 @@ const handleCreate = () => {
   isEdit.value = false;
   editFormRef.value?.clearValidate();
 
+  editForm.id = undefined;
   editForm.modelName = '';
-  editForm.modelType = '';
-  editForm.resourceType = '';
+  editForm.modelType = 'LLM';
   editForm.provider = '';
-  editForm.protocol = '';
+  editForm.protocol = 'OPENAI';
   editForm.baseUrl = '';
   editForm.apiKey = '';
-  editForm.status = '';
+  editForm.apiKeyConfigured = false;
   editForm.description = '';
   editDialogVisible.value = true;
 };
 
-// 打开修改弹窗
+// 打开修改弹窗（访问密钥不回填，留空表示不修改）
 const handleEdit = (row: ModelServiceCatalog) => {
   isEdit.value = true;
   editFormRef.value?.clearValidate();
@@ -368,13 +396,12 @@ const handleEdit = (row: ModelServiceCatalog) => {
   editForm.id = row.id;
   editForm.modelName = row.modelName;
   editForm.modelType = row.modelType;
-  editForm.resourceType = row.resourceType;
   editForm.provider = row.provider;
   editForm.protocol = row.protocol;
   editForm.baseUrl = row.baseUrl;
-  editForm.apiKey = row.apiKey;
-  editForm.status = row.status;
-  editForm.description = row.description;
+  editForm.apiKey = '';
+  editForm.apiKeyConfigured = !!row.apiKeyConfigured;
+  editForm.description = row.description ?? '';
   editDialogVisible.value = true;
 };
 
@@ -387,19 +414,22 @@ const submitEdit = async () => {
   const payload: ModelServiceCatalogPayload = {
     modelName: editForm.modelName,
     modelType: editForm.modelType,
-    resourceType: editForm.resourceType,
     provider: editForm.provider,
     protocol: editForm.protocol,
     baseUrl: editForm.baseUrl,
-    apiKey: editForm.apiKey,
-    status: editForm.status,
     description: editForm.description,
   };
+  // 有值才带密钥；编辑留空不修改
+  if (editForm.apiKey.trim()) {
+    payload.apiKey = editForm.apiKey.trim();
+  }
 
   try {
-    // 编辑模式下，将 id 添加到 payload 中
+    // 编辑模式下，将 id 添加到 payload 中；新增默认启用（状态改用列表开关）
     if (isEdit.value) {
       payload.id = editForm.id;
+    } else {
+      payload.status = 'ACTIVE';
     }
     await ModelServiceCatalogApi.save(payload);
     ElMessage.success(isEdit.value ? t('G2_MSG_UPDATE_OK', '更新成功') : t('G2_MSG_ADD_OK', '新增成功'));

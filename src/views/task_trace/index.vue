@@ -36,8 +36,11 @@
             trace <CopyText :text="bundle.task.traceId" :length="8" :copied-text="copiedText" />
           </span>
           <span class="task-trace__spacer" />
-          <el-switch v-if="!terminal" v-model="autoRefresh" size="small" :active-text="$t('AGENT_TRACE_AUTO_REFRESH', '自动刷新')" />
-          <el-button size="small" :loading="loading" @click="load(true)">{{ $t('G2_BTN_REFRESH', '刷新') }}</el-button>
+          <div class="task-trace__actions">
+            <el-button v-if="!embed" size="small" @click="goBack">{{ $t('G2_BTN_BACK', '返回') }}</el-button>
+            <el-switch v-if="!terminal" v-model="autoRefresh" size="small" :active-text="$t('AGENT_TRACE_AUTO_REFRESH', '自动刷新')" />
+            <el-button size="small" :loading="loading" @click="load(true)">{{ $t('G2_BTN_REFRESH', '刷新') }}</el-button>
+          </div>
         </div>
         <div class="task-trace__metrics">{{ metricsText }}</div>
         <el-alert v-if="showFinalAlert" class="task-trace__alert" type="error" :closable="false" :title="bundle.task.finalMessage ?? ''" show-icon />
@@ -94,7 +97,7 @@ import type { ToolCallRecordVo, TraceBundle } from './type';
 
 const TaskGraph = defineAsyncComponent(() => import('./components/TaskGraph.vue'));
 
-const CONVERSATION_PATH = '/conversation';
+const CONVERSATION_PATH = '/chat_conversation';
 const CONVERSATION_DETAIL_PATH = '/conversation_detail';
 const REFRESH_INTERVAL = 5000;
 const GRAPH_HEIGHT_KEY = 'g2rain.agent.trace.graphHeight';
@@ -142,6 +145,15 @@ const metricsText = computed(() => {
 
 function hasRoute(path: string): boolean {
   return router.resolve(path).matched.length > 0;
+}
+
+function goBack(): void {
+  const conversationId = bundle.value?.task.conversationId;
+  if (conversationId) {
+    void router.push({ path: CONVERSATION_DETAIL_PATH, query: { conversationId } });
+    return;
+  }
+  void router.push({ path: CONVERSATION_PATH });
 }
 
 /** 加载追踪数据；silent 为 true 时保留当前选中与视口（刷新） */
@@ -238,6 +250,8 @@ onBeforeUnmount(stopRefresh);
 .task-trace__goal { margin: 0 0 8px; font-size: 18px; font-weight: 600; color: var(--g2-text-primary); line-height: 1.4; }
 .task-trace__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; color: var(--g2-text-secondary); font-size: var(--g2-font-size-sm); }
 .task-trace__spacer { flex: 1; }
+.task-trace__actions { display: inline-flex; align-items: center; gap: 8px; }
+.task-trace__actions :deep(.el-button + .el-button) { margin-left: 0; }
 .task-trace__metrics { margin-top: 6px; color: var(--g2-text-secondary); font-size: var(--g2-font-size-sm); }
 .task-trace__alert { margin-top: 12px; }
 .task-trace__graph {

@@ -4,11 +4,11 @@
  */
 
 import { getHttpClient } from '@runtime/http';
+import { Gateway } from '@runtime/console';
 import type { TaskNodePayload, TaskNodePayloadPayload, TaskNodePayloadQuery } from './type';
 import type { PageData, PageSelectListDto } from '@platform/types/api.type';
 
-// 导入 mock 数据以触发自动注册（副作用导入）
-import './mock';
+const base = Gateway.HARNESS;
 
 /**
  * 大报文溢出表 API 服务类
@@ -21,7 +21,7 @@ export class TaskNodePayloadApi {
    */
   static async list(params?: TaskNodePayloadQuery): Promise<TaskNodePayload[]> {
     const http = getHttpClient('default');
-    const res = await http.get<TaskNodePayload[]>('/task_node_payload/list', params);
+    const res = await http.get<TaskNodePayload[]>(`${base}/task_node_payload/list`, params);
     return res.data || [];
   }
 
@@ -32,7 +32,7 @@ export class TaskNodePayloadApi {
    */
   static async page(params: TaskNodePayloadQuery & PageSelectListDto): Promise<PageData<TaskNodePayload>> {
     const http = getHttpClient('default');
-    const res = await http.get<PageData<TaskNodePayload>>('/task_node_payload/page', params);
+    const res = await http.get<PageData<TaskNodePayload>>(`${base}/task_node_payload/page`, params);
     return res.data;
   }
 
@@ -43,7 +43,7 @@ export class TaskNodePayloadApi {
    */
   static async getById(id: number): Promise<TaskNodePayload> {
     const http = getHttpClient('default');
-    const res = await http.get<TaskNodePayload>(`/task_node_payload/${id}`);
+    const res = await http.get<TaskNodePayload>(`${base}/task_node_payload/${id}`);
     return res.data;
   }
 
@@ -55,7 +55,7 @@ export class TaskNodePayloadApi {
    */
   static async save(payload: TaskNodePayloadPayload): Promise<TaskNodePayload> {
     const http = getHttpClient('default');
-    const res = await http.post<TaskNodePayload>('/task_node_payload/save', payload);
+    const res = await http.post<TaskNodePayload>(`${base}/task_node_payload/save`, payload);
     return res.data;
   }
 
@@ -65,7 +65,7 @@ export class TaskNodePayloadApi {
    */
   static async remove(id: number): Promise<void> {
     const http = getHttpClient('default');
-    await http.delete(`/task_node_payload/${id}`);
+    await http.delete(`${base}/task_node_payload/${id}`);
   }
 }
 

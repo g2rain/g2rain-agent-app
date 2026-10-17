@@ -10,9 +10,6 @@ import type { RemoteSelectOption } from '@g2rain/ui';
 import { useLocaleStore } from '@platform/stores/locale.store';
 import type { DictItem } from './type';
 
-// 导入 mock 数据以触发自动注册（副作用导入）
-import './mock';
-
 const LOCALIZED_OPTIONS_PATH = '/infra/dictionary_item/localized_options';
 
 /** 将 BOOLEAN_FLAG 等字典 code 转为 boolean（与业务页、DictText 回显一致） */

@@ -16,8 +16,7 @@
           <el-tag size="small" effect="plain" :type="isPlatform ? 'info' : 'primary'">
             {{ isPlatform ? $t('AGENT_RESOURCE_PLATFORM', '平台') : $t('AGENT_RESOURCE_CUSTOM', '私有') }}
           </el-tag>
-          <span v-if="isPlatform" v-permission="'skill:platform'" class="skill-drawer__muted">{{ $t('AGENT_PLATFORM_EDITABLE', '运营方可编辑') }}</span>
-          <span v-if="skillId" class="skill-drawer__muted">{{ fill($t('AGENT_SKILL_USAGE', '被 {n} 个智能体使用'), { n: usageCount }) }}</span>
+          <span v-if="isPlatform" class="skill-drawer__muted">{{ $t('AGENT_PLATFORM_EDITABLE', '运营方可编辑') }}</span>
         </div>
         <div class="skill-drawer__actions">
           <span v-if="readonly" class="skill-drawer__muted">{{ $t('AGENT_READONLY_PLATFORM', '平台技能只读') }}</span>
@@ -39,14 +38,19 @@
               <el-input v-model="form.semanticDesc" type="textarea" :rows="4" maxlength="1000" show-word-limit
                 :placeholder="$t('AGENT_SKILL_SEMANTIC_HINT', '写清适用什么、不负责什么，供模型选择技能')" />
             </el-form-item>
-            <el-form-item :label="$t('AGENT_FIELD_STATUS', '状态')">
-              <el-switch v-model="active" :active-text="$t('AGENT_STATUS_ACTIVE', '启用')" />
-            </el-form-item>
           </el-form>
         </el-tab-pane>
 
         <el-tab-pane :label="$t('AGENT_SKILL_TAB_MANUAL', '操作手册')" name="manual">
-          <MarkdownEditor v-model="manual" :locale="locale" height="calc(100vh - 220px)" mode="split" :readonly="readonly" />
+          <!-- 隐藏 Tab 里挂 CodeMirror 会量到 0 宽，要点一下才 refresh；进入手册 Tab 再挂载 -->
+          <MarkdownEditor
+            v-if="tab === 'manual'"
+            v-model="manual"
+            :locale="locale"
+            height="calc(100vh - 220px)"
+            mode="split"
+            :readonly="readonly"
+          />
         </el-tab-pane>
 
         <el-tab-pane name="contract">
@@ -101,6 +105,7 @@
 
     <ToolPicker
       :visible="pickerOpen"
+      :hide-customer="isPlatform"
       :excluded="toolBindings.map((b) => b.toolName)"
       :title="$t('AGENT_SKILL_ADD_TOOL', '添加工具')"
       :search-placeholder="$t('AGENT_TOOL_SEARCH', '搜索工具名或标题')"
@@ -119,7 +124,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
 import { StatusDot, PageElementPermission, showErrorMessage } from '@/components';
 import { EMPTY, RecordStatus, ResourceType, fill } from '@runtime/console';
-import { McpToolProfileApi, ToolPicker, type McpToolProfileVo } from '@/views/mcp_tool';
+import { McpToolProfileApi, ToolPicker, type McpToolProfileVo } from '@/views/mcp_tool_profile';
 import ContractPanel from './ContractPanel.vue';
 import { AgentDetailApi } from '../api';
 import { parseContract } from '../contract';
@@ -129,10 +134,18 @@ import type { SkillProfilePayload, SkillToolBindingVo } from '../type';
 const MarkdownEditor = defineAsyncComponent(() => import('@/components/markdown').then((m) => m.MarkdownEditor));
 
 /**
- * 技能配置：基本信息、操作手册、执行契约、工具。技能与智能体是多对多，修改对所有使用者生效。
- * skillId 为 null 时新建，保存后自动绑定到当前智能体。
+ * 技能配置：基本信息、操作手册、执行契约、工具。
+ * skillId 为 null 时新建，保存时写入当前 agentId。
  */
-const props = defineProps<{ visible: boolean; skillId: number | null; agentId: number; locale: string; initialTab?: string }>();
+const props = defineProps<{
+  visible: boolean;
+  skillId: number | null;
+  agentId: number;
+  /** 所属智能体类型；新建技能时写入，后端仍会按智能体再写死 */
+  agentResourceType?: string;
+  locale: string;
+  initialTab?: string;
+}>();
 const emit = defineEmits<{ close: []; saved: [skillId: number] }>();
 
 const SKILL_KEY_PATTERN = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/;
@@ -146,16 +159,11 @@ const form = ref<SkillProfilePayload>({});
 const manual = ref('');
 const contract = ref('');
 const snapshot = ref('');
-const usageCount = ref(0);
 const toolBindings = ref<SkillToolBindingVo[]>([]);
 const toolMeta = ref<McpToolProfileVo[]>([]);
 
 const isPlatform = computed(() => form.value.resourceType === ResourceType.PLATFORM);
 const readonly = computed(() => isPlatform.value && !PageElementPermission.has('skill:platform'));
-const active = computed({
-  get: () => form.value.status !== RecordStatus.INACTIVE,
-  set: (on: boolean) => (form.value = { ...form.value, status: on ? RecordStatus.ACTIVE : RecordStatus.INACTIVE }),
-});
 
 const enabledToolNames = computed(() => toolBindings.value.filter((b) => b.enabledFlag === 1).map((b) => b.toolName));
 const issues = computed(() => lintContract(contract.value, enabledToolNames.value));
@@ -180,24 +188,25 @@ async function load(): Promise<void> {
   loading.value = true;
   tab.value = props.initialTab ?? 'basic';
   try {
-    toolMeta.value = await McpToolProfileApi.list().catch(() => []);
+    toolMeta.value = await McpToolProfileApi.listAll().catch(() => []);
     if (props.skillId) {
-      const [skill, tools, usages] = await Promise.all([
+      const [skill, tools] = await Promise.all([
         AgentDetailApi.skill(props.skillId),
         AgentDetailApi.skillTools(props.skillId),
-        AgentDetailApi.skillUsages(props.skillId),
       ]);
       form.value = skill ? { ...skill } : {};
       manual.value = skill?.skillManual ?? '';
       contract.value = skill?.skillContract ?? '{}';
       toolBindings.value = tools;
-      usageCount.value = usages.length;
     } else {
-      form.value = { resourceType: ResourceType.CUSTOM, status: RecordStatus.ACTIVE };
+      form.value = {
+        agentId: props.agentId,
+        resourceType: props.agentResourceType || ResourceType.CUSTOM,
+        status: RecordStatus.ACTIVE,
+      };
       manual.value = MANUAL_TEMPLATE;
       contract.value = JSON.stringify({ mode: 'REACT', delegatable: false, outputs: {}, tools: {} }, null, 2);
       toolBindings.value = [];
-      usageCount.value = 0;
     }
   } catch (error: unknown) {
     showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载失败'));
@@ -226,20 +235,14 @@ async function save(): Promise<void> {
     ElMessage.warning(t('AGENT_CONTRACT_BLOCKED', '执行契约有错误，修正后才能保存'));
     return;
   }
-  if (usageCount.value > 1) {
-    const ok = await ElMessageBox.confirm(
-      fill(t('AGENT_SKILL_SHARED_CONFIRM', '这个技能还被其他 {n} 个智能体使用，修改会同时影响它们。确定保存吗？'), { n: usageCount.value - 1 }),
-      t('G2_LBL_TIP', '提示'),
-      { type: 'warning' },
-    ).then(() => true, () => false);
-    if (!ok) return;
-  }
   saving.value = true;
   try {
-    const id = await AgentDetailApi.saveSkill({ ...form.value, skillManual: manual.value, skillContract: contract.value });
-    if (!props.skillId) {
-      await AgentDetailApi.saveAgentSkill({ agentId: props.agentId, skillId: id, enabledFlag: 1 });
-    }
+    const id = await AgentDetailApi.saveSkill({
+      ...form.value,
+      agentId: form.value.agentId ?? props.agentId,
+      skillManual: manual.value,
+      skillContract: contract.value,
+    });
     snapshot.value = current();
     ElMessage.success(t('G2_MSG_SAVE_OK', '保存成功'));
     emit('saved', id);
@@ -257,12 +260,13 @@ async function refreshTools(): Promise<void> {
 async function addTools(tools: McpToolProfileVo[]): Promise<void> {
   pickerOpen.value = false;
   if (!props.skillId) return;
-  await Promise.all(tools.map((tool) => AgentDetailApi.saveSkillTool({ skillId: props.skillId!, toolName: tool.name, enabledFlag: 1 })));
+  // 新增后端固定启用，不必传 enabledFlag
+  await Promise.all(tools.map((tool) => AgentDetailApi.saveSkillTool({ skillId: props.skillId!, toolName: tool.name })));
   await refreshTools();
 }
 
 async function toggleTool(binding: SkillToolBindingVo, on: boolean): Promise<void> {
-  await AgentDetailApi.saveSkillTool({ ...binding, enabledFlag: on ? 1 : 0 });
+  await AgentDetailApi.updateSkillToolEnabled(binding.id, on ? 1 : 0);
   await refreshTools();
 }
 

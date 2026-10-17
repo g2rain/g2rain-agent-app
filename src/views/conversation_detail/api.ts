@@ -1,8 +1,11 @@
 /**
- * 会话详情 API（g2rain-agent-runtime，只读）。
+ * 会话详情 API：聚合各生成器 list 接口。
  */
-import { getHttpClient } from '@runtime/http';
-import { Gateway } from '@runtime/console';
+import { ChatConversationApi } from '@/views/chat_conversation/api';
+import { ChatMessageApi } from '@/views/chat_message/api';
+import { TaskInstanceApi } from '@/views/task_instance/api';
+import { TaskResumeRecordApi } from '@/views/task_resume_record/api';
+import { TaskGraphNodeApi } from '@/views/task_graph_node/api';
 import type {
   ChatConversationVo,
   ChatMessageVo,
@@ -12,30 +15,29 @@ import type {
   TaskResumeRecordVo,
 } from './type';
 
-// 导入 mock 数据以触发自动注册（副作用导入）
-import './mock';
-
-async function list<T>(table: string, params: Record<string, string>): Promise<T[]> {
-  const res = await getHttpClient('default').get<T[]>(`${Gateway.HARNESS}/${table}/list`, params);
-  return res.data ?? [];
-}
-
 export class ConversationDetailApi {
   /**
    * 会话、全部消息、全部任务及各任务的恢复记录；会话不存在时返回 null。
-   * 恢复记录按任务逐个查询（后端暂无按会话聚合的接口），任务数通常在十个以内。
    */
   static async load(conversationId: string): Promise<ConversationBundle | null> {
     const query = { conversationId };
-    const [conversations, messages, tasks] = await Promise.all([
-      list<ChatConversationVo>('chat_conversation', query),
-      list<ChatMessageVo>('chat_message', query),
-      list<TaskInstanceVo>('task_instance', query),
+    const [conversations, messagePage, tasks] = await Promise.all([
+      ChatConversationApi.list(query) as Promise<ChatConversationVo[]>,
+      ChatMessageApi.page({
+        conversationId,
+        pageNum: 1,
+        pageSize: 200,
+        sorts: ['createdAtMs,asc'],
+      } as Parameters<typeof ChatMessageApi.page>[0]),
+      TaskInstanceApi.list(query) as Promise<TaskInstanceVo[]>,
     ]);
     const conversation = conversations[0];
     if (!conversation) return null;
+    const messages = (messagePage?.records ?? []) as ChatMessageVo[];
     const groups = await Promise.all(
-      tasks.map((task) => list<TaskResumeRecordVo>('task_resume_record', { taskId: task.taskId })),
+      tasks.map((task) =>
+        TaskResumeRecordApi.list({ taskId: task.taskId }) as Promise<TaskResumeRecordVo[]>,
+      ),
     );
     const resumes = Object.fromEntries(tasks.map((task, index) => [task.taskId, groups[index]]));
     return { conversation, messages, tasks, resumes };
@@ -43,6 +45,6 @@ export class ConversationDetailApi {
 
   /** 任务步骤，选中任务时按需加载 */
   static nodes(taskId: string): Promise<TaskGraphNodeVo[]> {
-    return list<TaskGraphNodeVo>('task_graph_node', { taskId });
+    return TaskGraphNodeApi.list({ taskId }) as Promise<TaskGraphNodeVo[]>;
   }
 }

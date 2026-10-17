@@ -22,6 +22,9 @@ export interface McpToolProfile extends BaseVo {
   description: string;
 }
 
+/** 工具选择器与契约面板使用的工具档案 */
+export type McpToolProfileVo = McpToolProfile;
+
 /**
  * 用于创建 / 更新时提交的负载（不包含审计字段）
  */

@@ -41,6 +41,8 @@ agent-app 是智能体的**配置台 + 观测台**：
 
 - **按业务对象组织页面，不按表组织。** 绑定表（`agent_skill_binding`、`skill_tool_binding`）、运行明细表（`task_graph_node/edge`、`tool_call_record` 等）不单独出菜单，作为主对象详情里的 Tab 或抽屉出现。
 - **公共资源只读，私有资源可写。** 运营方维护公共资源（模型目录中的广场模型、平台工具、PLATFORM 智能体）；租户引用公共资源，维护自己的私有资源。
+- **智能体菜单按供给来源平级拆分。** 一级「智能体管理」下：「自建智能体」（`CUSTOM`，`/agent_profile/custom`）与「平台智能体」（`PLATFORM`，`/agent_profile/platform`，IAM 授运营方）。详情工作台叫「智能体配置」，不要当菜单名。复制/安装副本归「智能体模板」，不挂在平台智能体上。
+- **菜单顺序即配置习惯。** 侧栏与 IAM 挂载顺序固定为：模型 → 工具（先接入、再工具）→ 智能体 → 会话；只使用模型可停在模型配置。细则见[需求第 5.1 节](../requirements/20261014-agent-console.md#51-配置习惯与菜单顺序)。
 - **runtime 只读。** 观测页不出现新增、编辑、删除按钮。
 - **长文本、结构化字段用专用编辑器。** Markdown 字段用 `MarkdownEditor`，JSON 字段用 `JsonEditor`，不用单行 `el-input`。
 - **国际化。** 所有用户可见文案走 `$t(key, fallback)`，页面跟随所选语言切换。
@@ -88,11 +90,11 @@ model_service_catalog（共享，无 organ_id）            model_service_profil
 
 | 来源 | resource_type | 维护方 | 可见范围 | 当前实现 |
 |---|---|---|---|---|
-| basis `resource_api` 同步 | BUILT_IN | 运营方 | 全部租户 | 未实现（仅 `LocalMcpToolRegistryBootstrap` 启动时内存注册 CMS 接口） |
-| 运营方外部系统 OpenAPI 导入 | EXTENSION | 运营方 | 全部租户 | 未实现（`OpenApiRegistry` 为预留空实现） |
-| 租户私有配置 | CUSTOMER | 租户 | 本租户 | 只有 CRUD |
+| basis `resource_api` 同步 | BUILT_IN | 运营方 | 全部租户 | `OpenApiDocumentConverter` + `sync_built_in` |
+| 运营方外部系统 OpenAPI 导入 | EXTENSION | 运营方 | 全部租户 | `OpenApiDocumentConverter` + 导入预览/确认 |
+| 租户私有配置 | CUSTOMER | 租户 | 本租户 | CRUD + 同上导入链路 |
 
-工具命名遵循 `EndpointStrategy`：`{method}_{path}`，例如 `get_article_list`、`post_article_save`、`delete_article_id`。`skill_tool_binding.tool_name` 与 `skill_contract.tools` 的 key 都用这个名字。
+工具命名遵循 `EndpointStrategy`：`{method}_{self|serviceCode}_{contextPath}_{path}`，例如 `get_self_basis_users_id`、`post_crm_orders`。`skill_tool_binding.tool_name` 与 `skill_contract.tools` 的 key 都用这个名字。
 
 ### 2.3 agent-studio
 
@@ -268,7 +270,7 @@ chat_conversation  (conversation_id)                 ← 观测入口
 
 | 能力 | 归属 | 理由 |
 |---|---|---|
-| 页面、页面 API、DTO / VO、Mock | `views/<module>` | 只服务一个页面 |
+| 页面、页面 API、DTO / VO | `views/<module>` | 只服务一个页面 |
 | 页面私有组件（`ActionTimeline`、`ContractPanel` 等） | `views/<module>/components` | 只服务一个页面，不从全局出口导出 |
 | 状态枚举、状态 → 语义色映射、来源徽标映射、内置工具中文名、ID / 耗时格式化 | `runtime/console` | 服务本应用多个页面，带应用语义 |
 | `MarkdownEditor`、`MarkdownViewer`、`JsonEditor`、`JsonViewer`、`DagCanvas`、`SecretInput`、`CopyText`、`StatusDot` | `components` | 纯 UI / 交互，无业务语义 |
@@ -284,7 +286,7 @@ chat_conversation  (conversation_id)                 ← 观测入口
   | 所有者 | 公共 API | 使用方 |
   |---|---|---|
   | `views/mcp_tool` | `McpToolProfileApi`、`ToolPicker` | `agent_detail`（技能配置抽屉） |
-  | `views/conversation_detail` | `conversationDetailRoute()`（带 `embed` 参数的路由） | `conversation` |
+  | `views/conversation_detail` | `conversationDetailRoute()`（带 `embed` 参数的路由） | `chat_conversation` |
   | `views/task_trace` | `taskTraceRoute()`（带 `embed` 参数的路由） | `conversation_detail` |
 
   技能、工具调用不再有独立页面：技能相关 API 与组件归 `views/agent_detail`，工具调用 API 与详情组件归 `views/task_trace`，都只在本模块内使用。
@@ -294,12 +296,12 @@ chat_conversation  (conversation_id)                 ← 观测入口
 
 ### 5.3 页面模块
 
-- 每个页面目录保持 `index.vue + api.ts + type.ts + mock.ts`，需要对外复用时再加 `index.ts`。
+- 每个页面目录保持 `index.vue + api.ts + type.ts`，需要对外复用时再加 `index.ts`。
 - `api.ts` 用 `getHttpClient('default')`，路径带网关前缀；页面组件不拼 Axios 配置，不重复 `api.ts` 已有的转换。
 - 类型命名用 `XxxQuery`、`XxxPayload`、`XxxVo`；`state`、`request`、`response` 等 JSON 字段在 `type.ts` 里声明为 `string`，在 `api.ts` 或页面的 composable 中解析为显式类型，不在模板里 `JSON.parse`。
 - 每个页面在 `views/route-map.ts` 静态注册；新增或调整 linkPath、权限点后执行 `g2rain-app build-config` 并 Review `resources.json`。
 - 权限点只用静态字符串 `v-permission="'agent:edit'"`，动态表达式无法被资源生成器扫描。
-- Mock 只在开发和显式 Mock 模式生效。会话观测、会话详情、执行追踪共用 `views/harness_sample`（基于 `123.sql` 样例，已去掉 requestId 等环境信息），各页面 `mock.ts` 调用 `registerHarnessSample()`，保证先打开哪个页面都返回同一份数据。
+- 控制台页面不维护 `mock.ts` / `harness_sample` / `studio_sample`，联调走真实后端。
 
 ### 5.4 多实例与生命周期
 
@@ -322,7 +324,7 @@ chat_conversation  (conversation_id)                 ← 观测入口
 ### 5.6 国际化与安全
 
 - 模板用 `$t('AGENT_xxx', '默认文案')`，脚本用平台 `t`；枚举文案的 key 统一在 `runtime/console` 中维护。至少用两种语言验证。
-- 访问密钥只在表单中以 `SecretInput` 出现，不进入表格、日志、Mock 和 URL。
+- 访问密钥只在表单中以 `SecretInput` 出现，不进入表格、日志和 URL。
 - 前端权限只控制体验，所有写操作由后端重新鉴权；运营方专属能力靠 IAM 权限点授予，前端不硬编码运营方判断。
 - `tool_call_record.request` 中的敏感值只存 handle，界面原样展示 handle，不尝试还原。
 
@@ -410,6 +412,25 @@ chat_conversation  (conversation_id)                 ← 观测入口
 
 前端设计依赖以下后端能力，按优先级列出。本文只登记需求，不在本项目实现。
 
+### 9.1 MCP 工具（已定口径，待开发）
+
+**已完成（勿再排期）：** `mcp_external_service` 删服务级联删工具（事务）；`code` 与 `endpoint+contextPath` 两套唯一（EXTENSION 全局 / CUSTOMER 本机构且不撞 EXTENSION）；三工具菜单入口。
+
+**mcp-registry 不认 agent**；隔离靠分类型接口；PLATFORM 禁绑 CUSTOMER 由 **studio 写绑定**校验。OpenAPI / BUILT_IN 文档链路细节见 [openapi-document-and-mcp-tools](../../../../g2rain-server/g2rain-basis/docs/requirements/openapi-document-and-mcp-tools.md)。
+
+| 优先级 | 服务 | 缺口 | 影响 |
+|---|---|---|---|
+| P0 | mcp-registry | `mcp_tool_profile` 分类型 `built_in` / `extension` / `customer` 的 list、page、save（类型写死）；BUILT_IN、EXTENSION 查询不隔离，CUSTOMER 本机构 | 自有/扩展/客户系统工具；ToolPicker |
+| P0 | mcp-registry | `POST /mcp_tool_profile/{id}/status` 启停 | 工具列表 |
+| P0 | mcp-registry | 修 `extension/page` 误写成 CUSTOMER | 扩展系统接入 |
+| P0 | studio | 写 `skill_tool_binding`：PLATFORM 智能体禁止绑定 CUSTOMER 工具 | 技能 ToolPicker 确认 |
+| P0 | agent-app | ToolPicker：3 Tab + 各类型真分页；PLATFORM 仅自有+扩展；勾选跨 Tab 累加；三菜单对接分类型 API | 智能体详情、工具三菜单 |
+| P1 | mcp-registry | `POST .../sync_built_in`：读 basis `resource_api` → 写 BUILT_IN（展开只在 mcp） | 自有系统工具 |
+| P1 | mcp-registry | OpenAPI `preview`（接口清单，非整份展开文档）+ `confirm` 写入 | 扩展/客户系统工具导入 |
+| P1 | basis | `resource_api` 拆分存原始最小 `openapi_document`（不做语义展开）；供 sync 前置 | manager 导入、BUILT_IN 同步 |
+
+### 9.2 其它缺口
+
 | 优先级 | 服务 | 缺口 | 影响页面 |
 |---|---|---|---|
 | P0 | model-nexus | 配置保存支持「接入私有模型」：一次请求在同一事务中写入 CUSTOM 目录与 profile；删除私有配置时一并删除其目录 | 模型配置 |
@@ -417,10 +438,7 @@ chat_conversation  (conversation_id)                 ← 观测入口
 | P0 | model-nexus | 目录接口按角色收口：`model_service_catalog` 的写接口与 CUSTOM 查询只对运营方开放；租户只能查询 ACTIVE 的 MARKET 目录，且不返回 `api_key` | 模型目录、模型配置 |
 | P0 | model-nexus | VO 明文返回 `api_key`：广场模型对租户不返回，私有模型返回掩码 | 全部模型页 |
 | P2 | model-nexus | 广场模型被引用的机构数；私有目录的所属机构（经 profile 关联，运营方跨机构查询） | 模型目录 |
-| P0 | mcp-registry | 工具、服务查询需返回「BUILT_IN / EXTENSION 不隔离 + 本机构 CUSTOMER」 | 工具目录、技能工具绑定 |
 | P0 | studio | 标准 `list` / `page` 只返回本机构数据，租户查不到 PLATFORM 智能体和技能；需按「PLATFORM 不隔离 + 本机构 CUSTOM」合并（`active_catalog`、`capability_bundle` 已是此逻辑） | 智能体配置、智能体详情 |
-| P1 | mcp-registry | basis `resource_api` → BUILT_IN 工具同步接口 | 工具目录（运营方） |
-| P1 | mcp-registry | OpenAPI 文档解析与导入接口（预览 + 确认写入） | 服务接入 |
 | P1 | studio | PLATFORM 智能体 / 技能「复制为私有」接口（含绑定复制；技能复制后替换当前智能体的绑定） | 智能体配置、智能体详情 |
 | P1 | studio | 新建技能与绑定同事务写入 | 智能体详情 |
 | P1 | studio | 公共资源写保护：租户不得修改、删除 PLATFORM 记录 | 智能体配置、智能体详情 |
@@ -455,24 +473,25 @@ src/
 │   └── console/             # 枚举、语义色与徽标映射、内置动作名、格式化
 │       └── index.ts
 └── views/
-    ├── model_catalog/       # index.vue + api.ts + type.ts + mock.ts
-    ├── model_profile/
+    ├── model_service_catalog/   # index.vue + api.ts + type.ts
+    ├── model_service_profile/
     │   └── components/      # MarketPicker、CustomModelForm、ParamsForm、TryPanel
-    ├── model_usage/
-    ├── mcp_service/
-    │   └── components/      # OpenApiImport
+    ├── model_usage_record/
+    ├── mcp_external_service/
+    ├── mcp_tool_profile/
+    │   ├── components/      # OpenApiImport
+    │   └── index.ts         # 导出 OpenApiImport
     ├── mcp_tool/
     │   ├── components/      # ToolPicker
     │   └── index.ts         # 导出 McpToolProfileApi、ToolPicker
-    ├── agent/
+    ├── agent_profile/
+    │   └── index.ts         # 导出 AgentProfileApi、类型
     ├── agent_detail/
     │   ├── components/      # ProfileSection、SkillList、SkillAdd、SkillDrawer、ContractPanel、CapabilityPreview
     │   ├── contract.ts      # 契约类型、解析、按 inputSchema 生成骨架
     │   ├── contract-lint.ts # 装载校验与枚举校验，输出带 JSON 路径的问题
     │   └── index.ts         # 导出 agentDetailRoute
-    ├── studio_sample/       # 智能体配置共用 Mock 样例（内存中可增删改，registerStudioSample）
-    ├── harness_sample/      # 运行观测共用 Mock 样例（data.ts + registerHarnessSample）
-    ├── conversation/
+    ├── chat_conversation/
     ├── conversation_detail/
     │   ├── components/      # TurnList、TaskSummary
     │   ├── turns.ts         # 消息按轮分组、确认结果语义

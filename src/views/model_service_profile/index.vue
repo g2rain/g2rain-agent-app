@@ -1,37 +1,26 @@
 
 <template>
   <div class="model_service_profile-page">
-    <!-- 查询表单 -->
     <el-card class="model_service_profile-page__search" shadow="never">
-      <!-- 基础查询表单（BaseSelectListDto） -->
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
-        <!-- 业务特定查询字段 -->
-        <el-form-item label="机构ID">
-          <el-input v-model="queryForm.organId" placeholder="请输入机构ID" clearable style="width: 200px" />
+        <el-form-item label="模型名称">
+          <el-input v-model="queryForm.modelName" placeholder="请输入模型名称" clearable style="width: 200px" />
         </el-form-item>
-        <el-form-item label="模型服务目录ID">
-          <el-input v-model="queryForm.catalogId" placeholder="请输入模型服务目录ID" clearable style="width: 200px" />
+        <el-form-item label="模型类型">
+          <el-select v-model="queryForm.modelType" placeholder="请选择模型类型" clearable style="width: 200px">
+            <el-option v-for="item in MODEL_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
         </el-form-item>
-        <el-form-item label="采样温度">
-          <el-input v-model="queryForm.temperature" placeholder="请输入采样温度" clearable style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="Top P 采样">
-          <el-input v-model="queryForm.topP" placeholder="请输入Top P 采样" clearable style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="最大输出 token 数">
-          <el-input v-model="queryForm.maxTokens" placeholder="请输入最大输出 token 数" clearable style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="请求超时毫秒数">
-          <el-input v-model="queryForm.timeoutMs" placeholder="请输入请求超时毫秒数" clearable style="width: 200px" />
+        <el-form-item label="来源">
+          <el-select v-model="queryForm.resourceType" placeholder="请选择来源" clearable style="width: 160px">
+            <el-option v-for="item in RESOURCE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
         </el-form-item>
         <el-form-item label="状态">
-          <el-input v-model="queryForm.status" placeholder="请输入状态" clearable style="width: 200px" />
+          <el-select v-model="queryForm.status" placeholder="请选择状态" clearable style="width: 160px">
+            <el-option v-for="item in STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
         </el-form-item>
-        <el-form-item label="模型说明">
-          <el-input v-model="queryForm.description" placeholder="请输入模型说明" clearable style="width: 200px" />
-        </el-form-item>
-
-        <!-- 操作按钮 -->
         <template #actions>
           <el-form-item>
             <el-button type="primary" @click="handleSearch">{{ $t('G2_BTN_QUERY', '查询') }}</el-button>
@@ -41,30 +30,54 @@
       </QueryForm>
     </el-card>
 
-    <!-- 标题和操作按钮 -->
     <div class="model_service_profile-page__header">
       <div class="model_service_profile-page__title-group">
-        <h2>管理模型服务配置数据</h2>
+        <h2>模型配置</h2>
       </div>
-      <el-button type="primary" v-permission="'model_service_profile:add'" @click="handleCreate">新增模型服务配置</el-button>
+      <div class="model_service_profile-page__actions">
+        <el-button type="primary" v-permission="'model_service_profile:add'" @click="openCreate('market')">模型广场</el-button>
+        <el-button v-permission="'model_service_profile:add'" @click="openCreate('custom')">私有模型</el-button>
+      </div>
     </div>
 
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
-      <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="120" />
-      <el-table-column prop="organId" label="机构ID" width="140" />
-      <el-table-column prop="catalogId" label="模型服务目录ID" width="140" />
-      <el-table-column prop="temperature" label="采样温度" width="180" />
-      <el-table-column prop="topP" label="Top P 采样" width="180" />
-      <el-table-column prop="maxTokens" label="最大输出 token 数" width="140" />
-      <el-table-column prop="timeoutMs" label="请求超时毫秒数" width="140" />
-      <el-table-column prop="status" label="状态" width="180" />
-      <el-table-column prop="description" label="模型说明" width="180" />
+      <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="100" />
+      <el-table-column label="模型" min-width="200">
+        <template #default="{ row }">
+          <div>{{ row.modelName }}</div>
+          <div class="model_service_profile-page__meta">{{ row.provider }} · {{ optionLabel(PROTOCOL_OPTIONS, row.protocol) }}</div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="resourceType" label="来源" width="110">
+        <template #default="{ row }">
+          <el-tag size="small" effect="plain" :type="row.resourceType === 'MARKET' ? 'info' : 'primary'">
+            {{ optionLabel(RESOURCE_OPTIONS, row.resourceType) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="modelType" label="类型" width="120">
+        <template #default="{ row }">{{ optionLabel(MODEL_TYPE_OPTIONS, row.modelType) }}</template>
+      </el-table-column>
+      <el-table-column prop="status" label="状态" width="140">
+        <template #default="{ row }">
+          <StatusSwitch
+            v-model="row.status"
+            v-permission="'model_service_profile:status_update'"
+            active-value="ACTIVE"
+            inactive-value="INACTIVE"
+            :options="STATUS_OPTIONS"
+            :api-method="({ nextValue }) => ModelServiceProfileApi.updateStatus(row.id, String(nextValue))"
+            @success="notifyStatusSwitchSuccess"
+            @error="(p) => notifyStatusSwitchError(p)"
+          />
+        </template>
+      </el-table-column>
       <TableColumn prop="createTime" :label="$t('G2_FIELD_CREATE_TIME', '创建时间')" width="180" sortable="custom" />
       <TableColumn prop="updateTime" :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')" width="180" sortable="custom" />
-      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="280">
+      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="200">
         <template #default="{ row }">
-          <el-button type="primary" link size="small" @click="handleView(row)">{{ $t('G2_BTN_DETAIL', '明细') }}</el-button>
-          <el-button type="primary" v-permission="'model_service_profile:edit'" link size="small" @click="handleEdit(row)">{{ $t('G2_BTN_EDIT', '编辑') }}</el-button>
+          <el-button type="primary" link size="small" @click="handleView(row)">{{ $t('G2_BTN_DETAIL', '详情') }}</el-button>
+          <el-button type="primary" v-permission="'model_service_profile:edit'" link size="small" @click="openEdit(row)">{{ $t('G2_BTN_EDIT', '编辑') }}</el-button>
           <el-button type="danger" v-permission="'model_service_profile:delete'" link size="small" @click="handleDelete(row)">{{ $t('G2_BTN_DELETE', '删除') }}</el-button>
         </template>
         <template #header>
@@ -76,7 +89,6 @@
       </el-table-column>
     </SortableTable>
 
-    <!-- 分页组件 -->
     <div class="model_service_profile-page__pagination">
       <el-pagination
         v-model:current-page="pagination.pageNum"
@@ -89,83 +101,273 @@
       />
     </div>
 
-    <!-- 新增 / 编辑弹窗 -->
-    <el-dialog v-model="editDialogVisible" :title="isEdit ? '编辑模型服务配置' : '新增模型服务配置'" width="520px">
-      <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="100px">
-        <el-form-item label="机构ID" prop="organId">
-          <el-input v-model="editForm.organId" placeholder="请输入机构ID" />
-        </el-form-item>
-        <el-form-item label="模型服务目录ID" prop="catalogId">
-          <el-input v-model="editForm.catalogId" placeholder="请输入模型服务目录ID" />
-        </el-form-item>
-        <el-form-item label="采样温度" prop="temperature">
-          <el-input v-model="editForm.temperature" placeholder="请输入采样温度" />
-        </el-form-item>
-        <el-form-item label="Top P 采样" prop="topP">
-          <el-input v-model="editForm.topP" placeholder="请输入Top P 采样" />
-        </el-form-item>
-        <el-form-item label="最大输出 token 数" prop="maxTokens">
-          <el-input v-model="editForm.maxTokens" placeholder="请输入最大输出 token 数" />
-        </el-form-item>
-        <el-form-item label="请求超时毫秒数" prop="timeoutMs">
-          <el-input v-model="editForm.timeoutMs" placeholder="请输入请求超时毫秒数" />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-input v-model="editForm.status" placeholder="请输入状态" />
-        </el-form-item>
-        <el-form-item label="模型说明" prop="description">
-          <el-input v-model="editForm.description" placeholder="请输入模型说明" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="editDialogVisible = false">{{ $t('G2_BTN_CANCEL', '取消') }}</el-button>
-          <el-button type="primary" @click="submitEdit">{{ $t('G2_BTN_SAVE', '保存') }}</el-button>
-        </span>
-      </template>
-    </el-dialog>
+    <!-- 从广场选择 / 编辑广场来源：先选模型，再配参数 -->
+    <el-drawer
+      v-model="marketDialogVisible"
+      :title="marketDrawerTitle"
+      size="560px"
+      destroy-on-close
+    >
+      <div class="model_service_profile-page__drawer">
+        <!-- 步骤一：只选模型 -->
+        <template v-if="!isEdit && marketStep === 'pick'">
+          <div class="model_service_profile-page__pick-bar">
+            <el-select
+              v-model="pickType"
+              clearable
+              placeholder="模型类型"
+              class="model_service_profile-page__pick-type"
+              @change="onPickFilterChange"
+            >
+              <el-option
+                v-for="item in MODEL_TYPE_OPTIONS"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+            <el-input
+              v-model="pickKeyword"
+              clearable
+              class="model_service_profile-page__pick-search"
+              placeholder="搜索模型名"
+              @change="onPickFilterChange"
+              @clear="onPickFilterChange"
+            />
+          </div>
+          <el-radio-group
+            v-model="selectedCatalogId"
+            v-loading="pickLoading"
+            class="model_service_profile-page__pick"
+            @change="onPickSelect"
+          >
+            <el-radio
+              v-for="item in market"
+              :key="item.id"
+              :value="item.id"
+              :disabled="configuredIds.has(item.id)"
+              class="model_service_profile-page__pick-item"
+            >
+              <div class="model_service_profile-page__pick-main">
+                <span>{{ item.modelName }}</span>
+                <span class="model_service_profile-page__meta">
+                  {{ item.provider }} · {{ optionLabel(MODEL_TYPE_OPTIONS, item.modelType) }}
+                </span>
+              </div>
+              <el-tag
+                size="small"
+                :type="configuredIds.has(item.id) ? 'info' : 'success'"
+                effect="plain"
+                class="model_service_profile-page__pick-status"
+              >
+                {{ configuredIds.has(item.id) ? '已配置' : '未配置' }}
+              </el-tag>
+            </el-radio>
+          </el-radio-group>
+          <div class="model_service_profile-page__pick-pager">
+            <el-pagination
+              v-model:current-page="pickPagination.pageNum"
+              v-model:page-size="pickPagination.pageSize"
+              :total="pickPagination.total"
+              layout="total, prev, pager, next"
+              small
+              @current-change="loadMarketPage"
+              @size-change="onPickPageSizeChange"
+            />
+          </div>
+        </template>
 
-    <!-- 明细弹窗 -->
-    <el-dialog v-model="detailDialogVisible" title="模型服务配置明细" width="520px">
+        <!-- 步骤二 / 编辑：已选模型摘要 + 参数（一屏看完） -->
+        <template v-else>
+          <div class="model_service_profile-page__picked">
+            <div>
+              <div class="model_service_profile-page__picked-name">
+                {{ isEdit ? editRow?.modelName : selectedMarket?.modelName }}
+              </div>
+              <div class="model_service_profile-page__meta">
+                <template v-if="isEdit">
+                  {{ optionLabel(RESOURCE_OPTIONS, editRow?.resourceType) }}
+                  · {{ optionLabel(MODEL_TYPE_OPTIONS, editRow?.modelType) }}
+                </template>
+                <template v-else>
+                  {{ selectedMarket?.provider }}
+                  · {{ optionLabel(MODEL_TYPE_OPTIONS, selectedMarket?.modelType) }}
+                </template>
+              </div>
+            </div>
+            <el-button v-if="!isEdit" link type="primary" @click="marketStep = 'pick'">重选</el-button>
+          </div>
+          <h4>参数</h4>
+          <el-form label-width="140px">
+            <ParamsForm
+              v-model:temperature="params.temperature"
+              v-model:top-p="params.topP"
+              v-model:max-tokens="params.maxTokens"
+              v-model:timeout-ms="params.timeoutMs"
+              :model-type="currentModelType"
+            />
+          </el-form>
+        </template>
+      </div>
+      <template #footer>
+        <el-button @click="marketDialogVisible = false">{{ $t('G2_BTN_CANCEL', '取消') }}</el-button>
+        <el-button v-if="!isEdit && marketStep === 'params'" @click="marketStep = 'pick'">上一步</el-button>
+        <el-button
+          v-if="!isEdit && marketStep === 'pick'"
+          type="primary"
+          :disabled="!selectedCatalogId || configuredIds.has(Number(selectedCatalogId))"
+          @click="goMarketParams"
+        >
+          下一步
+        </el-button>
+        <el-button
+          v-else
+          type="primary"
+          :loading="saving"
+          @click="submitMarket"
+        >
+          {{ $t('G2_BTN_SAVE', '保存') }}
+        </el-button>
+      </template>
+    </el-drawer>
+
+    <!-- 私有模型 -->
+    <el-drawer
+      v-model="customDialogVisible"
+      :title="isEdit ? '编辑私有模型' : '接入私有模型'"
+      size="720px"
+      destroy-on-close
+    >
+      <div class="model_service_profile-page__drawer">
+        <el-form ref="customFormRef" :model="custom" :rules="customRules" label-width="100px">
+          <h4>模型</h4>
+          <el-form-item label="模型名称" prop="modelName">
+            <el-input v-model="custom.modelName" placeholder="请输入模型名称" />
+          </el-form-item>
+          <el-row :gutter="16">
+            <el-col :span="12">
+              <el-form-item label="模型类型" prop="modelType">
+                <el-select v-model="custom.modelType" style="width: 100%">
+                  <el-option v-for="item in MODEL_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="供应商" prop="provider">
+                <el-input v-model="custom.provider" placeholder="请输入供应商" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <h4>连接</h4>
+          <el-form-item label="协议" prop="protocol">
+            <el-select v-model="custom.protocol" style="width: 100%">
+              <el-option v-for="item in PROTOCOL_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="服务地址" prop="baseUrl">
+            <el-input v-model="custom.baseUrl" placeholder="请输入服务地址" />
+          </el-form-item>
+          <el-form-item label="访问密钥" prop="apiKey">
+            <el-input
+              v-model="custom.apiKey"
+              type="password"
+              show-password
+              :placeholder="isEdit && custom.apiKeyConfigured ? '已配置，留空表示不修改' : '请输入访问密钥'"
+            />
+          </el-form-item>
+          <el-form-item label="说明" prop="description">
+            <el-input v-model="custom.description" type="textarea" :rows="1" placeholder="请输入说明" />
+          </el-form-item>
+          <h4>参数</h4>
+          <ParamsForm
+            v-model:temperature="params.temperature"
+            v-model:top-p="params.topP"
+            v-model:max-tokens="params.maxTokens"
+            v-model:timeout-ms="params.timeoutMs"
+            :model-type="custom.modelType"
+          />
+        </el-form>
+      </div>
+      <template #footer>
+        <el-button @click="customDialogVisible = false">{{ $t('G2_BTN_CANCEL', '取消') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="submitCustom">{{ $t('G2_BTN_SAVE', '保存') }}</el-button>
+      </template>
+    </el-drawer>
+
+    <el-dialog v-model="detailDialogVisible" title="模型配置明细" width="560px">
       <el-descriptions :column="1" border>
         <el-descriptions-item :label="$t('G2_FIELD_ID', 'ID')">{{ currentRow?.id }}</el-descriptions-item>
-        <el-descriptions-item label="机构ID">{{ currentRow?.organId }}</el-descriptions-item>
-        <el-descriptions-item label="模型服务目录ID">{{ currentRow?.catalogId }}</el-descriptions-item>
-        <el-descriptions-item label="采样温度">{{ currentRow?.temperature }}</el-descriptions-item>
-        <el-descriptions-item label="Top P 采样">{{ currentRow?.topP }}</el-descriptions-item>
-        <el-descriptions-item label="最大输出 token 数">{{ currentRow?.maxTokens }}</el-descriptions-item>
-        <el-descriptions-item label="请求超时毫秒数">{{ currentRow?.timeoutMs }}</el-descriptions-item>
-        <el-descriptions-item label="状态">{{ currentRow?.status }}</el-descriptions-item>
-        <el-descriptions-item label="模型说明">{{ currentRow?.description }}</el-descriptions-item>
-        <el-descriptions-item :label="$t('G2_FIELD_CREATE_TIME', '创建时间')">{{ currentRow?.createTime }}</el-descriptions-item>
-        <el-descriptions-item :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')">{{ currentRow?.updateTime }}</el-descriptions-item>
+        <el-descriptions-item label="模型名称">{{ currentRow?.modelName }}</el-descriptions-item>
+        <el-descriptions-item label="来源">{{ optionLabel(RESOURCE_OPTIONS, currentRow?.resourceType) }}</el-descriptions-item>
+        <el-descriptions-item label="类型">{{ optionLabel(MODEL_TYPE_OPTIONS, currentRow?.modelType) }}</el-descriptions-item>
+        <el-descriptions-item label="供应商">{{ currentRow?.provider }}</el-descriptions-item>
+        <el-descriptions-item label="协议">{{ optionLabel(PROTOCOL_OPTIONS, currentRow?.protocol) }}</el-descriptions-item>
+        <el-descriptions-item label="服务地址">{{ currentRow?.baseUrl }}</el-descriptions-item>
+        <el-descriptions-item label="访问密钥">{{ currentRow?.apiKeyConfigured ? '已配置' : '未配置' }}</el-descriptions-item>
+        <el-descriptions-item label="采样温度">{{ currentRow?.temperature ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="Top P">{{ currentRow?.topP ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="最大 Token">{{ currentRow?.maxTokens ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="超时">{{ Math.round((currentRow?.timeoutMs || 0) / 1000) }} s</el-descriptions-item>
+        <el-descriptions-item label="状态">{{ optionLabel(STATUS_OPTIONS, currentRow?.status) }}</el-descriptions-item>
+        <el-descriptions-item label="说明">{{ currentRow?.description }}</el-descriptions-item>
       </el-descriptions>
       <template #footer>
-        <span class="dialog-footer">
-          <el-button type="primary" @click="detailDialogVisible = false">{{ $t('G2_BTN_CLOSE', '关闭') }}</el-button>
-        </span>
+        <el-button type="primary" @click="detailDialogVisible = false">{{ $t('G2_BTN_CLOSE', '关闭') }}</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
-import { ElMessageBox, ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
-import { ModelServiceProfileApi } from './api';
-import type { ModelServiceProfile, ModelServiceProfilePayload, ModelServiceProfileQuery } from './type';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
-
 import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
-import { showErrorMessage } from '@/components';
+import { StatusSwitch } from '@g2rain/ui/platform';
+import { showErrorMessage, notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
+import ParamsForm from './components/ParamsForm.vue';
+import { ModelServiceProfileApi } from './api';
+import type {
+  MarketCatalogOption,
+  ModelServiceProfile,
+  ModelServiceProfilePayload,
+  ModelServiceProfileQuery,
+} from './type';
 
+type EnumOption = { value: string; label: string };
 
-// 组件引用
+const MODEL_TYPE_OPTIONS: EnumOption[] = [
+  { value: 'LLM', label: '大语言模型' },
+  { value: 'VECTOR', label: '向量模型' },
+  { value: 'RERANK', label: '重排序模型' },
+];
+
+const PROTOCOL_OPTIONS: EnumOption[] = [
+  { value: 'OPENAI', label: 'OpenAI' },
+  { value: 'ANTHROPIC', label: 'Anthropic' },
+  { value: 'GEMINI', label: 'Gemini' },
+];
+
+const STATUS_OPTIONS: EnumOption[] = [
+  { value: 'ACTIVE', label: '启用' },
+  { value: 'INACTIVE', label: '禁用' },
+];
+
+const RESOURCE_OPTIONS: EnumOption[] = [
+  { value: 'MARKET', label: '模型广场' },
+  { value: 'CUSTOM', label: '私有模型' },
+];
+
+const optionLabel = (options: EnumOption[], value?: string | null): string => {
+  if (!value) return '';
+  return options.find((item) => item.value === value)?.label ?? value;
+};
+
 const queryFormRef = ref<InstanceType<typeof QueryForm> | null>(null);
+const customFormRef = ref<FormInstance | null>(null);
 
-// 基础查询表单（BaseSelectListDto）；用 ref 以匹配 QueryForm defineModel
 const baseQueryForm = ref<BaseSelectListDto>({
   id: undefined,
   createTime: undefined,
@@ -173,230 +375,332 @@ const baseQueryForm = ref<BaseSelectListDto>({
   sorts: undefined,
 });
 
-// 业务查询状态
 const queryForm = reactive({
-  organId: undefined,
-  catalogId: undefined,
-  temperature: '',
-  topP: '',
-  maxTokens: undefined,
-  timeoutMs: undefined,
+  modelName: '',
+  modelType: '',
+  resourceType: '',
   status: '',
+});
+
+const pagination = reactive({ pageNum: 1, pageSize: 10, total: 0 });
+const tableData = ref<ModelServiceProfile[]>([]);
+
+const marketDialogVisible = ref(false);
+const customDialogVisible = ref(false);
+const detailDialogVisible = ref(false);
+const isEdit = ref(false);
+const saving = ref(false);
+const currentRow = ref<ModelServiceProfile | null>(null);
+const editRow = ref<ModelServiceProfile | null>(null);
+
+const market = ref<MarketCatalogOption[]>([]);
+const configuredIds = ref(new Set<number>());
+const pickType = ref('');
+const pickKeyword = ref('');
+const selectedCatalogId = ref<number | undefined>(undefined);
+const selectedMarket = ref<MarketCatalogOption | null>(null);
+const marketStep = ref<'pick' | 'params'>('pick');
+const pickPagination = reactive({ pageNum: 1, pageSize: 7, total: 0 });
+const pickLoading = ref(false);
+
+const marketDrawerTitle = computed(() => {
+  if (isEdit.value) return '编辑模型配置';
+  return marketStep.value === 'pick' ? '选择广场模型' : '配置参数';
+});
+
+const params = reactive({ temperature: 0, topP: 1, maxTokens: 4096, timeoutMs: 120000 });
+const custom = reactive({
+  catalogId: undefined as number | undefined,
+  modelName: '',
+  modelType: 'LLM',
+  provider: '',
+  protocol: 'OPENAI',
+  baseUrl: '',
+  apiKey: '',
+  apiKeyConfigured: false,
   description: '',
 });
 
-// 分页相关状态
-const pagination = reactive({
-  pageNum: 1,
-  pageSize: 10,
-  total: 0,
+const customRules: FormRules = {
+  modelName: [{ required: true, message: '请输入模型名称', trigger: 'blur' }],
+  modelType: [{ required: true, message: '请选择模型类型', trigger: 'change' }],
+  provider: [{ required: true, message: '请输入供应商', trigger: 'blur' }],
+  protocol: [{ required: true, message: '请选择协议', trigger: 'change' }],
+  baseUrl: [{ required: true, message: '请输入服务地址', trigger: 'blur' }],
+};
+
+const currentModelType = computed(() => {
+  if (isEdit.value && editRow.value) return editRow.value.modelType || 'LLM';
+  return selectedMarket.value?.modelType || 'LLM';
 });
 
-// 定义列表引用
-const tableData = ref<ModelServiceProfile[]>([]);
+const loadConfiguredIds = async () => {
+  const page = await ModelServiceProfileApi.page({
+    pageNum: 1,
+    pageSize: 500,
+  } as PageSelectListDto & ModelServiceProfileQuery);
+  configuredIds.value = new Set(page.records.map((r) => r.catalogId));
+};
 
-// 加载列表数据
+const loadMarketPage = async () => {
+  pickLoading.value = true;
+  try {
+    const pageData = await ModelServiceProfileApi.marketCatalogPage({
+      pageNum: pickPagination.pageNum,
+      pageSize: pickPagination.pageSize,
+      modelType: pickType.value || undefined,
+      modelName: pickKeyword.value.trim() || undefined,
+    });
+    market.value = pageData.records || [];
+    pickPagination.total = pageData.total || 0;
+  } catch (error: unknown) {
+    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败'));
+  } finally {
+    pickLoading.value = false;
+  }
+};
+
+const onPickFilterChange = () => {
+  pickPagination.pageNum = 1;
+  void loadMarketPage();
+};
+
+const onPickPageSizeChange = () => {
+  pickPagination.pageNum = 1;
+  void loadMarketPage();
+};
+
+const onPickSelect = (id: number | string | undefined) => {
+  const catalogId = typeof id === 'number' ? id : Number(id);
+  selectedMarket.value = market.value.find((item) => item.id === catalogId) || null;
+};
+
+const goMarketParams = () => {
+  if (!selectedCatalogId.value || !selectedMarket.value) {
+    ElMessage.warning('请先选择广场模型');
+    return;
+  }
+  if (configuredIds.value.has(selectedCatalogId.value)) {
+    ElMessage.warning('该模型已配置');
+    return;
+  }
+  marketStep.value = 'params';
+};
+
 const loadData = async () => {
   try {
-    // 合并基础查询 + 业务查询，并过滤空值
     const query = Object.fromEntries(
-      Object.entries({ ...baseQueryForm.value, ...queryForm })
-        .filter(([_, v]) => (v ?? '') !== '' && [v].flat().length)
+      Object.entries({ ...baseQueryForm.value, ...queryForm }).filter(([_, v]) => (v ?? '') !== '' && [v].flat().length),
     ) as ModelServiceProfileQuery;
-
-    // 请求分页数据
     const pageData = await ModelServiceProfileApi.page({
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize,
       ...query,
     } as PageSelectListDto & ModelServiceProfileQuery);
-
-    // 设置响应结果
     tableData.value = pageData.records;
     pagination.total = pageData.total;
+    configuredIds.value = new Set(pageData.records.map((r) => r.catalogId));
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败');
-    showErrorMessage(msg);
+    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败'));
   }
 };
 
-// 处理排序变化
-const handleSortChange = (params: Record<string, string>) => {
-  // 更新 QueryForm 的 sorts 字段
-  queryFormRef.value?.updateSorts(params);
+const handleSortChange = (paramsMap: Record<string, string>) => {
+  queryFormRef.value?.updateSorts(paramsMap);
 };
 
-// 查询
 const handleSearch = () => {
-  pagination.pageNum = 1; // 重置到第一页
-  loadData();
+  pagination.pageNum = 1;
+  void loadData();
 };
 
-// 重置查询条件
 const handleReset = () => {
-  // 重置基础查询表单
   baseQueryForm.value.id = undefined;
   baseQueryForm.value.createTime = undefined;
   baseQueryForm.value.updateTime = undefined;
   baseQueryForm.value.sorts = undefined;
-  // 重置业务特定查询表单
-  queryForm.organId = undefined;
-  queryForm.catalogId = undefined;
-  queryForm.temperature = '';
-  queryForm.topP = '';
-  queryForm.maxTokens = undefined;
-  queryForm.timeoutMs = undefined;
+  queryForm.modelName = '';
+  queryForm.modelType = '';
+  queryForm.resourceType = '';
   queryForm.status = '';
-  queryForm.description = '';
-
-  pagination.pageNum = 1; // 重置到第一页
-  loadData();
+  pagination.pageNum = 1;
+  void loadData();
 };
 
-// 分页大小变化
 const handleSizeChange = (size: number) => {
   pagination.pageSize = size;
-  pagination.pageNum = 1; // 重置到第一页
-  loadData();
+  pagination.pageNum = 1;
+  void loadData();
 };
 
-// 页码变化
 const handlePageChange = (page: number) => {
   pagination.pageNum = page;
-  loadData();
+  void loadData();
 };
 
-// 当前记录引用
-const currentRow = ref<ModelServiceProfile | null>(null);
-// 明细弹窗引用
-const detailDialogVisible = ref(false);
+const resetParams = () => {
+  Object.assign(params, { temperature: 0, topP: 1, maxTokens: 4096, timeoutMs: 120000 });
+};
 
-// 查询数据明细
+const openCreate = async (mode: 'market' | 'custom') => {
+  isEdit.value = false;
+  editRow.value = null;
+  resetParams();
+  if (mode === 'market') {
+    selectedCatalogId.value = undefined;
+    selectedMarket.value = null;
+    marketStep.value = 'pick';
+    pickType.value = '';
+    pickKeyword.value = '';
+    pickPagination.pageNum = 1;
+    pickPagination.pageSize = 7;
+    try {
+      await loadConfiguredIds();
+      await loadMarketPage();
+      marketDialogVisible.value = true;
+    } catch (error: unknown) {
+      showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败'));
+    }
+  } else {
+    Object.assign(custom, {
+      catalogId: undefined,
+      modelName: '',
+      modelType: 'LLM',
+      provider: '',
+      protocol: 'OPENAI',
+      baseUrl: '',
+      apiKey: '',
+      apiKeyConfigured: false,
+      description: '',
+    });
+    customDialogVisible.value = true;
+  }
+};
+
+const openEdit = (row: ModelServiceProfile) => {
+  isEdit.value = true;
+  editRow.value = row;
+  Object.assign(params, {
+    temperature: Number(row.temperature ?? 0),
+    topP: Number(row.topP ?? 1),
+    maxTokens: row.maxTokens ?? 4096,
+    timeoutMs: row.timeoutMs || 120000,
+  });
+  if (row.resourceType === 'CUSTOM') {
+    Object.assign(custom, {
+      catalogId: row.catalogId,
+      modelName: row.modelName || '',
+      modelType: row.modelType || 'LLM',
+      provider: row.provider || '',
+      protocol: row.protocol || 'OPENAI',
+      baseUrl: row.baseUrl || '',
+      apiKey: '',
+      apiKeyConfigured: !!row.apiKeyConfigured,
+      description: row.description || '',
+    });
+    customDialogVisible.value = true;
+  } else {
+    marketStep.value = 'params';
+    marketDialogVisible.value = true;
+  }
+};
+
 const handleView = (row: ModelServiceProfile) => {
   currentRow.value = { ...row };
   detailDialogVisible.value = true;
 };
 
-// 删除数据记录
 const handleDelete = (row: ModelServiceProfile) => {
-  ElMessageBox.confirm(`确认删除模型服务配置「${row.id}」吗？`, t('G2_LBL_TIP', '提示'), {
-    type: 'warning',
-  })
+  const tip =
+    row.resourceType === 'CUSTOM'
+      ? `确认删除私有模型「${row.modelName || row.id}」？将同时删除对应目录。`
+      : `确认删除配置「${row.modelName || row.id}」吗？`;
+  ElMessageBox.confirm(tip, t('G2_LBL_TIP', '提示'), { type: 'warning' })
     .then(async () => {
       try {
         await ModelServiceProfileApi.remove(row.id);
-        // 如果当前页只有一条数据，删除后应该跳转到上一页
-        if (tableData.value.length === 1 && pagination.pageNum > 1) {
-          pagination.pageNum--;
-        }
+        if (tableData.value.length === 1 && pagination.pageNum > 1) pagination.pageNum--;
         await loadData();
         ElMessage.success(t('G2_MSG_DELETE_OK', '删除成功'));
       } catch (error: unknown) {
-        const msg = error instanceof Error ? error.message : t('G2_MSG_DELETE_FAIL', '删除失败');
-        showErrorMessage(msg);
+        showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_DELETE_FAIL', '删除失败'));
       }
     })
     .catch(() => {});
 };
 
-// 保存弹窗引用
-const editDialogVisible = ref(false);
-
-// 修改标记状态
-const isEdit = ref(false);
-
-// 修改组件引用
-const editFormRef = ref<FormInstance | null>(null);
-
-// 保存表单状态
-const editForm = reactive({
-  id: undefined as number | undefined,
-  organId: undefined as number | undefined,
-  catalogId: undefined as number | undefined,
-  temperature: '',
-  topP: '',
-  maxTokens: undefined as number | undefined,
-  timeoutMs: undefined as number | undefined,
-  status: '',
-  description: '',
-});
-
-// 表单校验规则
-const editRules: FormRules = {
-  organId: [{ required: true, message: '请输入机构标识', trigger: 'blur' }],
-  catalogId: [{ required: true, message: '请输入模型服务目录标识', trigger: 'blur' }],
-  status: [{ required: true, message: '请输入状态[ACTIVE:启用, INACTIVE:禁用]', trigger: 'blur' }],
-};
-
-// 打开创建弹窗
-const handleCreate = () => {
-  isEdit.value = false;
-  editFormRef.value?.clearValidate();
-
-  editForm.organId = undefined;
-  editForm.catalogId = undefined;
-  editForm.temperature = '';
-  editForm.topP = '';
-  editForm.maxTokens = undefined;
-  editForm.timeoutMs = undefined;
-  editForm.status = '';
-  editForm.description = '';
-  editDialogVisible.value = true;
-};
-
-// 打开修改弹窗
-const handleEdit = (row: ModelServiceProfile) => {
-  isEdit.value = true;
-  editFormRef.value?.clearValidate();
-
-  editForm.id = row.id;
-  editForm.organId = row.organId;
-  editForm.catalogId = row.catalogId;
-  editForm.temperature = row.temperature;
-  editForm.topP = row.topP;
-  editForm.maxTokens = row.maxTokens;
-  editForm.timeoutMs = row.timeoutMs;
-  editForm.status = row.status;
-  editForm.description = row.description;
-  editDialogVisible.value = true;
-};
-
-// 提交数据表单
-const submitEdit = async () => {
-  if (!editFormRef.value) return;
-  const valid = await editFormRef.value.validate();
-  if (!valid) return;
-
-  const payload: ModelServiceProfilePayload = {
-    organId: editForm.organId,
-    catalogId: editForm.catalogId,
-    temperature: editForm.temperature,
-    topP: editForm.topP,
-    maxTokens: editForm.maxTokens,
-    timeoutMs: editForm.timeoutMs,
-    status: editForm.status,
-    description: editForm.description,
-  };
-
+const submitMarket = async () => {
+  saving.value = true;
   try {
-    // 编辑模式下，将 id 添加到 payload 中
-    if (isEdit.value) {
-      payload.id = editForm.id;
+    if (isEdit.value && editRow.value) {
+      await ModelServiceProfileApi.save({
+        id: editRow.value.id,
+        catalogId: editRow.value.catalogId,
+        temperature: params.temperature,
+        topP: params.topP,
+        maxTokens: params.maxTokens,
+        timeoutMs: params.timeoutMs,
+      });
+    } else {
+      if (!selectedCatalogId.value) {
+        ElMessage.warning('请选择广场模型');
+        return;
+      }
+      await ModelServiceProfileApi.save({
+        catalogId: selectedCatalogId.value,
+        temperature: params.temperature,
+        topP: params.topP,
+        maxTokens: params.maxTokens,
+        timeoutMs: params.timeoutMs,
+      });
     }
-    await ModelServiceProfileApi.save(payload);
-    ElMessage.success(isEdit.value ? t('G2_MSG_UPDATE_OK', '更新成功') : t('G2_MSG_ADD_OK', '新增成功'));
+    ElMessage.success(t('G2_MSG_SAVE_OK', '保存成功'));
+    marketDialogVisible.value = false;
     await loadData();
-    editDialogVisible.value = false;
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败');
-    showErrorMessage(msg);
+    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败'));
+  } finally {
+    saving.value = false;
   }
 };
 
-// 挂载回调
+const submitCustom = async () => {
+  if (!customFormRef.value) return;
+  const valid = await customFormRef.value.validate().catch(() => false);
+  if (!valid) return;
+
+  saving.value = true;
+  try {
+    const payload: ModelServiceProfilePayload = {
+      modelName: custom.modelName,
+      modelType: custom.modelType,
+      provider: custom.provider,
+      protocol: custom.protocol,
+      baseUrl: custom.baseUrl,
+      description: custom.description,
+      temperature: params.temperature,
+      topP: params.topP,
+      maxTokens: params.maxTokens,
+      timeoutMs: params.timeoutMs,
+    };
+    if (custom.apiKey.trim()) payload.apiKey = custom.apiKey.trim();
+    if (isEdit.value && editRow.value) {
+      payload.id = editRow.value.id;
+      payload.catalogId = custom.catalogId;
+    }
+    await ModelServiceProfileApi.save(payload);
+    ElMessage.success(t('G2_MSG_SAVE_OK', '保存成功'));
+    customDialogVisible.value = false;
+    await loadData();
+  } catch (error: unknown) {
+    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败'));
+  } finally {
+    saving.value = false;
+  }
+};
+
 onMounted(() => {
-  // 查询列表
-  loadData();
+  void loadData();
 });
 </script>
 
@@ -433,9 +737,8 @@ onMounted(() => {
   line-height: 1.4;
 }
 
-.dialog-footer {
+.model_service_profile-page__actions {
   display: flex;
-  justify-content: flex-end;
   gap: 8px;
 }
 
@@ -448,5 +751,130 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
+}
+
+.model_service_profile-page__meta {
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+}
+
+.model_service_profile-page__drawer h4 {
+  margin: 8px 0 12px;
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+}
+
+.model_service_profile-page__gap {
+  margin-bottom: 12px;
+  display: block;
+}
+
+.model_service_profile-page__pick-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.model_service_profile-page__pick-type {
+  width: 140px;
+  flex: none;
+}
+
+.model_service_profile-page__pick-search {
+  width: 200px;
+  flex: none;
+  margin-left: auto;
+}
+
+.model_service_profile-page__pick {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.model_service_profile-page__pick-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-right: 0 !important;
+  height: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--el-border-color);
+  border-radius: 6px;
+  box-sizing: border-box;
+  background: var(--el-bg-color);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.model_service_profile-page__pick-item:hover {
+  border-color: var(--el-color-primary-light-5);
+  background: var(--el-color-primary-light-9);
+}
+
+.model_service_profile-page__pick-item.is-checked {
+  border-color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
+}
+
+.model_service_profile-page__pick-item.is-disabled {
+  cursor: not-allowed;
+  background: var(--el-fill-color-light);
+  border-color: var(--el-border-color-lighter);
+  opacity: 0.65;
+}
+
+.model_service_profile-page__pick-item.is-disabled:hover {
+  border-color: var(--el-border-color-lighter);
+  background: var(--el-fill-color-light);
+}
+
+.model_service_profile-page__pick-item :deep(.el-radio__label) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  padding-left: 8px;
+}
+
+.model_service_profile-page__pick-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.model_service_profile-page__pick-status {
+  flex: none;
+  margin-left: auto;
+}
+
+.model_service_profile-page__pick-pager {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.model_service_profile-page__picked {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--el-border-color);
+  border-radius: 6px;
+  background: var(--el-fill-color-blank);
+}
+
+.model_service_profile-page__picked-name {
+  font-weight: 600;
+  margin-bottom: 4px;
 }
 </style>

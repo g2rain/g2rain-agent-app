@@ -4,11 +4,11 @@
  */
 
 import { getHttpClient } from '@runtime/http';
+import { Gateway } from '@runtime/console';
 import type { ToolCallRecord, ToolCallRecordPayload, ToolCallRecordQuery } from './type';
 import type { PageData, PageSelectListDto } from '@platform/types/api.type';
 
-// 导入 mock 数据以触发自动注册（副作用导入）
-import './mock';
+const base = Gateway.HARNESS;
 
 /**
  * 工具调用记录表 API 服务类
@@ -21,7 +21,7 @@ export class ToolCallRecordApi {
    */
   static async list(params?: ToolCallRecordQuery): Promise<ToolCallRecord[]> {
     const http = getHttpClient('default');
-    const res = await http.get<ToolCallRecord[]>('/tool_call_record/list', params);
+    const res = await http.get<ToolCallRecord[]>(`${base}/tool_call_record/list`, params);
     return res.data || [];
   }
 
@@ -32,7 +32,7 @@ export class ToolCallRecordApi {
    */
   static async page(params: ToolCallRecordQuery & PageSelectListDto): Promise<PageData<ToolCallRecord>> {
     const http = getHttpClient('default');
-    const res = await http.get<PageData<ToolCallRecord>>('/tool_call_record/page', params);
+    const res = await http.get<PageData<ToolCallRecord>>(`${base}/tool_call_record/page`, params);
     return res.data;
   }
 
@@ -43,7 +43,7 @@ export class ToolCallRecordApi {
    */
   static async getById(id: number): Promise<ToolCallRecord> {
     const http = getHttpClient('default');
-    const res = await http.get<ToolCallRecord>(`/tool_call_record/${id}`);
+    const res = await http.get<ToolCallRecord>(`${base}/tool_call_record/${id}`);
     return res.data;
   }
 
@@ -55,7 +55,7 @@ export class ToolCallRecordApi {
    */
   static async save(payload: ToolCallRecordPayload): Promise<ToolCallRecord> {
     const http = getHttpClient('default');
-    const res = await http.post<ToolCallRecord>('/tool_call_record/save', payload);
+    const res = await http.post<ToolCallRecord>(`${base}/tool_call_record/save`, payload);
     return res.data;
   }
 
@@ -65,7 +65,7 @@ export class ToolCallRecordApi {
    */
   static async remove(id: number): Promise<void> {
     const http = getHttpClient('default');
-    await http.delete(`/tool_call_record/${id}`);
+    await http.delete(`${base}/tool_call_record/${id}`);
   }
 }
 

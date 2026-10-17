@@ -4,11 +4,11 @@
  */
 
 import { getHttpClient } from '@runtime/http';
+import { Gateway } from '@runtime/console';
 import type { TaskGraphNode, TaskGraphNodePayload, TaskGraphNodeQuery } from './type';
 import type { PageData, PageSelectListDto } from '@platform/types/api.type';
 
-// 导入 mock 数据以触发自动注册（副作用导入）
-import './mock';
+const base = Gateway.HARNESS;
 
 /**
  * 任务图步骤表 API 服务类
@@ -21,7 +21,7 @@ export class TaskGraphNodeApi {
    */
   static async list(params?: TaskGraphNodeQuery): Promise<TaskGraphNode[]> {
     const http = getHttpClient('default');
-    const res = await http.get<TaskGraphNode[]>('/task_graph_node/list', params);
+    const res = await http.get<TaskGraphNode[]>(`${base}/task_graph_node/list`, params);
     return res.data || [];
   }
 
@@ -32,7 +32,7 @@ export class TaskGraphNodeApi {
    */
   static async page(params: TaskGraphNodeQuery & PageSelectListDto): Promise<PageData<TaskGraphNode>> {
     const http = getHttpClient('default');
-    const res = await http.get<PageData<TaskGraphNode>>('/task_graph_node/page', params);
+    const res = await http.get<PageData<TaskGraphNode>>(`${base}/task_graph_node/page`, params);
     return res.data;
   }
 
@@ -43,7 +43,7 @@ export class TaskGraphNodeApi {
    */
   static async getById(id: number): Promise<TaskGraphNode> {
     const http = getHttpClient('default');
-    const res = await http.get<TaskGraphNode>(`/task_graph_node/${id}`);
+    const res = await http.get<TaskGraphNode>(`${base}/task_graph_node/${id}`);
     return res.data;
   }
 
@@ -55,7 +55,7 @@ export class TaskGraphNodeApi {
    */
   static async save(payload: TaskGraphNodePayload): Promise<TaskGraphNode> {
     const http = getHttpClient('default');
-    const res = await http.post<TaskGraphNode>('/task_graph_node/save', payload);
+    const res = await http.post<TaskGraphNode>(`${base}/task_graph_node/save`, payload);
     return res.data;
   }
 
@@ -65,7 +65,7 @@ export class TaskGraphNodeApi {
    */
   static async remove(id: number): Promise<void> {
     const http = getHttpClient('default');
-    await http.delete(`/task_graph_node/${id}`);
+    await http.delete(`${base}/task_graph_node/${id}`);
   }
 }
 

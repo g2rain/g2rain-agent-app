@@ -2,19 +2,15 @@
  * 智能体详情 API（g2rain-agent-studio）。
  */
 import { getHttpClient } from '@runtime/http';
-import { Gateway } from '@runtime/console';
+import { Gateway, ResourceType } from '@runtime/console';
+import { AgentProfileApi } from '@/views/agent_profile';
+import type { AgentProfile, AgentProfilePayload } from '@/views/agent_profile';
 import type {
-  AgentProfilePayload,
-  AgentProfileVo,
-  AgentSkillBindingVo,
   CapabilityBundleVo,
   SkillProfilePayload,
   SkillProfileVo,
   SkillToolBindingVo,
 } from './type';
-
-// 导入 mock 数据以触发自动注册（副作用导入）
-import './mock';
 
 const base = Gateway.STUDIO;
 const http = () => getHttpClient('default');
@@ -33,35 +29,23 @@ async function remove(table: string, id: number): Promise<void> {
   await http().delete(`${base}/${table}/${id}`);
 }
 
+function agentKind(resourceType?: string): 'custom' | 'platform' {
+  return resourceType === ResourceType.PLATFORM ? 'platform' : 'custom';
+}
+
 export class AgentDetailApi {
-  static async agent(id: number): Promise<AgentProfileVo | null> {
-    return (await list<AgentProfileVo>('agent_profile', { id }))[0] ?? null;
+  static async agent(id: number, resourceType: string = ResourceType.CUSTOM): Promise<AgentProfile | null> {
+    const rows = await AgentProfileApi.list(agentKind(resourceType), { id });
+    return rows[0] ?? null;
   }
 
   static saveAgent(payload: AgentProfilePayload): Promise<number> {
-    return save('agent_profile', payload);
+    return AgentProfileApi.save(payload.resourceType || ResourceType.CUSTOM, payload);
   }
 
-  static agentSkills(agentId: number): Promise<AgentSkillBindingVo[]> {
-    return list<AgentSkillBindingVo>('agent_skill_binding', { agentId });
-  }
-
-  /** 使用某个技能的全部绑定，用于「被 N 个智能体使用」与删除校验 */
-  static skillUsages(skillId: number): Promise<AgentSkillBindingVo[]> {
-    return list<AgentSkillBindingVo>('agent_skill_binding', { skillId });
-  }
-
-  static saveAgentSkill(payload: Partial<AgentSkillBindingVo>): Promise<number> {
-    return save('agent_skill_binding', payload);
-  }
-
-  static removeAgentSkill(id: number): Promise<void> {
-    return remove('agent_skill_binding', id);
-  }
-
-  /** 可绑定的技能（PLATFORM ∪ 本机构 CUSTOM，PLATFORM 合并待后端支持） */
-  static skills(): Promise<SkillProfileVo[]> {
-    return list<SkillProfileVo>('skill_profile');
+  /** 当前智能体下的技能 */
+  static agentSkills(agentId: number): Promise<SkillProfileVo[]> {
+    return list<SkillProfileVo>('skill_profile', { agentId });
   }
 
   static async skill(id: number): Promise<SkillProfileVo | null> {
@@ -70,6 +54,11 @@ export class AgentDetailApi {
 
   static saveSkill(payload: SkillProfilePayload): Promise<number> {
     return save('skill_profile', payload);
+  }
+
+  /** 技能列表启停：仅改状态 */
+  static async updateSkillStatus(row: SkillProfileVo, status: string): Promise<void> {
+    await http().post(`${base}/skill_profile/${row.id}/status`, { status });
   }
 
   static removeSkill(id: number): Promise<void> {
@@ -87,6 +76,11 @@ export class AgentDetailApi {
 
   static saveSkillTool(payload: Partial<SkillToolBindingVo>): Promise<number> {
     return save('skill_tool_binding', payload);
+  }
+
+  /** 工具绑定启停：仅改 enabledFlag */
+  static async updateSkillToolEnabled(id: number, enabledFlag: number): Promise<void> {
+    await http().post(`${base}/skill_tool_binding/${id}/enabled`, { enabledFlag });
   }
 
   static removeSkillTool(id: number): Promise<void> {

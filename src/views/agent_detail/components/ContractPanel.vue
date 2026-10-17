@@ -13,7 +13,7 @@
       <el-button v-if="view === 'source' && !readonly" size="small" @click="format">{{ $t('AGENT_CONTRACT_FORMAT', '格式化') }}</el-button>
     </div>
 
-    <JsonEditor v-if="view === 'source' || !parsed.ok" ref="editor" v-model="model" :diagnostics="diagnostics" :readonly="readonly" height="560px" />
+    <JsonEditor v-if="view === 'source' || !parsed.ok" v-model="model" :diagnostics="diagnostics" :readonly="readonly" height="560px" />
 
     <div v-else class="contract__structure">
       <nav class="contract__nav">
@@ -108,7 +108,7 @@ import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { t } from '@platform/i18n';
 import { EMPTY, fill } from '@runtime/console';
-import type { McpToolProfileVo } from '@/views/mcp_tool';
+import type { McpToolProfileVo } from '@/views/mcp_tool_profile';
 import { isWriteTool, parseContract, stringifyContract, toolSkeleton, type SkillContract } from '../contract';
 import { issueUnder, toDiagnostics, type ContractIssue, type ContractPath } from '../contract-lint';
 
@@ -127,7 +127,6 @@ const OUTPUTS = '__outputs';
 
 const view = ref<string>('structure');
 const selected = ref<string>(ROOT);
-const editor = ref<{ format: () => boolean } | null>(null);
 
 const parsed = computed(() => parseContract(model.value));
 const contract = computed<SkillContract>(() => (parsed.value.ok ? parsed.value.contract : {}));
@@ -284,9 +283,29 @@ function select(key: string): void {
   segmentOpen.value = false;
 }
 
-function format(): void {
-  if (!editor.value?.format()) ElMessage.warning(t('AGENT_CONTRACT_FORMAT_FAIL', '内容不是合法 JSON，无法格式化'));
+function prettyJson(text: string): string | null {
+  try {
+    return JSON.stringify(JSON.parse(text), null, 2);
+  } catch {
+    return null;
+  }
 }
+
+function format(): void {
+  const pretty = prettyJson(model.value);
+  if (pretty == null) {
+    ElMessage.warning(t('AGENT_CONTRACT_FORMAT_FAIL', '内容不是合法 JSON，无法格式化'));
+    return;
+  }
+  model.value = pretty;
+}
+
+/** 进入源码时直接美化 model（JsonEditor 异步挂载，等 ref 会扑空） */
+watch(view, (value) => {
+  if (value !== 'source' || props.readonly) return;
+  const pretty = prettyJson(model.value);
+  if (pretty != null && pretty !== model.value) model.value = pretty;
+});
 
 /** 外部切换技能时回到根属性 */
 watch(

@@ -1,52 +1,62 @@
 /**
- * 模型服务配置相关类型定义
+ * 模型配置（model_service_profile）类型
  */
 
 import type { BaseSelectListDto, BaseVo } from '@platform/types/api.type';
 
-/**
- * 模型服务配置接口
- */
+/** 列表/明细（联表目录字段） */
 export interface ModelServiceProfile extends BaseVo {
-  organId: number;
+  organId?: number;
   catalogId: number;
-  temperature: string;
-  topP: string;
-  maxTokens: number;
-  timeoutMs: number;
+  modelName?: string;
+  modelType?: string;
+  resourceType?: string;
+  provider?: string;
+  protocol?: string;
+  baseUrl?: string;
+  apiKeyConfigured?: boolean;
+  temperature?: number | string | null;
+  topP?: number | string | null;
+  maxTokens?: number | null;
+  timeoutMs?: number | null;
   status: string;
-  description: string;
+  description?: string | null;
 }
 
-/**
- * 用于创建 / 更新时提交的负载（不包含审计字段）
- */
+/** 保存负载 */
 export interface ModelServiceProfilePayload {
-  id?: number; // 更新时传入 ID，新增时不传
+  id?: number;
   organId?: number;
   catalogId?: number;
-  temperature?: string;
-  topP?: string;
+  modelName?: string;
+  modelType?: string;
+  provider?: string;
+  protocol?: string;
+  baseUrl?: string;
+  apiKey?: string;
+  temperature?: number | string;
+  topP?: number | string;
   maxTokens?: number;
   timeoutMs?: number;
   status?: string;
   description?: string;
 }
 
-/**
- * 模型服务配置查询条件
- * 用于分页查询时的业务查询参数
- * 包含业务查询字段和基础查询字段（BaseSelectListDto）
- */
+/** 查询条件 */
 export interface ModelServiceProfileQuery extends BaseSelectListDto {
-  // 业务查询字段
-  organId?: number;
-  catalogId?: number;
-  temperature?: string;
-  topP?: string;
-  maxTokens?: number;
-  timeoutMs?: number;
+  modelName?: string;
+  modelType?: string;
+  resourceType?: string;
   status?: string;
-  description?: string;
+  provider?: string;
 }
 
+/** 模型广场候选 */
+export interface MarketCatalogOption {
+  id: number;
+  modelName: string;
+  modelType: string;
+  provider: string;
+  protocol: string;
+  status?: string;
+}

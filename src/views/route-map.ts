@@ -20,45 +20,10 @@ export interface ViewRouteConfig {
  * 你可以在子应用生成后按需补充 `views/*` 并在这里注册。
  */
 export const routeMap: Record<string, ViewRouteConfig> = {
-    '/agents': {
-            component: () => import('@/views/agent/index.vue'),
-            name: 'Agent',
-            meta: { title: '智能体列表', requiresAuth: true, showInHome: true },
-        },
-    '/mcp_tool': {
-            component: () => import('@/views/mcp_tool/index.vue'),
-            name: 'McpTool',
-            meta: { title: '工具目录', requiresAuth: true, showInHome: true },
-        },
-    '/mcp_service': {
-            component: () => import('@/views/mcp_service/index.vue'),
-            name: 'McpService',
-            meta: { title: '服务接入', requiresAuth: true, showInHome: true },
-        },
-    '/model_catalog': {
-            component: () => import('@/views/model_catalog/index.vue'),
-            name: 'ModelCatalog',
-            meta: { title: '模型目录', requiresAuth: true, showInHome: true },
-        },
-    '/model_profile': {
-            component: () => import('@/views/model_profile/index.vue'),
-            name: 'ModelProfile',
-            meta: { title: '模型配置', requiresAuth: true, showInHome: true },
-        },
-    '/model_usage': {
-            component: () => import('@/views/model_usage/index.vue'),
-            name: 'ModelUsage',
-            meta: { title: '用量统计', requiresAuth: true, showInHome: true },
-        },
     '/agent_detail': {
             component: () => import('@/views/agent_detail/index.vue'),
             name: 'AgentDetail',
-            meta: { title: '智能体详情', requiresAuth: true, showInHome: false },
-        },
-    '/conversation': {
-            component: () => import('@/views/conversation/index.vue'),
-            name: 'Conversation',
-            meta: { title: '会话观测', requiresAuth: true, showInHome: true },
+            meta: { title: '智能体配置', requiresAuth: true, showInHome: false },
         },
     '/conversation_detail': {
             component: () => import('@/views/conversation_detail/index.vue'),
@@ -73,92 +38,72 @@ export const routeMap: Record<string, ViewRouteConfig> = {
     '/chat_conversation': {
             component: () => import('@/views/chat_conversation/index.vue'),
             name: 'ChatConversation',
-            meta: { title: '聊天会话表', requiresAuth: true, showInHome: true },
+            meta: { title: '会话观测', requiresAuth: true, showInHome: true },
         },
-    '/chat_message': {
-            component: () => import('@/views/chat_message/index.vue'),
-            name: 'ChatMessage',
-            meta: { title: '聊天消息表', requiresAuth: true, showInHome: true },
+    '/agent_profile/custom': {
+            component: () => import('@/views/agent_profile/index.vue'),
+            name: 'AgentProfileCustom',
+            meta: { title: '自建智能体', requiresAuth: true, showInHome: true },
         },
-    '/task_instance': {
-            component: () => import('@/views/task_instance/index.vue'),
-            name: 'TaskInstance',
-            meta: { title: '任务实例表', requiresAuth: true, showInHome: true },
-        },
-    '/task_graph_node': {
-            component: () => import('@/views/task_graph_node/index.vue'),
-            name: 'TaskGraphNode',
-            meta: { title: '任务图步骤表', requiresAuth: true, showInHome: true },
-        },
-    '/task_graph_edge': {
-            component: () => import('@/views/task_graph_edge/index.vue'),
-            name: 'TaskGraphEdge',
-            meta: { title: '任务图依赖边表', requiresAuth: true, showInHome: true },
-        },
-    '/task_node_payload': {
-            component: () => import('@/views/task_node_payload/index.vue'),
-            name: 'TaskNodePayload',
-            meta: { title: '大报文溢出表', requiresAuth: true, showInHome: true },
-        },
-    '/task_checkpoint': {
-            component: () => import('@/views/task_checkpoint/index.vue'),
-            name: 'TaskCheckpoint',
-            meta: { title: '任务检查点表', requiresAuth: true, showInHome: true },
-        },
-    '/tool_call_record': {
-            component: () => import('@/views/tool_call_record/index.vue'),
-            name: 'ToolCallRecord',
-            meta: { title: '工具调用记录表', requiresAuth: true, showInHome: true },
-        },
-    '/task_resume_record': {
-            component: () => import('@/views/task_resume_record/index.vue'),
-            name: 'TaskResumeRecord',
-            meta: { title: '任务恢复动作审计表', requiresAuth: true, showInHome: true },
+    '/agent_profile/platform': {
+            component: () => import('@/views/agent_profile/index.vue'),
+            name: 'AgentProfilePlatform',
+            meta: { title: '平台智能体', requiresAuth: true, showInHome: true },
         },
     '/agent_profile': {
             component: () => import('@/views/agent_profile/index.vue'),
             name: 'AgentProfile',
-            meta: { title: '数字员工画像表', requiresAuth: true, showInHome: true },
+            meta: { title: '自建智能体', requiresAuth: true, showInHome: false },
         },
-    '/skill_profile': {
-            component: () => import('@/views/skill_profile/index.vue'),
-            name: 'SkillProfile',
-            meta: { title: '定义表', requiresAuth: true, showInHome: true },
+    '/mcp_external_service/extension': {
+            component: () => import('@/views/mcp_external_service/index.vue'),
+            name: 'McpExternalServiceExtension',
+            meta: { title: '扩展系统接入', requiresAuth: true, showInHome: true },
         },
-    '/agent_skill_binding': {
-            component: () => import('@/views/agent_skill_binding/index.vue'),
-            name: 'AgentSkillBinding',
-            meta: { title: '数字员工', requiresAuth: true, showInHome: true },
-        },
-    '/skill_tool_binding': {
-            component: () => import('@/views/skill_tool_binding/index.vue'),
-            name: 'SkillToolBinding',
-            meta: { title: '绑定表', requiresAuth: true, showInHome: true },
+    '/mcp_external_service/customer': {
+            component: () => import('@/views/mcp_external_service/index.vue'),
+            name: 'McpExternalServiceCustomer',
+            meta: { title: '客户系统接入', requiresAuth: true, showInHome: true },
         },
     '/mcp_external_service': {
             component: () => import('@/views/mcp_external_service/index.vue'),
             name: 'McpExternalService',
-            meta: { title: '外部服务表', requiresAuth: true, showInHome: true },
+            meta: { title: '客户系统接入', requiresAuth: true, showInHome: false },
+        },
+    '/mcp_tool_profile/built_in': {
+            component: () => import('@/views/mcp_tool_profile/index.vue'),
+            name: 'McpToolProfileBuiltIn',
+            meta: { title: '自有系统工具', requiresAuth: true, showInHome: true },
+        },
+    '/mcp_tool_profile/extension': {
+            component: () => import('@/views/mcp_tool_profile/index.vue'),
+            name: 'McpToolProfileExtension',
+            meta: { title: '扩展系统工具', requiresAuth: true, showInHome: true },
+        },
+    '/mcp_tool_profile/customer': {
+            component: () => import('@/views/mcp_tool_profile/index.vue'),
+            name: 'McpToolProfileCustomer',
+            meta: { title: '客户系统工具', requiresAuth: true, showInHome: true },
         },
     '/mcp_tool_profile': {
             component: () => import('@/views/mcp_tool_profile/index.vue'),
             name: 'McpToolProfile',
-            meta: { title: '暴露档案表', requiresAuth: true, showInHome: true },
+            meta: { title: '客户系统工具', requiresAuth: true, showInHome: false },
         },
     '/model_service_catalog': {
             component: () => import('@/views/model_service_catalog/index.vue'),
             name: 'ModelServiceCatalog',
-            meta: { title: '模型服务目录', requiresAuth: true, showInHome: true },
+            meta: { title: '模型广场', requiresAuth: true, showInHome: true },
         },
     '/model_service_profile': {
             component: () => import('@/views/model_service_profile/index.vue'),
             name: 'ModelServiceProfile',
-            meta: { title: '模型服务配置', requiresAuth: true, showInHome: true },
+            meta: { title: '模型配置', requiresAuth: true, showInHome: true },
         },
     '/model_usage_record': {
             component: () => import('@/views/model_usage_record/index.vue'),
             name: 'ModelUsageRecord',
-            meta: { title: '模型用量记录', requiresAuth: true, showInHome: true },
+            meta: { title: '用量统计', requiresAuth: true, showInHome: true },
         }
 };
 

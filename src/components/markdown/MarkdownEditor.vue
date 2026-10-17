@@ -62,6 +62,23 @@ function onChange(value: string): void {
 .markdown-editor.is-over { border-color: var(--g2-color-danger); }
 .markdown-editor.is-readonly { padding: 12px 16px; max-height: var(--md-height); overflow: auto; }
 .markdown-editor :deep(.bytemd) { height: var(--md-height); border: none; }
+/* ByteMD 右侧「源代码」实为打开 GitHub 宣传入口，产品侧隐藏 */
+.markdown-editor :deep(.bytemd-toolbar-right [bytemd-tippy-path="5"]) { display: none; }
+/* ByteMD 默认限宽居中 + 行 padding 4%，画像场景改为贴左铺满 */
+.markdown-editor :deep(.bytemd-editor .CodeMirror .CodeMirror-lines) {
+  max-width: none;
+  margin: 0;
+  padding: 8px 0;
+}
+.markdown-editor :deep(.bytemd-editor .CodeMirror pre.CodeMirror-line),
+.markdown-editor :deep(.bytemd-editor .CodeMirror pre.CodeMirror-line-like) {
+  padding: 0 12px;
+}
+.markdown-editor :deep(.bytemd-preview .markdown-body) {
+  max-width: none;
+  margin: 0;
+  padding: 8px 12px;
+}
 .markdown-editor__counter {
   position: absolute;
   right: 12px;

@@ -1,37 +1,18 @@
-
 <template>
   <div class="mcp_external_service-page">
-    <!-- 查询表单 -->
     <el-card class="mcp_external_service-page__search" shadow="never">
-      <!-- 基础查询表单（BaseSelectListDto） -->
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
-        <!-- 业务特定查询字段 -->
-        <el-form-item label="机构ID">
-          <el-input v-model="queryForm.organId" placeholder="请输入机构ID" clearable style="width: 200px" />
-        </el-form-item>
         <el-form-item label="服务编码">
-          <el-input v-model="queryForm.code" placeholder="请输入服务编码" clearable style="width: 200px" />
+          <el-input v-model="queryForm.code" placeholder="请输入服务编码" clearable style="width: 180px" />
         </el-form-item>
         <el-form-item label="服务名称">
-          <el-input v-model="queryForm.name" placeholder="请输入服务名称" clearable style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="调用基址">
-          <el-input v-model="queryForm.endpoint" placeholder="请输入调用基址" clearable style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="上下文路径">
-          <el-input v-model="queryForm.contextPath" placeholder="请输入上下文路径" clearable style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="资源类型">
-          <el-input v-model="queryForm.resourceType" placeholder="请输入资源类型" clearable style="width: 200px" />
+          <el-input v-model="queryForm.name" placeholder="请输入服务名称" clearable style="width: 180px" />
         </el-form-item>
         <el-form-item label="状态">
-          <el-input v-model="queryForm.status" placeholder="请输入状态" clearable style="width: 200px" />
+          <el-select v-model="queryForm.status" placeholder="请选择" clearable style="width: 140px">
+            <el-option v-for="item in STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
         </el-form-item>
-        <el-form-item label="说明">
-          <el-input v-model="queryForm.description" placeholder="请输入说明" clearable style="width: 200px" />
-        </el-form-item>
-
-        <!-- 操作按钮 -->
         <template #actions>
           <el-form-item>
             <el-button type="primary" @click="handleSearch">{{ $t('G2_BTN_QUERY', '查询') }}</el-button>
@@ -41,29 +22,41 @@
       </QueryForm>
     </el-card>
 
-    <!-- 标题和操作按钮 -->
     <div class="mcp_external_service-page__header">
       <div class="mcp_external_service-page__title-group">
-        <h2>管理外部服务表数据</h2>
+        <h2>{{ pageTitle }}</h2>
       </div>
-      <el-button type="primary" v-permission="'mcp_external_service:add'" @click="handleCreate">新增外部服务表</el-button>
+      <el-button type="primary" v-permission="'mcp_external_service:add'" @click="handleCreate">新增</el-button>
     </div>
 
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
-      <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="120" />
-      <el-table-column prop="organId" label="机构ID" width="140" />
-      <el-table-column prop="code" label="服务编码" width="180" />
-      <el-table-column prop="name" label="服务名称" width="180" />
-      <el-table-column prop="endpoint" label="调用基址" width="180" />
-      <el-table-column prop="contextPath" label="上下文路径" width="180" />
-      <el-table-column prop="resourceType" label="资源类型" width="180" />
-      <el-table-column prop="status" label="状态" width="180" />
-      <el-table-column prop="description" label="说明" width="180" />
-      <TableColumn prop="createTime" :label="$t('G2_FIELD_CREATE_TIME', '创建时间')" width="180" sortable="custom" />
-      <TableColumn prop="updateTime" :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')" width="180" sortable="custom" />
-      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="280">
+      <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="100" />
+      <el-table-column prop="code" label="服务编码" width="160" />
+      <el-table-column prop="name" label="服务名称" min-width="160" />
+      <el-table-column label="调用地址" min-width="240">
         <template #default="{ row }">
-          <el-button type="primary" link size="small" @click="handleView(row)">{{ $t('G2_BTN_DETAIL', '明细') }}</el-button>
+          <code>{{ callUrl(row) }}</code>
+        </template>
+      </el-table-column>
+      <el-table-column prop="status" label="状态" width="140">
+        <template #default="{ row }">
+          <StatusSwitch
+            :model-value="row.status"
+            v-permission="'mcp_external_service:edit'"
+            active-value="ACTIVE"
+            inactive-value="INACTIVE"
+            :options="STATUS_OPTIONS"
+            :api-method="({ nextValue }) => McpExternalServiceApi.updateStatus(row.id, String(nextValue))"
+            @update:model-value="(value) => (row.status = String(value))"
+            @success="notifyStatusSwitchSuccess"
+            @error="(p) => notifyStatusSwitchError(p)"
+          />
+        </template>
+      </el-table-column>
+      <TableColumn prop="updateTime" :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')" width="180" sortable="custom" />
+      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="200">
+        <template #default="{ row }">
+          <el-button type="primary" link size="small" @click="handleView(row)">{{ $t('G2_BTN_DETAIL', '详情') }}</el-button>
           <el-button type="primary" v-permission="'mcp_external_service:edit'" link size="small" @click="handleEdit(row)">{{ $t('G2_BTN_EDIT', '编辑') }}</el-button>
           <el-button type="danger" v-permission="'mcp_external_service:delete'" link size="small" @click="handleDelete(row)">{{ $t('G2_BTN_DELETE', '删除') }}</el-button>
         </template>
@@ -76,7 +69,6 @@
       </el-table-column>
     </SortableTable>
 
-    <!-- 分页组件 -->
     <div class="mcp_external_service-page__pagination">
       <el-pagination
         v-model:current-page="pagination.pageNum"
@@ -89,32 +81,22 @@
       />
     </div>
 
-    <!-- 新增 / 编辑弹窗 -->
-    <el-dialog v-model="editDialogVisible" :title="isEdit ? '编辑外部服务表' : '新增外部服务表'" width="520px">
+    <el-dialog v-model="editDialogVisible" :title="isEdit ? '编辑服务' : '新增服务'" width="520px">
       <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="100px">
-        <el-form-item label="机构ID" prop="organId">
-          <el-input v-model="editForm.organId" placeholder="请输入机构ID" />
-        </el-form-item>
         <el-form-item label="服务编码" prop="code">
-          <el-input v-model="editForm.code" placeholder="请输入服务编码" />
+          <el-input v-model="editForm.code" placeholder="请输入服务编码" :disabled="isEdit" />
         </el-form-item>
         <el-form-item label="服务名称" prop="name">
           <el-input v-model="editForm.name" placeholder="请输入服务名称" />
         </el-form-item>
         <el-form-item label="调用基址" prop="endpoint">
-          <el-input v-model="editForm.endpoint" placeholder="请输入调用基址" />
+          <el-input v-model="editForm.endpoint" placeholder="https://api.example.com" />
         </el-form-item>
         <el-form-item label="上下文路径" prop="contextPath">
-          <el-input v-model="editForm.contextPath" placeholder="请输入上下文路径" />
-        </el-form-item>
-        <el-form-item label="资源类型" prop="resourceType">
-          <el-input v-model="editForm.resourceType" placeholder="请输入资源类型" />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-input v-model="editForm.status" placeholder="请输入状态" />
+          <el-input v-model="editForm.contextPath" placeholder="/v1（可空）" />
         </el-form-item>
         <el-form-item label="说明" prop="description">
-          <el-input v-model="editForm.description" placeholder="请输入说明" />
+          <el-input v-model="editForm.description" type="textarea" :rows="2" placeholder="请输入说明" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -125,17 +107,14 @@
       </template>
     </el-dialog>
 
-    <!-- 明细弹窗 -->
-    <el-dialog v-model="detailDialogVisible" title="外部服务表明细" width="520px">
+    <el-dialog v-model="detailDialogVisible" title="服务明细" width="520px">
       <el-descriptions :column="1" border>
         <el-descriptions-item :label="$t('G2_FIELD_ID', 'ID')">{{ currentRow?.id }}</el-descriptions-item>
-        <el-descriptions-item label="机构ID">{{ currentRow?.organId }}</el-descriptions-item>
         <el-descriptions-item label="服务编码">{{ currentRow?.code }}</el-descriptions-item>
         <el-descriptions-item label="服务名称">{{ currentRow?.name }}</el-descriptions-item>
-        <el-descriptions-item label="调用基址">{{ currentRow?.endpoint }}</el-descriptions-item>
-        <el-descriptions-item label="上下文路径">{{ currentRow?.contextPath }}</el-descriptions-item>
-        <el-descriptions-item label="资源类型">{{ currentRow?.resourceType }}</el-descriptions-item>
-        <el-descriptions-item label="状态">{{ currentRow?.status }}</el-descriptions-item>
+        <el-descriptions-item label="调用地址">{{ currentRow ? callUrl(currentRow) : '' }}</el-descriptions-item>
+        <el-descriptions-item label="资源类型">{{ pageTitle }}</el-descriptions-item>
+        <el-descriptions-item label="状态">{{ optionLabel(STATUS_OPTIONS, currentRow?.status) }}</el-descriptions-item>
         <el-descriptions-item label="说明">{{ currentRow?.description }}</el-descriptions-item>
         <el-descriptions-item :label="$t('G2_FIELD_CREATE_TIME', '创建时间')">{{ currentRow?.createTime }}</el-descriptions-item>
         <el-descriptions-item :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')">{{ currentRow?.updateTime }}</el-descriptions-item>
@@ -150,22 +129,46 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import type { FormInstance, FormRules } from 'element-plus';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { t } from '@platform/i18n';
+import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
+import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
+import { StatusSwitch } from '@g2rain/ui/platform';
+import { RecordStatus, ResourceType } from '@runtime/console';
+import { showErrorMessage, notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
 import { McpExternalServiceApi } from './api';
 import type { McpExternalService, McpExternalServicePayload, McpExternalServiceQuery } from './type';
-import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 
-import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
-import { showErrorMessage } from '@/components';
+type EnumOption = { value: string; label: string };
 
+const STATUS_OPTIONS: EnumOption[] = [
+  { value: RecordStatus.ACTIVE, label: '启用' },
+  { value: RecordStatus.INACTIVE, label: '禁用' },
+];
 
-// 组件引用
+const optionLabel = (options: EnumOption[], value?: string | null): string => {
+  if (!value) return '';
+  return options.find((item) => item.value === value)?.label ?? value;
+};
+
+const route = useRoute();
+
+/** 由菜单入口 path 决定，不读客户端 query */
+const resourceType = computed(() =>
+  route.path.includes('/extension') ? ResourceType.EXTENSION : ResourceType.CUSTOMER,
+);
+
+const pageTitle = computed(() =>
+  resourceType.value === ResourceType.EXTENSION
+    ? t('AGENT_MENU_EXTENSION_SERVICE', '扩展系统接入')
+    : t('AGENT_MENU_CUSTOMER_SERVICE', '客户系统接入'),
+);
+
 const queryFormRef = ref<InstanceType<typeof QueryForm> | null>(null);
 
-// 基础查询表单（BaseSelectListDto）；用 ref 以匹配 QueryForm defineModel
 const baseQueryForm = ref<BaseSelectListDto>({
   id: undefined,
   createTime: undefined,
@@ -173,234 +176,182 @@ const baseQueryForm = ref<BaseSelectListDto>({
   sorts: undefined,
 });
 
-// 业务查询状态
 const queryForm = reactive({
-  organId: undefined,
   code: '',
   name: '',
-  endpoint: '',
-  contextPath: '',
-  resourceType: '',
   status: '',
-  description: '',
 });
 
-// 分页相关状态
 const pagination = reactive({
   pageNum: 1,
   pageSize: 10,
   total: 0,
 });
 
-// 定义列表引用
 const tableData = ref<McpExternalService[]>([]);
 
-// 加载列表数据
-const loadData = async () => {
-  try {
-    // 合并基础查询 + 业务查询，并过滤空值
-    const query = Object.fromEntries(
-      Object.entries({ ...baseQueryForm.value, ...queryForm })
-        .filter(([_, v]) => (v ?? '') !== '' && [v].flat().length)
-    ) as McpExternalServiceQuery;
+function callUrl(row: McpExternalService): string {
+  const path = (row.contextPath || '').trim();
+  if (!row.endpoint) return '';
+  if (!path) return row.endpoint;
+  return `${row.endpoint.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
+}
 
-    // 请求分页数据
-    const pageData = await McpExternalServiceApi.page({
+async function loadData(): Promise<void> {
+  try {
+    const query = Object.fromEntries(
+      Object.entries({ ...baseQueryForm.value, ...queryForm }).filter(([_, v]) => (v ?? '') !== '' && [v].flat().length),
+    ) as McpExternalServiceQuery;
+    const pageData = await McpExternalServiceApi.page(resourceType.value, {
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize,
       ...query,
     } as PageSelectListDto & McpExternalServiceQuery);
-
-    // 设置响应结果
-    tableData.value = pageData.records;
+    tableData.value = pageData.records.map((row) => ({ ...row }));
     pagination.total = pageData.total;
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败');
-    showErrorMessage(msg);
+    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败'));
   }
-};
+}
 
-// 处理排序变化
-const handleSortChange = (params: Record<string, string>) => {
-  // 更新 QueryForm 的 sorts 字段
+function handleSortChange(params: Record<string, string>): void {
   queryFormRef.value?.updateSorts(params);
-};
+}
 
-// 查询
-const handleSearch = () => {
-  pagination.pageNum = 1; // 重置到第一页
-  loadData();
-};
+function handleSearch(): void {
+  pagination.pageNum = 1;
+  void loadData();
+}
 
-// 重置查询条件
-const handleReset = () => {
-  // 重置基础查询表单
+function handleReset(): void {
   baseQueryForm.value.id = undefined;
   baseQueryForm.value.createTime = undefined;
   baseQueryForm.value.updateTime = undefined;
   baseQueryForm.value.sorts = undefined;
-  // 重置业务特定查询表单
-  queryForm.organId = undefined;
   queryForm.code = '';
   queryForm.name = '';
-  queryForm.endpoint = '';
-  queryForm.contextPath = '';
-  queryForm.resourceType = '';
   queryForm.status = '';
-  queryForm.description = '';
+  pagination.pageNum = 1;
+  void loadData();
+}
 
-  pagination.pageNum = 1; // 重置到第一页
-  loadData();
-};
-
-// 分页大小变化
-const handleSizeChange = (size: number) => {
+function handleSizeChange(size: number): void {
   pagination.pageSize = size;
-  pagination.pageNum = 1; // 重置到第一页
-  loadData();
-};
+  pagination.pageNum = 1;
+  void loadData();
+}
 
-// 页码变化
-const handlePageChange = (page: number) => {
+function handlePageChange(page: number): void {
   pagination.pageNum = page;
-  loadData();
-};
+  void loadData();
+}
 
-// 当前记录引用
 const currentRow = ref<McpExternalService | null>(null);
-// 明细弹窗引用
 const detailDialogVisible = ref(false);
 
-// 查询数据明细
-const handleView = (row: McpExternalService) => {
+function handleView(row: McpExternalService): void {
   currentRow.value = { ...row };
   detailDialogVisible.value = true;
-};
+}
 
-// 删除数据记录
-const handleDelete = (row: McpExternalService) => {
-  ElMessageBox.confirm(`确认删除外部服务表「${row.id}」吗？`, t('G2_LBL_TIP', '提示'), {
+function handleDelete(row: McpExternalService): void {
+  ElMessageBox.confirm(`确认删除服务「${row.name}」吗？`, t('G2_LBL_TIP', '提示'), {
     type: 'warning',
   })
     .then(async () => {
       try {
         await McpExternalServiceApi.remove(row.id);
-        // 如果当前页只有一条数据，删除后应该跳转到上一页
         if (tableData.value.length === 1 && pagination.pageNum > 1) {
           pagination.pageNum--;
         }
         await loadData();
         ElMessage.success(t('G2_MSG_DELETE_OK', '删除成功'));
       } catch (error: unknown) {
-        const msg = error instanceof Error ? error.message : t('G2_MSG_DELETE_FAIL', '删除失败');
-        showErrorMessage(msg);
+        showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_DELETE_FAIL', '删除失败'));
       }
     })
     .catch(() => {});
-};
+}
 
-// 保存弹窗引用
 const editDialogVisible = ref(false);
-
-// 修改标记状态
 const isEdit = ref(false);
-
-// 修改组件引用
 const editFormRef = ref<FormInstance | null>(null);
 
-// 保存表单状态
 const editForm = reactive({
   id: undefined as number | undefined,
-  organId: undefined as number | undefined,
   code: '',
   name: '',
   endpoint: '',
   contextPath: '',
-  resourceType: '',
-  status: '',
   description: '',
 });
 
-// 表单校验规则
 const editRules: FormRules = {
-  organId: [{ required: true, message: '请输入机构标识', trigger: 'blur' }],
   code: [{ required: true, message: '请输入服务编码', trigger: 'blur' }],
   name: [{ required: true, message: '请输入服务名称', trigger: 'blur' }],
-  endpoint: [{ required: true, message: '请输入调用基址(http/https)', trigger: 'blur' }],
-  contextPath: [{ required: true, message: '请输入上下文路径', trigger: 'blur' }],
-  resourceType: [{ required: true, message: '请输入资源类型[EXTENSION:扩展系统, CUSTOMER:客户系统]', trigger: 'blur' }],
-  status: [{ required: true, message: '请输入状态[ACTIVE:启用, INACTIVE:禁用]', trigger: 'blur' }],
+  endpoint: [{ required: true, message: '请输入调用基址', trigger: 'blur' }],
 };
 
-// 打开创建弹窗
-const handleCreate = () => {
+function handleCreate(): void {
   isEdit.value = false;
   editFormRef.value?.clearValidate();
-
-  editForm.organId = undefined;
+  editForm.id = undefined;
   editForm.code = '';
   editForm.name = '';
   editForm.endpoint = '';
   editForm.contextPath = '';
-  editForm.resourceType = '';
-  editForm.status = '';
   editForm.description = '';
   editDialogVisible.value = true;
-};
+}
 
-// 打开修改弹窗
-const handleEdit = (row: McpExternalService) => {
+function handleEdit(row: McpExternalService): void {
   isEdit.value = true;
   editFormRef.value?.clearValidate();
-
   editForm.id = row.id;
-  editForm.organId = row.organId;
   editForm.code = row.code;
   editForm.name = row.name;
   editForm.endpoint = row.endpoint;
-  editForm.contextPath = row.contextPath;
-  editForm.resourceType = row.resourceType;
-  editForm.status = row.status;
-  editForm.description = row.description;
+  editForm.contextPath = row.contextPath ?? '';
+  editForm.description = row.description ?? '';
   editDialogVisible.value = true;
-};
+}
 
-// 提交数据表单
-const submitEdit = async () => {
+async function submitEdit(): Promise<void> {
   if (!editFormRef.value) return;
-  const valid = await editFormRef.value.validate();
+  const valid = await editFormRef.value.validate().catch(() => false);
   if (!valid) return;
 
   const payload: McpExternalServicePayload = {
-    organId: editForm.organId,
-    code: editForm.code,
-    name: editForm.name,
-    endpoint: editForm.endpoint,
-    contextPath: editForm.contextPath,
-    resourceType: editForm.resourceType,
-    status: editForm.status,
+    code: editForm.code.trim(),
+    name: editForm.name.trim(),
+    endpoint: editForm.endpoint.trim(),
+    contextPath: editForm.contextPath.trim() || '/',
     description: editForm.description,
   };
+  if (isEdit.value) {
+    payload.id = editForm.id;
+  }
 
   try {
-    // 编辑模式下，将 id 添加到 payload 中
-    if (isEdit.value) {
-      payload.id = editForm.id;
-    }
-    await McpExternalServiceApi.save(payload);
+    await McpExternalServiceApi.save(resourceType.value, payload);
     ElMessage.success(isEdit.value ? t('G2_MSG_UPDATE_OK', '更新成功') : t('G2_MSG_ADD_OK', '新增成功'));
     await loadData();
     editDialogVisible.value = false;
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败');
-    showErrorMessage(msg);
+    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败'));
   }
-};
+}
 
-// 挂载回调
+watch(
+  () => route.path,
+  () => {
+    pagination.pageNum = 1;
+    void loadData();
+  },
+);
+
 onMounted(() => {
-  // 查询列表
-  loadData();
+  void loadData();
 });
 </script>
 
@@ -452,5 +403,11 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
+}
+
+.mcp_external_service-page code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--g2-text-secondary);
 }
 </style>

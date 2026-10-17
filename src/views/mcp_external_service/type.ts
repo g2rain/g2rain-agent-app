@@ -8,14 +8,14 @@ import type { BaseSelectListDto, BaseVo } from '@platform/types/api.type';
  * 外部服务表接口
  */
 export interface McpExternalService extends BaseVo {
-  organId: number;
+  organId?: number;
   code: string;
   name: string;
   endpoint: string;
-  contextPath: string;
+  contextPath: string | null;
   resourceType: string;
   status: string;
-  description: string;
+  description: string | null;
 }
 
 /**

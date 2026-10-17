@@ -1,28 +1,12 @@
 /**
- * 智能体详情的读取模型与写入载荷（g2rain-agent-studio）。
+ * 智能体详情页私有类型（g2rain-agent-studio）。
+ * 智能体画像类型见 `@/views/agent_profile`，不在此重复定义。
  */
-
-/** 智能体（agent_profile） */
-export interface AgentProfileVo {
-  id: number;
-  agentCode: string;
-  agentName: string;
-  resourceType: string;
-  identityDesc: string | null;
-  missionDesc: string | null;
-  boundaryDesc: string | null;
-  styleDesc: string | null;
-  principleDesc: string | null;
-  status: string;
-  description: string | null;
-  updateTime: string;
-}
-
-export type AgentProfilePayload = Partial<Omit<AgentProfileVo, 'updateTime'>>;
 
 /** 技能（skill_profile） */
 export interface SkillProfileVo {
   id: number;
+  agentId: number;
   skillKey: string;
   skillName: string;
   resourceType: string;
@@ -36,15 +20,6 @@ export interface SkillProfileVo {
 
 export type SkillProfilePayload = Partial<Omit<SkillProfileVo, 'updateTime'>>;
 
-/** 智能体 ↔ 技能（agent_skill_binding） */
-export interface AgentSkillBindingVo {
-  id: number;
-  agentId: number;
-  skillId: number;
-  enabledFlag: number;
-  description: string | null;
-}
-
 /** 技能 ↔ 工具（skill_tool_binding） */
 export interface SkillToolBindingVo {
   id: number;
@@ -54,10 +29,9 @@ export interface SkillToolBindingVo {
   description: string | null;
 }
 
-/** 技能列表的一行：绑定 + 技能 + 模式 + 工具数 */
+/** 技能列表的一行 */
 export interface SkillRow {
-  binding: AgentSkillBindingVo;
-  skill: SkillProfileVo | undefined;
+  skill: SkillProfileVo;
   mode: string | undefined;
   toolCount: number;
 }

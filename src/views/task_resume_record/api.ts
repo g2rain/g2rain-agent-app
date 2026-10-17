@@ -4,11 +4,11 @@
  */
 
 import { getHttpClient } from '@runtime/http';
+import { Gateway } from '@runtime/console';
 import type { TaskResumeRecord, TaskResumeRecordPayload, TaskResumeRecordQuery } from './type';
 import type { PageData, PageSelectListDto } from '@platform/types/api.type';
 
-// 导入 mock 数据以触发自动注册（副作用导入）
-import './mock';
+const base = Gateway.HARNESS;
 
 /**
  * 任务恢复动作审计表 API 服务类
@@ -21,7 +21,7 @@ export class TaskResumeRecordApi {
    */
   static async list(params?: TaskResumeRecordQuery): Promise<TaskResumeRecord[]> {
     const http = getHttpClient('default');
-    const res = await http.get<TaskResumeRecord[]>('/task_resume_record/list', params);
+    const res = await http.get<TaskResumeRecord[]>(`${base}/task_resume_record/list`, params);
     return res.data || [];
   }
 
@@ -32,7 +32,7 @@ export class TaskResumeRecordApi {
    */
   static async page(params: TaskResumeRecordQuery & PageSelectListDto): Promise<PageData<TaskResumeRecord>> {
     const http = getHttpClient('default');
-    const res = await http.get<PageData<TaskResumeRecord>>('/task_resume_record/page', params);
+    const res = await http.get<PageData<TaskResumeRecord>>(`${base}/task_resume_record/page`, params);
     return res.data;
   }
 
@@ -43,7 +43,7 @@ export class TaskResumeRecordApi {
    */
   static async getById(id: number): Promise<TaskResumeRecord> {
     const http = getHttpClient('default');
-    const res = await http.get<TaskResumeRecord>(`/task_resume_record/${id}`);
+    const res = await http.get<TaskResumeRecord>(`${base}/task_resume_record/${id}`);
     return res.data;
   }
 
@@ -55,7 +55,7 @@ export class TaskResumeRecordApi {
    */
   static async save(payload: TaskResumeRecordPayload): Promise<TaskResumeRecord> {
     const http = getHttpClient('default');
-    const res = await http.post<TaskResumeRecord>('/task_resume_record/save', payload);
+    const res = await http.post<TaskResumeRecord>(`${base}/task_resume_record/save`, payload);
     return res.data;
   }
 
@@ -65,7 +65,7 @@ export class TaskResumeRecordApi {
    */
   static async remove(id: number): Promise<void> {
     const http = getHttpClient('default');
-    await http.delete(`/task_resume_record/${id}`);
+    await http.delete(`${base}/task_resume_record/${id}`);
   }
 }
 

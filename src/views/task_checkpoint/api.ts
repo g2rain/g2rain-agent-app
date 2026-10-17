@@ -4,11 +4,11 @@
  */
 
 import { getHttpClient } from '@runtime/http';
+import { Gateway } from '@runtime/console';
 import type { TaskCheckpoint, TaskCheckpointPayload, TaskCheckpointQuery } from './type';
 import type { PageData, PageSelectListDto } from '@platform/types/api.type';
 
-// 导入 mock 数据以触发自动注册（副作用导入）
-import './mock';
+const base = Gateway.HARNESS;
 
 /**
  * 任务检查点表 API 服务类
@@ -21,7 +21,7 @@ export class TaskCheckpointApi {
    */
   static async list(params?: TaskCheckpointQuery): Promise<TaskCheckpoint[]> {
     const http = getHttpClient('default');
-    const res = await http.get<TaskCheckpoint[]>('/task_checkpoint/list', params);
+    const res = await http.get<TaskCheckpoint[]>(`${base}/task_checkpoint/list`, params);
     return res.data || [];
   }
 
@@ -32,7 +32,7 @@ export class TaskCheckpointApi {
    */
   static async page(params: TaskCheckpointQuery & PageSelectListDto): Promise<PageData<TaskCheckpoint>> {
     const http = getHttpClient('default');
-    const res = await http.get<PageData<TaskCheckpoint>>('/task_checkpoint/page', params);
+    const res = await http.get<PageData<TaskCheckpoint>>(`${base}/task_checkpoint/page`, params);
     return res.data;
   }
 
@@ -43,7 +43,7 @@ export class TaskCheckpointApi {
    */
   static async getById(id: number): Promise<TaskCheckpoint> {
     const http = getHttpClient('default');
-    const res = await http.get<TaskCheckpoint>(`/task_checkpoint/${id}`);
+    const res = await http.get<TaskCheckpoint>(`${base}/task_checkpoint/${id}`);
     return res.data;
   }
 
@@ -55,7 +55,7 @@ export class TaskCheckpointApi {
    */
   static async save(payload: TaskCheckpointPayload): Promise<TaskCheckpoint> {
     const http = getHttpClient('default');
-    const res = await http.post<TaskCheckpoint>('/task_checkpoint/save', payload);
+    const res = await http.post<TaskCheckpoint>(`${base}/task_checkpoint/save`, payload);
     return res.data;
   }
 
@@ -65,7 +65,7 @@ export class TaskCheckpointApi {
    */
   static async remove(id: number): Promise<void> {
     const http = getHttpClient('default');
-    await http.delete(`/task_checkpoint/${id}`);
+    await http.delete(`${base}/task_checkpoint/${id}`);
   }
 }
 

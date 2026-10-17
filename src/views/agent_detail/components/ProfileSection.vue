@@ -43,9 +43,14 @@
       </section>
     </div>
 
-    <aside class="profile__hint">
-      <h4>{{ activeSection.title }}</h4>
-      <p>{{ activeSection.hint }}</p>
+    <aside class="profile__side">
+      <div v-if="$slots.actions" class="profile__actions">
+        <slot name="actions" />
+      </div>
+      <div class="profile__hint">
+        <h4>{{ activeSection.title }}</h4>
+        <p>{{ activeSection.hint }}</p>
+      </div>
     </aside>
   </div>
 </template>
@@ -53,7 +58,8 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref, type WritableComputedRef } from 'vue';
 import { t } from '@platform/i18n';
-import { PROFILE_SECTIONS, type AgentProfilePayload, type ProfileSectionKey } from '../type';
+import type { AgentProfilePayload } from '@/views/agent_profile';
+import { PROFILE_SECTIONS, type ProfileSectionKey } from '../type';
 
 const MarkdownEditor = defineAsyncComponent(() => import('@/components/markdown').then((m) => m.MarkdownEditor));
 
@@ -130,8 +136,22 @@ function sectionModel(key: ProfileSectionKey): WritableComputedRef<string> {
 </script>
 
 <style scoped>
-.profile { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
-.profile__main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.profile {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 16px;
+  height: 100%;
+  min-height: 0;
+}
+.profile__main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 8px;
+}
 .profile__card {
   padding: 14px 18px;
   border: 1px solid var(--g2-border-color-light);
@@ -157,9 +177,17 @@ function sectionModel(key: ProfileSectionKey): WritableComputedRef<string> {
   transition: transform var(--g2-transition-duration);
 }
 .profile__caret.is-open { transform: rotate(90deg); }
+.profile__side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  height: 100%;
+}
 .profile__hint {
-  position: sticky;
-  top: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
   padding: 14px 16px;
   border-radius: var(--g2-border-radius-lg);
   background: color-mix(in srgb, var(--g2-color-primary) 6%, var(--g2-bg-container));
@@ -169,8 +197,15 @@ function sectionModel(key: ProfileSectionKey): WritableComputedRef<string> {
 }
 .profile__hint h4 { margin: 0 0 6px; font-size: var(--g2-font-size-base); color: var(--g2-text-primary); }
 .profile__hint p { margin: 0; }
+.profile__actions {
+  flex: none;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 0 4px;
+}
 @media (max-width: 1200px) {
   .profile { grid-template-columns: minmax(0, 1fr); }
   .profile__hint { display: none; }
+  .profile__side { height: auto; }
 }
 </style>
