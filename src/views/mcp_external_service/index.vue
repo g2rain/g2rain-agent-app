@@ -2,6 +2,9 @@
   <div class="mcp_external_service-page">
     <el-card class="mcp_external_service-page__search" shadow="never">
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
+        <el-form-item label="所属机构">
+          <OrganSelect v-model="queryForm.organId" />
+        </el-form-item>
         <el-form-item label="服务编码">
           <el-input v-model="queryForm.code" placeholder="请输入服务编码" clearable style="width: 180px" />
         </el-form-item>
@@ -31,6 +34,7 @@
 
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="100" />
+      <el-table-column prop="organId" label="所属机构" width="110" />
       <el-table-column prop="code" label="服务编码" width="160" />
       <el-table-column prop="name" label="服务名称" min-width="160" />
       <el-table-column label="调用地址" min-width="240">
@@ -83,6 +87,9 @@
 
     <el-dialog v-model="editDialogVisible" :title="isEdit ? '编辑服务' : '新增服务'" width="520px">
       <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="100px">
+        <el-form-item v-if="!isEdit || editForm.organId != null" label="所属机构" prop="organId">
+          <OrganSelect v-model="editForm.organId" :disabled="isEdit" width="100%" />
+        </el-form-item>
         <el-form-item label="服务编码" prop="code">
           <el-input v-model="editForm.code" placeholder="请输入服务编码" :disabled="isEdit" />
         </el-form-item>
@@ -110,6 +117,7 @@
     <el-dialog v-model="detailDialogVisible" title="服务明细" width="520px">
       <el-descriptions :column="1" border>
         <el-descriptions-item :label="$t('G2_FIELD_ID', 'ID')">{{ currentRow?.id }}</el-descriptions-item>
+        <el-descriptions-item label="所属机构">{{ currentRow?.organId }}</el-descriptions-item>
         <el-descriptions-item label="服务编码">{{ currentRow?.code }}</el-descriptions-item>
         <el-descriptions-item label="服务名称">{{ currentRow?.name }}</el-descriptions-item>
         <el-descriptions-item label="调用地址">{{ currentRow ? callUrl(currentRow) : '' }}</el-descriptions-item>
@@ -136,7 +144,7 @@ import { ElMessageBox, ElMessage } from 'element-plus';
 import { t } from '@platform/i18n';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
-import { StatusSwitch } from '@g2rain/ui/platform';
+import { OrganSelect, StatusSwitch } from '@g2rain/ui/platform';
 import { RecordStatus, ResourceType } from '@runtime/console';
 import { showErrorMessage, notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
 import { McpExternalServiceApi } from './api';
@@ -177,6 +185,7 @@ const baseQueryForm = ref<BaseSelectListDto>({
 });
 
 const queryForm = reactive({
+  organId: undefined as number | null | undefined,
   code: '',
   name: '',
   status: '',
@@ -228,6 +237,7 @@ function handleReset(): void {
   baseQueryForm.value.createTime = undefined;
   baseQueryForm.value.updateTime = undefined;
   baseQueryForm.value.sorts = undefined;
+  queryForm.organId = undefined;
   queryForm.code = '';
   queryForm.name = '';
   queryForm.status = '';
@@ -279,6 +289,7 @@ const editFormRef = ref<FormInstance | null>(null);
 
 const editForm = reactive({
   id: undefined as number | undefined,
+  organId: undefined as number | null | undefined,
   code: '',
   name: '',
   endpoint: '',
@@ -287,6 +298,13 @@ const editForm = reactive({
 });
 
 const editRules: FormRules = {
+  organId: [{
+    validator: (_rule, value, callback) => {
+      if (isEdit.value || value != null) callback();
+      else callback(new Error('请选择所属机构'));
+    },
+    trigger: 'change',
+  }],
   code: [{ required: true, message: '请输入服务编码', trigger: 'blur' }],
   name: [{ required: true, message: '请输入服务名称', trigger: 'blur' }],
   endpoint: [{ required: true, message: '请输入调用基址', trigger: 'blur' }],
@@ -296,6 +314,7 @@ function handleCreate(): void {
   isEdit.value = false;
   editFormRef.value?.clearValidate();
   editForm.id = undefined;
+  editForm.organId = undefined;
   editForm.code = '';
   editForm.name = '';
   editForm.endpoint = '';
@@ -308,6 +327,7 @@ function handleEdit(row: McpExternalService): void {
   isEdit.value = true;
   editFormRef.value?.clearValidate();
   editForm.id = row.id;
+  editForm.organId = row.organId ?? undefined;
   editForm.code = row.code;
   editForm.name = row.name;
   editForm.endpoint = row.endpoint;
@@ -322,6 +342,7 @@ async function submitEdit(): Promise<void> {
   if (!valid) return;
 
   const payload: McpExternalServicePayload = {
+    organId: editForm.organId ?? undefined,
     code: editForm.code.trim(),
     name: editForm.name.trim(),
     endpoint: editForm.endpoint.trim(),

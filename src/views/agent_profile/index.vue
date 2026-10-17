@@ -2,8 +2,8 @@
   <div class="agent_profile-page">
     <el-card class="agent_profile-page__search" shadow="never">
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
-        <el-form-item label="机构ID">
-          <el-input v-model="queryForm.organId" placeholder="请输入机构ID" clearable style="width: 160px" />
+        <el-form-item label="所属机构">
+          <OrganSelect v-model="queryForm.organId" />
         </el-form-item>
         <el-form-item label="名称">
           <el-input v-model="queryForm.agentName" placeholder="名称 / 编码" clearable style="width: 200px" />
@@ -31,7 +31,7 @@
 
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="100" />
-      <el-table-column prop="organId" label="机构ID" width="110" />
+      <el-table-column prop="organId" label="所属机构" width="110" />
       <el-table-column label="智能体" min-width="220">
         <template #default="{ row }">
           <div>{{ row.agentName }}</div>
@@ -89,7 +89,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
-import { StatusSwitch } from '@g2rain/ui/platform';
+import { OrganSelect, StatusSwitch } from '@g2rain/ui/platform';
 import { RecordStatus, ResourceType } from '@runtime/console';
 import { showErrorMessage, notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
 import { agentDetailRoute } from '@/views/agent_detail';
@@ -127,7 +127,7 @@ const baseQueryForm = ref<BaseSelectListDto>({
 });
 
 const queryForm = reactive({
-  organId: undefined as number | undefined | string,
+  organId: undefined as number | null | undefined,
   agentName: '',
   status: '',
 });

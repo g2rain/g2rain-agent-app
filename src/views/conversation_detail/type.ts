@@ -21,6 +21,8 @@ export interface ChatConversationVo {
 export interface ConversationBundle {
   conversation: ChatConversationVo;
   messages: ChatMessageVo[];
+  /** chat_message 分页总数 */
+  messageTotal: number;
   tasks: TaskInstanceVo[];
   /** 各任务的恢复记录，按 taskId 分组 */
   resumes: Record<string, TaskResumeRecordVo[]>;

@@ -2,6 +2,9 @@
   <div class="model_usage_record-page">
     <el-card class="model_usage_record-page__search" shadow="never">
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
+        <el-form-item label="所属机构">
+          <OrganSelect v-model="queryForm.organId" />
+        </el-form-item>
         <el-form-item label="模型配置">
           <el-select
             v-model="queryForm.profileId"
@@ -41,6 +44,7 @@
 
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="100" />
+      <el-table-column prop="organId" label="所属机构" width="110" />
       <TableColumn prop="createTime" label="时间" width="180" sortable="custom" />
       <el-table-column prop="modelName" label="模型" min-width="160" />
       <el-table-column prop="provider" label="供应商" width="120" />
@@ -78,6 +82,7 @@
     <el-dialog v-model="detailDialogVisible" title="用量明细" width="520px">
       <el-descriptions :column="1" border>
         <el-descriptions-item :label="$t('G2_FIELD_ID', 'ID')">{{ currentRow?.id }}</el-descriptions-item>
+        <el-descriptions-item label="所属机构">{{ currentRow?.organId }}</el-descriptions-item>
         <el-descriptions-item label="时间">{{ currentRow?.createTime }}</el-descriptions-item>
         <el-descriptions-item label="模型">{{ currentRow?.modelName }}</el-descriptions-item>
         <el-descriptions-item label="供应商">{{ currentRow?.provider }}</el-descriptions-item>
@@ -98,6 +103,7 @@ import { onMounted, reactive, ref } from 'vue';
 import { t } from '@platform/i18n';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { QueryForm, SortableTable, TableColumn, SortManagerButton } from '@g2rain/ui';
+import { OrganSelect } from '@g2rain/ui/platform';
 import { showErrorMessage } from '@/components';
 import { ModelUsageRecordApi } from './api';
 import type { ModelUsageProfileOption, ModelUsageRecord, ModelUsageRecordQuery } from './type';
@@ -125,6 +131,7 @@ const baseQueryForm = ref<BaseSelectListDto>({
 });
 
 const queryForm = reactive({
+  organId: undefined as number | null | undefined,
   profileId: undefined as number | undefined,
   modelName: '',
   provider: '',
@@ -167,6 +174,7 @@ const handleReset = () => {
   baseQueryForm.value.createTime = undefined;
   baseQueryForm.value.updateTime = undefined;
   baseQueryForm.value.sorts = undefined;
+  queryForm.organId = undefined;
   queryForm.profileId = undefined;
   queryForm.modelName = '';
   queryForm.provider = '';

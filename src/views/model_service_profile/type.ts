@@ -44,6 +44,7 @@ export interface ModelServiceProfilePayload {
 
 /** 查询条件 */
 export interface ModelServiceProfileQuery extends BaseSelectListDto {
+  organId?: number;
   modelName?: string;
   modelType?: string;
   resourceType?: string;

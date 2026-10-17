@@ -15,6 +15,9 @@
     <div class="tool-drawer__section">基本信息</div>
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
       <div class="tool-drawer__grid">
+        <el-form-item v-if="mode === 'create' || form.organId != null" label="所属机构" prop="organId">
+          <OrganSelect v-model="form.organId" :disabled="mode !== 'create'" width="100%" />
+        </el-form-item>
         <el-form-item label="工具名" prop="name">
           <el-input v-model="form.name" :disabled="locked" maxlength="256" placeholder="MCP tools/call 名称" />
         </el-form-item>
@@ -71,6 +74,7 @@ import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
 import { ElMessage } from 'element-plus';
 import { t } from '@platform/i18n';
+import { OrganSelect } from '@g2rain/ui/platform';
 import { JsonViewer, showErrorMessage } from '@/components';
 import { McpToolProfileApi } from '../api';
 import type { McpToolProfile } from '../type';
@@ -93,6 +97,7 @@ const tab = ref('schema');
 const saving = ref(false);
 const form = reactive({
   id: undefined as number | undefined,
+  organId: undefined as number | null | undefined,
   name: '',
   title: '',
   serviceCode: '',
@@ -117,6 +122,7 @@ const rules = computed<FormRules>(() => {
     return { title: required('请输入标题') };
   }
   return {
+    organId: [{ required: true, message: '请选择所属机构', trigger: 'change' }],
     name: required('请输入工具名'),
     title: required('请输入标题'),
     serviceCode: required('请输入服务编码'),
@@ -132,6 +138,7 @@ watch(
     tab.value = 'schema';
     const row = props.row;
     form.id = props.mode === 'create' ? undefined : row?.id;
+    form.organId = props.mode === 'create' ? undefined : (row?.organId ?? undefined);
     form.name = row?.name ?? '';
     form.title = row?.title ?? '';
     form.serviceCode = row?.serviceCode ?? '';
@@ -151,6 +158,7 @@ async function submit(): Promise<void> {
   try {
     if (props.mode === 'create') {
       await McpToolProfileApi.save(props.resourceType, {
+        organId: form.organId ?? undefined,
         name: form.name,
         title: form.title,
         serviceCode: form.serviceCode,

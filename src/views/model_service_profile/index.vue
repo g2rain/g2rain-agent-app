@@ -3,6 +3,9 @@
   <div class="model_service_profile-page">
     <el-card class="model_service_profile-page__search" shadow="never">
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
+        <el-form-item label="所属机构">
+          <OrganSelect v-model="queryForm.organId" />
+        </el-form-item>
         <el-form-item label="模型名称">
           <el-input v-model="queryForm.modelName" placeholder="请输入模型名称" clearable style="width: 200px" />
         </el-form-item>
@@ -42,6 +45,7 @@
 
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="100" />
+      <el-table-column prop="organId" label="所属机构" width="110" />
       <el-table-column label="模型" min-width="200">
         <template #default="{ row }">
           <div>{{ row.modelName }}</div>
@@ -105,7 +109,7 @@
     <el-drawer
       v-model="marketDialogVisible"
       :title="marketDrawerTitle"
-      size="560px"
+      size="720px"
       destroy-on-close
     >
       <div class="model_service_profile-page__drawer">
@@ -197,8 +201,11 @@
             </div>
             <el-button v-if="!isEdit" link type="primary" @click="marketStep = 'pick'">重选</el-button>
           </div>
-          <h4>参数</h4>
           <el-form label-width="140px">
+            <el-form-item v-if="!isEdit || formOrganId != null" label="所属机构" required>
+              <OrganSelect v-model="formOrganId" :disabled="isEdit" width="100%" />
+            </el-form-item>
+            <h4>参数</h4>
             <ParamsForm
               v-model:temperature="params.temperature"
               v-model:top-p="params.topP"
@@ -240,6 +247,9 @@
     >
       <div class="model_service_profile-page__drawer">
         <el-form ref="customFormRef" :model="custom" :rules="customRules" label-width="100px">
+          <el-form-item v-if="!isEdit || formOrganId != null" label="所属机构" required>
+            <OrganSelect v-model="formOrganId" :disabled="isEdit" width="100%" />
+          </el-form-item>
           <h4>模型</h4>
           <el-form-item label="模型名称" prop="modelName">
             <el-input v-model="custom.modelName" placeholder="请输入模型名称" />
@@ -297,6 +307,7 @@
     <el-dialog v-model="detailDialogVisible" title="模型配置明细" width="560px">
       <el-descriptions :column="1" border>
         <el-descriptions-item :label="$t('G2_FIELD_ID', 'ID')">{{ currentRow?.id }}</el-descriptions-item>
+        <el-descriptions-item label="所属机构">{{ currentRow?.organId }}</el-descriptions-item>
         <el-descriptions-item label="模型名称">{{ currentRow?.modelName }}</el-descriptions-item>
         <el-descriptions-item label="来源">{{ optionLabel(RESOURCE_OPTIONS, currentRow?.resourceType) }}</el-descriptions-item>
         <el-descriptions-item label="类型">{{ optionLabel(MODEL_TYPE_OPTIONS, currentRow?.modelType) }}</el-descriptions-item>
@@ -325,7 +336,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
-import { StatusSwitch } from '@g2rain/ui/platform';
+import { OrganSelect, StatusSwitch } from '@g2rain/ui/platform';
 import { showErrorMessage, notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
 import ParamsForm from './components/ParamsForm.vue';
 import { ModelServiceProfileApi } from './api';
@@ -376,11 +387,15 @@ const baseQueryForm = ref<BaseSelectListDto>({
 });
 
 const queryForm = reactive({
+  organId: undefined as number | null | undefined,
   modelName: '',
   modelType: '',
   resourceType: '',
   status: '',
 });
+
+/** 新增/编辑抽屉的机构（编辑时只读展示） */
+const formOrganId = ref<number | null | undefined>(undefined);
 
 const pagination = reactive({ pageNum: 1, pageSize: 10, total: 0 });
 const tableData = ref<ModelServiceProfile[]>([]);
@@ -519,6 +534,7 @@ const handleReset = () => {
   baseQueryForm.value.createTime = undefined;
   baseQueryForm.value.updateTime = undefined;
   baseQueryForm.value.sorts = undefined;
+  queryForm.organId = undefined;
   queryForm.modelName = '';
   queryForm.modelType = '';
   queryForm.resourceType = '';
@@ -545,6 +561,7 @@ const resetParams = () => {
 const openCreate = async (mode: 'market' | 'custom') => {
   isEdit.value = false;
   editRow.value = null;
+  formOrganId.value = undefined;
   resetParams();
   if (mode === 'market') {
     selectedCatalogId.value = undefined;
@@ -580,6 +597,7 @@ const openCreate = async (mode: 'market' | 'custom') => {
 const openEdit = (row: ModelServiceProfile) => {
   isEdit.value = true;
   editRow.value = row;
+  formOrganId.value = row.organId ?? undefined;
   Object.assign(params, {
     temperature: Number(row.temperature ?? 0),
     topP: Number(row.topP ?? 1),
@@ -646,7 +664,12 @@ const submitMarket = async () => {
         ElMessage.warning('请选择广场模型');
         return;
       }
+      if (formOrganId.value == null) {
+        ElMessage.warning('请选择所属机构');
+        return;
+      }
       await ModelServiceProfileApi.save({
+        organId: formOrganId.value,
         catalogId: selectedCatalogId.value,
         temperature: params.temperature,
         topP: params.topP,
@@ -668,10 +691,15 @@ const submitCustom = async () => {
   if (!customFormRef.value) return;
   const valid = await customFormRef.value.validate().catch(() => false);
   if (!valid) return;
+  if (!isEdit.value && formOrganId.value == null) {
+    ElMessage.warning('请选择所属机构');
+    return;
+  }
 
   saving.value = true;
   try {
     const payload: ModelServiceProfilePayload = {
+      organId: formOrganId.value ?? undefined,
       modelName: custom.modelName,
       modelType: custom.modelType,
       provider: custom.provider,
@@ -774,6 +802,7 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
+  min-width: 0;
 }
 
 .model_service_profile-page__pick-type {
@@ -782,9 +811,8 @@ onMounted(() => {
 }
 
 .model_service_profile-page__pick-search {
-  width: 200px;
-  flex: none;
-  margin-left: auto;
+  flex: 1;
+  min-width: 0;
 }
 
 .model_service_profile-page__pick {
@@ -794,14 +822,17 @@ onMounted(() => {
   gap: 8px;
   margin-bottom: 8px;
   width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 .model_service_profile-page__pick-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
   margin-right: 0 !important;
-  height: auto;
+  height: auto !important;
+  min-height: 56px;
   padding: 10px 12px;
   border: 1px solid var(--el-border-color);
   border-radius: 6px;
@@ -809,6 +840,7 @@ onMounted(() => {
   background: var(--el-bg-color);
   cursor: pointer;
   transition: border-color 0.15s ease, background-color 0.15s ease;
+  white-space: normal;
 }
 
 .model_service_profile-page__pick-item:hover {
@@ -833,6 +865,10 @@ onMounted(() => {
   background: var(--el-fill-color-light);
 }
 
+.model_service_profile-page__pick-item :deep(.el-radio__input) {
+  margin-top: 4px;
+}
+
 .model_service_profile-page__pick-item :deep(.el-radio__label) {
   display: flex;
   align-items: center;
@@ -841,6 +877,8 @@ onMounted(() => {
   flex: 1;
   min-width: 0;
   padding-left: 8px;
+  white-space: normal;
+  line-height: 1.4;
 }
 
 .model_service_profile-page__pick-main {
@@ -848,6 +886,7 @@ onMounted(() => {
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  overflow: hidden;
 }
 
 .model_service_profile-page__pick-status {

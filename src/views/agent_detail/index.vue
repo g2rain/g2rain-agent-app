@@ -277,6 +277,10 @@ async function saveProfile(): Promise<void> {
     ElMessage.warning(t('AGENT_REQUIRED', '请填写名称与编码'));
     return;
   }
+  if (!agentId.value && form.value.organId == null) {
+    ElMessage.warning(t('G2_PH_ORGAN', '请选择所属机构'));
+    return;
+  }
   saving.value = true;
   try {
     form.value.resourceType = entryResourceType.value;
@@ -348,7 +352,7 @@ onBeforeRouteLeave(async () => {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 0;
+  padding: 16px 20px 20px;
   overflow: hidden;
   overscroll-behavior: none;
 }

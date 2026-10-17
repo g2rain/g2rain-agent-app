@@ -2,6 +2,9 @@
   <div class="chat_conversation-page">
     <el-card class="chat_conversation-page__search" shadow="never">
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
+        <el-form-item label="所属机构">
+          <OrganSelect v-model="queryForm.organId" />
+        </el-form-item>
         <el-form-item :label="$t('AGENT_CONVERSATION_COLUMN', '会话')">
           <el-input
             v-model="queryForm.title"
@@ -36,6 +39,7 @@
           <CopyText :text="row.conversationId" :length="8" :copied-text="copiedText" />
         </template>
       </el-table-column>
+      <el-table-column prop="organId" label="所属机构" width="110" />
       <el-table-column :label="$t('AGENT_CONVERSATION_USER', '用户')" prop="userId" width="120" />
       <el-table-column :label="$t('AGENT_CONVERSATION_CURRENT', '当前任务')" width="140">
         <template #default="{ row }">
@@ -89,6 +93,7 @@ import { useRouter } from 'vue-router';
 import { t } from '@platform/i18n';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { QueryForm, SortableTable, TableColumn, SortManagerButton } from '@g2rain/ui';
+import { OrganSelect } from '@g2rain/ui/platform';
 import { CopyText, StatusDot, showErrorMessage } from '@/components';
 import { EMPTY, fromNow } from '@runtime/console';
 import { conversationDetailRoute } from '@/views/conversation_detail';
@@ -108,6 +113,7 @@ const baseQueryForm = ref<BaseSelectListDto>({
 });
 
 const queryForm = reactive({
+  organId: undefined as number | null | undefined,
   title: '',
 });
 
@@ -149,6 +155,7 @@ const handleReset = () => {
   baseQueryForm.value.createTime = undefined;
   baseQueryForm.value.updateTime = undefined;
   baseQueryForm.value.sorts = undefined;
+  queryForm.organId = undefined;
   queryForm.title = '';
   pagination.pageNum = 1;
   void loadData();

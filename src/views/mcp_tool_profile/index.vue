@@ -6,8 +6,8 @@
       <!-- 基础查询表单（BaseSelectListDto） -->
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
         <!-- 业务特定查询字段 -->
-        <el-form-item label="机构ID">
-          <el-input v-model="queryForm.organId" placeholder="请输入机构ID" clearable style="width: 200px" />
+        <el-form-item label="所属机构">
+          <OrganSelect v-model="queryForm.organId" />
         </el-form-item>
         <el-form-item label="Tool名称">
           <el-input v-model="queryForm.name" placeholder="请输入Tool名称" clearable style="width: 200px" />
@@ -59,7 +59,7 @@
 
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="120" />
-      <el-table-column prop="organId" label="机构ID" width="140" />
+      <el-table-column prop="organId" label="所属机构" width="110" />
       <el-table-column prop="name" label="Tool名称" width="180" />
       <el-table-column prop="title" label="Tool标题" width="180" />
       <el-table-column prop="serviceCode" label="所属服务编码" width="180" />
@@ -140,7 +140,7 @@ import type { McpToolProfile, McpToolProfileQuery } from './type';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 
 import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
-import { StatusSwitch } from '@g2rain/ui/platform';
+import { OrganSelect, StatusSwitch } from '@g2rain/ui/platform';
 import { notifyStatusSwitchError, notifyStatusSwitchSuccess, showErrorMessage } from '@/components';
 import OpenApiImport from './components/OpenApiImport.vue';
 import BuiltInSync from './components/BuiltInSync.vue';
@@ -188,7 +188,7 @@ const baseQueryForm = ref<BaseSelectListDto>({
 
 // 业务查询状态
 const queryForm = reactive({
-  organId: undefined as number | undefined,
+  organId: undefined as number | null | undefined,
   name: '',
   serviceCode: '',
   status: '' as string | null | undefined,

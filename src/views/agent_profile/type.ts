@@ -26,7 +26,7 @@ export interface AgentProfile extends BaseVo {
  */
 export interface AgentProfilePayload {
   id?: number; // 更新时传入 ID，新增时不传
-  organId?: number;
+  organId?: number | null;
   agentCode?: string;
   agentName?: string;
   resourceType?: string;

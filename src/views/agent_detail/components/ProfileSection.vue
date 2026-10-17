@@ -4,6 +4,9 @@
       <section class="profile__card">
         <h3>{{ $t('AGENT_PROFILE_BASIC', '基本信息') }}</h3>
         <el-form :model="form" label-position="top" :disabled="readonly" class="profile__basic">
+          <el-form-item v-if="creating || form.organId != null" :label="$t('G2_FIELD_ORGAN', '所属机构')" required>
+            <OrganSelect v-model="form.organId" :disabled="!creating || readonly" width="100%" />
+          </el-form-item>
           <el-form-item :label="$t('AGENT_FIELD_NAME', '名称')" required>
             <el-input v-model="form.agentName" maxlength="128" />
           </el-form-item>
@@ -57,6 +60,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref, type WritableComputedRef } from 'vue';
+import { OrganSelect } from '@g2rain/ui/platform';
 import { t } from '@platform/i18n';
 import type { AgentProfilePayload } from '@/views/agent_profile';
 import { PROFILE_SECTIONS, type ProfileSectionKey } from '../type';

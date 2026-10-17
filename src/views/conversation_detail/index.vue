@@ -44,7 +44,7 @@
       </header>
 
       <div class="conversation-detail__body">
-        <section class="conversation-detail__timeline">
+        <section v-loading="messagesLoading" class="conversation-detail__timeline">
           <TurnList
             :turns="visibleTurns"
             :resumes="bundle.resumes"
@@ -53,6 +53,17 @@
             :locale="locale"
             @select="selectTask"
           />
+          <div class="conversation-detail__pagination">
+            <el-pagination
+              v-model:current-page="messagePage.pageNum"
+              v-model:page-size="messagePage.pageSize"
+              :page-sizes="[10, 20, 50, 100]"
+              :total="bundle.messageTotal"
+              layout="total, sizes, prev, pager, next, jumper"
+              @size-change="handleMessageSizeChange"
+              @current-change="handleMessagePageChange"
+            />
+          </div>
         </section>
         <aside class="conversation-detail__aside">
           <TaskSummary
@@ -94,10 +105,12 @@ const locale = computed(() => localeStore.locale || 'zh-CN');
 
 const bundle = ref<ConversationBundle | null>(null);
 const loading = ref(false);
+const messagesLoading = ref(false);
 const failure = ref('');
 const selectedTaskId = ref<string | null>(null);
 const statusFilter = ref<string | null>(null);
 const nodeCache = reactive<Record<string, TaskGraphNodeVo[]>>({});
+const messagePage = reactive({ pageNum: 1, pageSize: 20 });
 
 const turns = computed(() => (bundle.value ? buildTurns(bundle.value.messages, bundle.value.tasks) : []));
 const visibleTurns = computed(() =>
@@ -156,7 +169,11 @@ async function load(silent = false): Promise<void> {
   loading.value = true;
   failure.value = '';
   try {
-    const next = await ConversationDetailApi.load(conversationId.value);
+    const next = await ConversationDetailApi.load(
+      conversationId.value,
+      messagePage.pageNum,
+      messagePage.pageSize,
+    );
     bundle.value = next;
     if (silent) Object.keys(nodeCache).forEach((key) => delete nodeCache[key]);
     const keep = silent && next?.tasks.some((task) => task.taskId === selectedTaskId.value);
@@ -171,8 +188,42 @@ async function load(silent = false): Promise<void> {
   }
 }
 
+/** 只翻消息页，不重拉任务 */
+async function loadMessages(): Promise<void> {
+  if (!conversationId.value || !bundle.value) return;
+  messagesLoading.value = true;
+  try {
+    const page = await ConversationDetailApi.pageMessages(
+      conversationId.value,
+      messagePage.pageNum,
+      messagePage.pageSize,
+    );
+    bundle.value = {
+      ...bundle.value,
+      messages: page.records,
+      messageTotal: page.total,
+    };
+  } catch (error: unknown) {
+    failure.value = error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载失败');
+  } finally {
+    messagesLoading.value = false;
+  }
+}
+
+function handleMessageSizeChange(size: number): void {
+  messagePage.pageSize = size;
+  messagePage.pageNum = 1;
+  void loadMessages();
+}
+
+function handleMessagePageChange(page: number): void {
+  messagePage.pageNum = page;
+  void loadMessages();
+}
+
 watch(conversationId, () => {
   statusFilter.value = null;
+  messagePage.pageNum = 1;
   void load();
 }, { immediate: true });
 </script>
@@ -203,6 +254,12 @@ watch(conversationId, () => {
   border: 1px solid var(--g2-border-color-light);
   border-radius: var(--g2-border-radius-lg);
   background: var(--g2-bg-container);
+}
+.conversation-detail__pagination {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+  padding-bottom: 8px;
 }
 .conversation-detail__aside { position: sticky; top: 16px; padding: 16px 20px; }
 @media (max-width: 1100px) {

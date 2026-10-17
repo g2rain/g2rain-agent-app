@@ -17,6 +17,7 @@ export interface ModelUsageRecord extends BaseVo {
 }
 
 export interface ModelUsageRecordQuery extends BaseSelectListDto {
+  organId?: number;
   profileId?: number;
   modelName?: string;
   provider?: string;
