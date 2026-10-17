@@ -123,7 +123,7 @@ import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
 import { StatusDot, PageElementPermission, showErrorMessage } from '@/components';
-import { EMPTY, RecordStatus, ResourceType, fill } from '@runtime/console';
+import { EMPTY, ResourceType, fill } from '@runtime/console';
 import { McpToolProfileApi, ToolPicker, type McpToolProfileVo } from '@/views/mcp_tool_profile';
 import ContractPanel from './ContractPanel.vue';
 import { AgentDetailApi } from '../api';
@@ -202,7 +202,6 @@ async function load(): Promise<void> {
       form.value = {
         agentId: props.agentId,
         resourceType: props.agentResourceType || ResourceType.CUSTOM,
-        status: RecordStatus.ACTIVE,
       };
       manual.value = MANUAL_TEMPLATE;
       contract.value = JSON.stringify({ mode: 'REACT', delegatable: false, outputs: {}, tools: {} }, null, 2);

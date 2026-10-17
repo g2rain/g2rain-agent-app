@@ -40,7 +40,6 @@ export interface McpToolProfilePayload {
   path?: string;
   openapiOperation?: string;
   inputSchema?: string;
-  status?: string;
   description?: string;
 }
 

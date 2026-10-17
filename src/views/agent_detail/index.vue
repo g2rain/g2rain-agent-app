@@ -85,7 +85,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
 import { useLocaleStore } from '@platform/stores/locale.store';
 import { PageElementPermission, showErrorMessage } from '@/components';
-import { RecordStatus, ResourceType, fill } from '@runtime/console';
+import { ResourceType, fill } from '@runtime/console';
 import ProfileSection from './components/ProfileSection.vue';
 import SkillList from './components/SkillList.vue';
 import SkillDrawer from './components/SkillDrawer.vue';
@@ -262,7 +262,7 @@ async function load(): Promise<void> {
       await loadSkills();
     } else {
       agent.value = null;
-      form.value = { resourceType: entryResourceType.value, status: RecordStatus.ACTIVE };
+      form.value = { resourceType: entryResourceType.value };
     }
     snapshot.value = JSON.stringify(form.value);
   } catch (error: unknown) {

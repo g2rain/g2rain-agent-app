@@ -33,7 +33,6 @@ export interface SkillProfilePayload {
   semanticDesc?: string;
   skillManual?: string;
   skillContract?: string;
-  status?: string;
   description?: string;
 }
 

@@ -38,7 +38,6 @@ export interface ModelServiceProfilePayload {
   topP?: number | string;
   maxTokens?: number;
   timeoutMs?: number;
-  status?: string;
   description?: string;
 }
 

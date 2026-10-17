@@ -35,7 +35,6 @@ export interface AgentProfilePayload {
   boundaryDesc?: string;
   styleDesc?: string;
   principleDesc?: string;
-  status?: string;
   description?: string;
 }
 

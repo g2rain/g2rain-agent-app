@@ -29,7 +29,6 @@ export interface McpExternalServicePayload {
   endpoint?: string;
   contextPath?: string;
   resourceType?: string;
-  status?: string;
   description?: string;
 }
 

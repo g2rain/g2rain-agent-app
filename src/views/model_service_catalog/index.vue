@@ -425,11 +425,9 @@ const submitEdit = async () => {
   }
 
   try {
-    // 编辑模式下，将 id 添加到 payload 中；新增默认启用（状态改用列表开关）
+    // 编辑模式下，将 id 添加到 payload 中；新增 status 由服务端默认（MARKET=INACTIVE / CUSTOM=ACTIVE）
     if (isEdit.value) {
       payload.id = editForm.id;
-    } else {
-      payload.status = 'ACTIVE';
     }
     await ModelServiceCatalogApi.save(payload);
     ElMessage.success(isEdit.value ? t('G2_MSG_UPDATE_OK', '更新成功') : t('G2_MSG_ADD_OK', '新增成功'));

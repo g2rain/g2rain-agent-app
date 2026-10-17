@@ -32,7 +32,6 @@ export interface ModelServiceCatalogPayload {
   protocol?: string;
   baseUrl?: string;
   apiKey?: string;
-  status?: string;
   description?: string;
 }
 
