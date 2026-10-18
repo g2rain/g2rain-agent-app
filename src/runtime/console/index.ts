@@ -6,4 +6,4 @@ export { Gateway } from './gateway';
 export * from './enums';
 export { describeStatus } from './status';
 export { actionLabel, isBuiltinAction } from './action';
-export { EMPTY, shortId, formatDuration, toEpoch, elapsed, formatClock, parseJson, fill, fromNow } from './format';
+export { EMPTY, shortId, formatDuration, toEpoch, elapsed, formatClock, parseJson, fromNow } from './format';

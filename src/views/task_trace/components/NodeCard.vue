@@ -31,7 +31,7 @@
 import { computed } from 'vue';
 import { t } from '@platform/i18n';
 import { StatusDot } from '@/components';
-import { NodeStatus, describeStatus, fill, formatClock, formatDuration } from '@runtime/console';
+import { NodeStatus, describeStatus, formatClock, formatDuration } from '@runtime/console';
 import type { GraphCard } from '../trace';
 
 const props = defineProps<{ card: GraphCard; selected: boolean }>();
@@ -40,7 +40,7 @@ const tone = computed(() => (props.card.kind === 'step' ? describeStatus(props.c
 /** 跳过、取消的步骤淡化；未开始的步骤保持正常显示 */
 const muted = computed(() => props.card.kind === 'step' && tone.value === 'muted' && props.card.node.status !== NodeStatus.PENDING);
 const callsText = computed(() =>
-  props.card.kind === 'step' ? fill(t('AGENT_TRACE_CALLS', '{n} 次调用'), { n: props.card.callCount }) : '',
+  props.card.kind === 'step' ? t('AGENT_TRACE_CALLS', { n: props.card.callCount }, '{n} 次调用') : '',
 );
 
 const APPROVAL_TEXT: Record<string, [string, string]> = {

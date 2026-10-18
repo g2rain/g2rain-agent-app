@@ -22,7 +22,7 @@
           <CopyText :text="bundle.conversation.conversationId" :length="8" :copied-text="$t('AGENT_COPIED', '已复制')" />
           <span>{{ $t('AGENT_CONVERSATION_USER', '用户') }} {{ bundle.conversation.userId }}</span>
           <span v-if="span">{{ span }}</span>
-          <span>{{ fill($t('AGENT_CONVERSATION_TASK_COUNT', '{n} 个任务'), { n: bundle.tasks.length }) }}</span>
+          <span>{{ $t('AGENT_CONVERSATION_TASK_COUNT', { n: bundle.tasks.length }, '{n} 个任务') }}</span>
           <span class="conversation-detail__spacer" />
           <div class="conversation-detail__actions">
             <el-button v-if="!embed" size="small" @click="goBack">{{ $t('G2_BTN_BACK', '返回') }}</el-button>
@@ -86,7 +86,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { t } from '@platform/i18n';
 import { useLocaleStore } from '@platform/stores/locale.store';
 import { CopyText, StatusDot } from '@/components';
-import { ResumeAction, describeStatus, fill, formatClock } from '@runtime/console';
+import { ResumeAction, describeStatus, formatClock } from '@runtime/console';
 import TurnList from './components/TurnList.vue';
 import TaskSummary from './components/TaskSummary.vue';
 import { ConversationDetailApi } from './api';

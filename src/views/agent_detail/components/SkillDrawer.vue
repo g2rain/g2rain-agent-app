@@ -120,7 +120,7 @@ import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
 import { StatusDot, showErrorMessage } from '@/components';
-import { EMPTY, ResourceType, fill } from '@runtime/console';
+import { EMPTY, ResourceType } from '@runtime/console';
 import { McpToolProfileApi, ToolPicker, type McpToolProfileVo } from '@/views/mcp_tool_profile';
 import ContractPanel from './ContractPanel.vue';
 import { AgentDetailApi } from '../api';
@@ -274,7 +274,7 @@ async function saveTool(binding: SkillToolBindingVo): Promise<void> {
 
 async function removeTool(binding: SkillToolBindingVo): Promise<void> {
   const ok = await ElMessageBox.confirm(
-    fill(t('AGENT_SKILL_REMOVE_TOOL_CONFIRM', '移除工具 {name}？契约中的配置不会被删除。'), { name: binding.toolName }),
+    t('AGENT_SKILL_REMOVE_TOOL_CONFIRM', { name: binding.toolName }, '移除工具 {name}？契约中的配置不会被删除。'),
     t('G2_LBL_TIP', '提示'),
     { type: 'warning' },
   ).then(() => true, () => false);

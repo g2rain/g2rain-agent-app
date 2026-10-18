@@ -9,7 +9,7 @@
           <span class="timeline__name" :class="{ 'is-code': !isLabel(step) }">{{ step.name }}</span>
           <span v-if="step.write" class="timeline__tag is-write">{{ $t('AGENT_TRACE_WRITE', '写') }}</span>
           <span v-if="outcomeText(step)" class="timeline__tag" :class="`is-${step.outcome}`">{{ outcomeText(step) }}</span>
-          <span v-if="step.repeat > 1" class="timeline__tag is-repeat">{{ fill($t('AGENT_TRACE_REPEAT', '重复 {n} 次'), { n: step.repeat }) }}</span>
+          <span v-if="step.repeat > 1" class="timeline__tag is-repeat">{{ $t('AGENT_TRACE_REPEAT', { n: step.repeat }, '重复 {n} 次') }}</span>
           <el-button v-if="step.call" link type="primary" size="small" @click="emit('open-call', step.call)">
             {{ $t('G2_BTN_DETAIL', '详情') }}
           </el-button>
@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { t } from '@platform/i18n';
-import { fill, isBuiltinAction } from '@runtime/console';
+import { isBuiltinAction } from '@runtime/console';
 import type { TimelineStep } from '../trace';
 import type { ToolCallRecordVo } from '../type';
 

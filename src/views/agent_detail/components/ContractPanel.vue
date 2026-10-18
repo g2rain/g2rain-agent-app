@@ -6,8 +6,8 @@
         <el-radio-button value="source">{{ $t('AGENT_CONTRACT_SOURCE', '源码') }}</el-radio-button>
       </el-radio-group>
       <span class="contract__summary">
-        <span v-if="errorCount" class="is-error">{{ fill($t('AGENT_CONTRACT_ERRORS', '{n} 个错误'), { n: errorCount }) }}</span>
-        <span v-if="warningCount" class="is-warning">{{ fill($t('AGENT_CONTRACT_WARNINGS', '{n} 个提示'), { n: warningCount }) }}</span>
+        <span v-if="errorCount" class="is-error">{{ $t('AGENT_CONTRACT_ERRORS', { n: errorCount }, '{n} 个错误') }}</span>
+        <span v-if="warningCount" class="is-warning">{{ $t('AGENT_CONTRACT_WARNINGS', { n: warningCount }, '{n} 个提示') }}</span>
         <span v-if="!errorCount && !warningCount" class="is-ok">{{ $t('AGENT_CONTRACT_OK', '校验通过') }}</span>
       </span>
       <el-button v-if="view === 'source'" size="small" @click="format">{{ $t('AGENT_CONTRACT_FORMAT', '格式化') }}</el-button>
@@ -83,7 +83,7 @@
         </template>
 
         <div v-else class="contract__unconfigured">
-          <p>{{ fill($t('AGENT_CONTRACT_UNCONFIGURED', '{name} 已绑定，但还没有配置契约。未配置的工具仍可调用，按只读、无参数约束处理。'), { name: selected }) }}</p>
+          <p>{{ $t('AGENT_CONTRACT_UNCONFIGURED', { name: selected }, '{name} 已绑定，但还没有配置契约。未配置的工具仍可调用，按只读、无参数约束处理。') }}</p>
           <el-button type="primary" plain @click="generate">{{ $t('AGENT_CONTRACT_GENERATE', '按参数定义生成契约骨架') }}</el-button>
         </div>
 
@@ -107,7 +107,7 @@
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { t } from '@platform/i18n';
-import { EMPTY, fill } from '@runtime/console';
+import { EMPTY } from '@runtime/console';
 import type { McpToolProfileVo } from '@/views/mcp_tool_profile';
 import { isWriteTool, parseContract, stringifyContract, toolSkeleton, type SkillContract } from '../contract';
 import { issueUnder, toDiagnostics, type ContractIssue, type ContractPath } from '../contract-lint';

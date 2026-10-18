@@ -6,7 +6,7 @@
       <span class="node-detail__meta">
         <code>{{ node.skillKey || EMPTY }}</code>
         <template v-if="node.target"> · {{ $t('AGENT_TRACE_TARGET', '目标') }} <code>{{ node.target }}</code></template>
-        · {{ fill($t('AGENT_TRACE_ROUNDS', '{n} 轮'), { n: state.rounds ?? 0 }) }}
+        · {{ $t('AGENT_TRACE_ROUNDS', { n: state.rounds ?? 0 }, '{n} 轮') }}
         · {{ formatDuration(elapsed(node.startedTime, node.finishedTime)) }}
       </span>
     </div>
@@ -89,7 +89,7 @@
 import { computed, defineAsyncComponent } from 'vue';
 import { t } from '@platform/i18n';
 import { JsonViewer, StatusDot } from '@/components';
-import { EMPTY, SideEffect, describeStatus, elapsed, fill, formatClock, formatDuration } from '@runtime/console';
+import { EMPTY, SideEffect, describeStatus, elapsed, formatClock, formatDuration } from '@runtime/console';
 import ActionTimeline from './ActionTimeline.vue';
 import { buildTimeline, isReused, parseNodeState } from '../trace';
 import type { ChatMessageVo, TaskGraphEdgeVo, TaskGraphNodeVo, ToolCallRecordVo } from '../type';

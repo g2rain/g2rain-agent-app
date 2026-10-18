@@ -5,7 +5,6 @@
  * shortId('9b1c31bd180d4b26a591f6eec1f2089b'); // '9b1c31bd'
  * formatDuration(12800);                       // '12.8 s'
  * elapsed('2026-10-12 10:08:31', '2026-10-12 10:09:11'); // 40000
- * fill('{n} 次调用', { n: 3 });                // '3 次调用'
  */
 import { t } from '@platform/i18n';
 
@@ -58,11 +57,6 @@ export function parseJson<T>(text: string | null | undefined, fallback: T): T {
   }
 }
 
-/** 用 `{name}` 占位符填充文案，常用于带参数的国际化文本 */
-export function fill(template: string, vars: Record<string, string | number>): string {
-  return template.replace(/\{(\w+)\}/g, (match, key: string) => (key in vars ? String(vars[key]) : match));
-}
-
 /**
  * 相对时间（刚刚 / N 分钟前 / N 小时前 / N 天前），超过 30 天显示日期。
  * 文案经国际化，调用方传入 now 便于测试。
@@ -72,10 +66,10 @@ export function fromNow(time: string | null | undefined, now = Date.now()): stri
   if (at === undefined) return EMPTY;
   const minutes = Math.floor((now - at) / 60_000);
   if (minutes < 1) return t('AGENT_TIME_JUST_NOW', '刚刚');
-  if (minutes < 60) return fill(t('AGENT_TIME_MINUTES_AGO', '{n} 分钟前'), { n: minutes });
+  if (minutes < 60) return t('AGENT_TIME_MINUTES_AGO', { n: minutes }, '{n} 分钟前');
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return fill(t('AGENT_TIME_HOURS_AGO', '{n} 小时前'), { n: hours });
+  if (hours < 24) return t('AGENT_TIME_HOURS_AGO', { n: hours }, '{n} 小时前');
   const days = Math.floor(hours / 24);
-  if (days <= 30) return fill(t('AGENT_TIME_DAYS_AGO', '{n} 天前'), { n: days });
+  if (days <= 30) return t('AGENT_TIME_DAYS_AGO', { n: days }, '{n} 天前');
   return time!.slice(0, 10);
 }

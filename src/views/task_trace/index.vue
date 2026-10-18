@@ -84,7 +84,6 @@ import {
   TaskStatus,
   describeStatus,
   elapsed,
-  fill,
   formatDuration,
 } from '@runtime/console';
 import NodeDetail from './components/NodeDetail.vue';
@@ -135,12 +134,16 @@ const selectedMessages = computed(() => bundle.value?.messages.filter((m) => m.n
 const metricsText = computed(() => {
   if (!bundle.value) return '';
   const calls = bundle.value.calls.filter((c) => !isReused(c));
-  return fill(t('AGENT_TRACE_METRICS', '{steps} 个步骤 · {calls} 次调用（写 {writes}） · {approvals} 次确认'), {
-    steps: bundle.value.nodes.length,
-    calls: calls.length,
-    writes: calls.filter((c) => c.sideEffect === SideEffect.WRITE).length,
-    approvals: bundle.value.resumes.length,
-  });
+  return t(
+    'AGENT_TRACE_METRICS',
+    {
+      steps: bundle.value.nodes.length,
+      calls: calls.length,
+      writes: calls.filter((c) => c.sideEffect === SideEffect.WRITE).length,
+      approvals: bundle.value.resumes.length,
+    },
+    '{steps} 个步骤 · {calls} 次调用（写 {writes}） · {approvals} 次确认',
+  );
 });
 
 function hasRoute(path: string): boolean {

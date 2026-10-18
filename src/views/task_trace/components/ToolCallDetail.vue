@@ -5,7 +5,7 @@
         <StatusDot v-bind="describeStatus(call.callStatus)" />
         <span v-if="call.sideEffect === SideEffect.WRITE" class="call-detail__write">{{ $t('AGENT_TRACE_WRITE', '写') }}</span>
         <span>{{ formatDuration(call.durationMs) }}</span>
-        <span v-if="call.round !== null">· {{ fill($t('AGENT_TRACE_ROUND', '第 {n} 轮'), { n: call.round }) }}</span>
+        <span v-if="call.round !== null">· {{ $t('AGENT_TRACE_ROUND', { n: call.round }, '第 {n} 轮') }}</span>
         <CopyText :text="call.callId" :length="8" :copied-text="$t('AGENT_COPIED', '已复制')" />
       </div>
       <el-tabs v-model="tab">
@@ -41,7 +41,7 @@
 import { computed, ref, watch } from 'vue';
 import { t } from '@platform/i18n';
 import { CopyText, JsonViewer, StatusDot, showErrorMessage } from '@/components';
-import { EMPTY, SideEffect, describeStatus, fill, formatDuration } from '@runtime/console';
+import { EMPTY, SideEffect, describeStatus, formatDuration } from '@runtime/console';
 import { TaskTraceApi } from '../api';
 import type { TaskNodePayloadVo, ToolCallRecordVo } from '../type';
 

@@ -67,7 +67,7 @@
     />
 
     <el-dialog v-model="removal.open" :title="$t('G2_BTN_DELETE', '删除')" width="420px">
-      <p>{{ fill($t('AGENT_SKILL_DELETE_CONFIRM', '删除技能「{name}」？将同时删除其工具绑定。'), { name: removal.name }) }}</p>
+      <p>{{ $t('AGENT_SKILL_DELETE_CONFIRM', { name: removal.name }, '删除技能「{name}」？将同时删除其工具绑定。') }}</p>
       <template #footer>
         <el-button @click="removal.open = false">{{ $t('G2_BTN_CANCEL', '取消') }}</el-button>
         <el-button type="danger" @click="confirmRemove">{{ $t('G2_BTN_DELETE', '删除') }}</el-button>
@@ -84,7 +84,7 @@ import { t } from '@platform/i18n';
 import { useLocaleStore } from '@platform/stores/locale.store';
 import { showErrorMessage, useFitHeight } from '@/components';
 import { useAccessTokenStore } from '@platform/stores';
-import { ResourceType, fill } from '@runtime/console';
+import { ResourceType } from '@runtime/console';
 import ProfileSection from './components/ProfileSection.vue';
 import SkillList from './components/SkillList.vue';
 import SkillDrawer from './components/SkillDrawer.vue';

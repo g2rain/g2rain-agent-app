@@ -6,7 +6,6 @@
  * lintContract(text, ['get_article_list']); // [{ path: ['tools', 'post_article_save'], severity: 'error', ... }]
  */
 import { t } from '@platform/i18n';
-import { fill } from '@runtime/console';
 import { locateJsonPath } from '@shared/json-path.util';
 import type { JsonDiagnostic } from '@/components/json-editor';
 import { CONTRACT_ENUMS, isWriteTool, parseContract, type SkillContract } from './contract';
@@ -20,7 +19,8 @@ export interface ContractIssue {
   message: string;
 }
 
-const msg = (code: string, text: string, vars: Record<string, string | number> = {}) => fill(t(code, text), vars);
+const msg = (code: string, text: string, vars: Record<string, string | number> = {}) =>
+  Object.keys(vars).length > 0 ? t(code, vars, text) : t(code, text);
 
 function checkEnum(issues: ContractIssue[], path: ContractPath, value: unknown, allowed: readonly string[]): void {
   if (value === undefined || value === null) return;
