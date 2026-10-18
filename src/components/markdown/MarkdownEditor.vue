@@ -1,5 +1,5 @@
 <template>
-  <div class="markdown-editor" :class="{ 'is-over': overLimit, 'is-readonly': readonly }" :style="{ '--md-height': height }">
+  <div ref="root" class="markdown-editor" :class="{ 'is-over': overLimit, 'is-readonly': readonly }" :style="{ '--md-height': height }">
     <MarkdownViewer v-if="readonly" :content="model" :locale="locale" />
     <Editor
       v-else
@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { Editor } from '@bytemd/vue-next';
 import 'bytemd/dist/index.css';
 import 'highlight.js/styles/github.css';
@@ -50,6 +50,25 @@ const overLimit = computed(() => props.maxLength > 0 && model.value.length > pro
 function onChange(value: string): void {
   model.value = value;
 }
+
+/**
+ * CodeMirror 在不可见时（抽屉动画中、页签未显示）初始化会测到 0 尺寸而不渲染内容，
+ * 变为可见后需 refresh 一次重新测量。
+ */
+const root = ref<HTMLElement | null>(null);
+let observer: ResizeObserver | null = null;
+
+onMounted(() => {
+  if (!root.value) return;
+  observer = new ResizeObserver(([entry]) => {
+    if (!entry || entry.contentRect.height <= 0) return;
+    const host = root.value?.querySelector('.CodeMirror') as (HTMLElement & { CodeMirror?: { refresh(): void } }) | null;
+    host?.CodeMirror?.refresh();
+  });
+  observer.observe(root.value);
+});
+
+onBeforeUnmount(() => observer?.disconnect());
 </script>
 
 <style scoped>

@@ -1,7 +1,6 @@
 <template>
   <div class="skill-list">
     <div class="skill-list__bar">
-      <span class="skill-list__count">{{ fill($t('AGENT_SKILL_COUNT', '{n} 个技能'), { n: rows.length }) }}</span>
       <el-button v-permission="'skill:add'" type="primary" @click="emit('create')">
         {{ $t('G2_BTN_ADD', '添加') }}
       </el-button>
@@ -24,7 +23,7 @@
               {{ resourceText(row.skill.resourceType) }}
             </el-tag>
             <span class="skill-list__meta">{{ row.mode ?? $t('AGENT_SKILL_CONTRACT_ERROR', '契约错误') }}</span>
-            <span class="skill-list__meta">{{ fill($t('AGENT_SKILL_TOOL_COUNT', '{n} 工具'), { n: row.toolCount }) }}</span>
+            <span class="skill-list__meta">{{ $t('AGENT_SKILL_TOOL_COUNT', { n: row.toolCount }, '{n} 工具') }}</span>
           </div>
           <p class="skill-list__desc">{{ firstLine(row.skill.semanticDesc) }}</p>
         </div>
@@ -51,7 +50,7 @@
 <script setup lang="ts">
 import { t } from '@platform/i18n';
 import { StatusSwitch } from '@g2rain/ui/platform';
-import { RecordStatus, ResourceType, fill } from '@runtime/console';
+import { RecordStatus, ResourceType } from '@runtime/console';
 import { notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
 import { AgentDetailApi } from '../api';
 import type { SkillProfileVo, SkillRow } from '../type';
@@ -78,8 +77,7 @@ function firstLine(text: string | null | undefined): string {
 </script>
 
 <style scoped>
-.skill-list__bar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-.skill-list__count { flex: 1; color: var(--g2-text-secondary); font-size: var(--g2-font-size-sm); }
+.skill-list__bar { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 12px; }
 .skill-list__items { margin: 0; padding: 0; list-style: none; border: 1px solid var(--g2-border-color-light); border-radius: var(--g2-border-radius-lg); background: var(--g2-bg-container); }
 .skill-list__item { display: flex; gap: 16px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--g2-border-color-light); }
 .skill-list__item:last-child { border-bottom: none; }
