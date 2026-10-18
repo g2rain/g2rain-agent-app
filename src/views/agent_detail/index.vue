@@ -1,5 +1,5 @@
 <template>
-  <div ref="rootRef" class="agent-detail" :style="frameStyle">
+  <div ref="rootRef" class="agent-detail" :style="fitStyle">
     <el-breadcrumb class="agent-detail__crumb" separator="/">
       <el-breadcrumb-item v-if="hasRoute(listPath)" :to="{ path: listPath }">
         {{ listTitle }}
@@ -25,8 +25,6 @@
             <el-tag size="small" effect="plain" :type="isPlatform ? 'info' : 'primary'">
               {{ isPlatform ? $t('AGENT_RESOURCE_PLATFORM', '平台') : $t('AGENT_RESOURCE_CUSTOM', '私有') }}
             </el-tag>
-            <span v-if="isPlatform" class="agent-detail__muted">{{ $t('AGENT_PLATFORM_EDITABLE', '运营方可编辑') }}</span>
-            <span v-if="readonly" class="agent-detail__muted">{{ $t('AGENT_READONLY_PLATFORM_AGENT', '平台智能体只读') }}</span>
           </div>
         </div>
         <el-button class="agent-detail__back" @click="goBack">{{ $t('G2_BTN_BACK', '返回') }}</el-button>
@@ -35,8 +33,8 @@
       <el-tabs v-model="tab" class="agent-detail__tabs">
         <el-tab-pane :label="$t('AGENT_TAB_AGENT', '智能体')" name="profile">
           <div class="agent-detail__pane">
-            <ProfileSection v-model="form" :readonly="readonly" :creating="!agentId" :locale="locale">
-              <template v-if="!readonly" #actions>
+            <ProfileSection v-model="form" :creating="!agentId" :locale="locale">
+              <template #actions>
                 <el-button v-permission="'agent:edit'" type="primary" :loading="saving" @click="saveProfile">
                   {{ $t('G2_BTN_SAVE', '保存') }}
                 </el-button>
@@ -47,7 +45,6 @@
         <el-tab-pane :label="`${$t('AGENT_TAB_SKILL', '技能')} ${skills.length}`" name="skill" :disabled="!agentId">
           <SkillList
             :rows="skillRows"
-            :readonly="readonly"
             @create="openSkill(null)"
             @open="openSkill"
             @remove="askRemove"
@@ -62,6 +59,7 @@
       :skill-id="drawer.skillId"
       :agent-id="agentId"
       :agent-resource-type="entryResourceType"
+      :organ-id="form.organId"
       :locale="locale"
       :initial-tab="drawer.tab"
       @saved="onSkillSaved"
@@ -79,12 +77,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
 import { useLocaleStore } from '@platform/stores/locale.store';
-import { PageElementPermission, showErrorMessage } from '@/components';
+import { showErrorMessage, useFitHeight } from '@/components';
+import { useAccessTokenStore } from '@platform/stores';
 import { ResourceType, fill } from '@runtime/console';
 import ProfileSection from './components/ProfileSection.vue';
 import SkillList from './components/SkillList.vue';
@@ -115,91 +114,12 @@ const listPath = computed(() => agentListPath(entryResourceType.value));
 const listTitle = computed(() =>
   entryResourceType.value === ResourceType.PLATFORM
     ? t('AGENT_MENU_PLATFORM_AGENT', '平台智能体')
-    : t('AGENT_MENU_CUSTOM_AGENT', '自建智能体'),
+    : t('AGENT_MENU_CUSTOM_AGENT', '租户智能体'),
 );
 
-/** 按父容器 clientHeight 定高；禁止用 ResizeObserver 盯自身/宿主，避免高度越测越小 */
+/** 占满所在滚动容器的剩余高度；独立运行与嵌入 Shell 同一套算法 */
 const rootRef = ref<HTMLElement | null>(null);
-const frameH = ref(0);
-const frameStyle = computed(() =>
-  frameH.value > 0 ? { height: `${frameH.value}px`, maxHeight: `${frameH.value}px` } : undefined,
-);
-let frameRaf = 0;
-/** 本页期间锁住会晃的滚动层（多为 workspace），离开时还原 */
-const lockedHosts: { el: HTMLElement; overflow: string; scrollTop: number }[] = [];
-
-function findShellNodes(el: HTMLElement): {
-  microSlot: HTMLElement | null;
-  microContainer: HTMLElement | null;
-  workspace: HTMLElement | null;
-} {
-  let node: HTMLElement | null = el.parentElement;
-  let microSlot: HTMLElement | null = null;
-  let microContainer: HTMLElement | null = null;
-  let workspace: HTMLElement | null = null;
-  while (node) {
-    if (node.classList.contains('micro-slot')) microSlot = node;
-    if (node.classList.contains('micro-container')) microContainer = node;
-    if (node.classList.contains('workspace')) workspace = node;
-    node = node.parentElement;
-  }
-  return { microSlot, microContainer, workspace };
-}
-
-function resolveFrameHost(el: HTMLElement): HTMLElement {
-  const { microSlot, microContainer, workspace } = findShellNodes(el);
-  // 定高用 micro-slot（含 padding）；勿用 workspace，否则会偏高
-  return microSlot ?? microContainer ?? workspace ?? document.documentElement;
-}
-
-function lockHostScroll(el: HTMLElement): void {
-  const { workspace, microSlot } = findShellNodes(el);
-  // workspace 才是 overflow:auto 的晃动源；micro-slot 一并锁死
-  for (const host of [workspace, microSlot]) {
-    if (!host || lockedHosts.some((item) => item.el === host)) continue;
-    lockedHosts.push({ el: host, overflow: host.style.overflow, scrollTop: host.scrollTop });
-    host.scrollTop = 0;
-    host.style.overflow = 'hidden';
-  }
-}
-
-function unlockHostScroll(): void {
-  while (lockedHosts.length) {
-    const item = lockedHosts.pop()!;
-    item.el.style.overflow = item.overflow;
-    item.el.scrollTop = item.scrollTop;
-  }
-}
-
-function syncFrameHeight(): void {
-  const el = rootRef.value;
-  if (!el) return;
-  lockHostScroll(el);
-  const host = resolveFrameHost(el);
-  const relTop = el.getBoundingClientRect().top - host.getBoundingClientRect().top;
-  const padBottom = Number.parseFloat(getComputedStyle(host).paddingBottom) || 0;
-  const next = Math.max(320, Math.floor(host.clientHeight - relTop - padBottom) - 4);
-  if (Math.abs(next - frameH.value) > 2) frameH.value = next;
-}
-
-function scheduleFrameHeight(): void {
-  if (frameRaf) cancelAnimationFrame(frameRaf);
-  frameRaf = requestAnimationFrame(() => {
-    frameRaf = 0;
-    syncFrameHeight();
-  });
-}
-
-onMounted(() => {
-  scheduleFrameHeight();
-  window.addEventListener('resize', scheduleFrameHeight);
-});
-
-onBeforeUnmount(() => {
-  if (frameRaf) cancelAnimationFrame(frameRaf);
-  window.removeEventListener('resize', scheduleFrameHeight);
-  unlockHostScroll();
-});
+const fitStyle = useFitHeight(rootRef);
 
 const agentId = computed(() => {
   const id = Number(route.query.agentId);
@@ -221,7 +141,6 @@ const drawer = reactive<{ open: boolean; skillId: number | null; tab: string }>(
 const removal = reactive({ open: false, name: '', skill: null as SkillProfileVo | null });
 
 const isPlatform = computed(() => form.value.resourceType === ResourceType.PLATFORM);
-const readonly = computed(() => isPlatform.value && !PageElementPermission.has('agent:platform'));
 const dirty = computed(() => JSON.stringify(form.value) !== snapshot.value);
 
 const skillRows = computed<SkillRow[]>(() =>
@@ -262,7 +181,9 @@ async function load(): Promise<void> {
       await loadSkills();
     } else {
       agent.value = null;
-      form.value = { resourceType: entryResourceType.value };
+      // 平台智能体归运营方：机构取当前登录机构，不让选
+      const platform = entryResourceType.value === ResourceType.PLATFORM;
+      form.value = { resourceType: entryResourceType.value, ...(platform ? { organId: useAccessTokenStore().organId } : {}) };
     }
     snapshot.value = JSON.stringify(form.value);
   } catch (error: unknown) {
@@ -273,9 +194,6 @@ async function load(): Promise<void> {
 }
 
 async function saveProfile(): Promise<void> {
-  if (!agentId.value && entryResourceType.value === ResourceType.PLATFORM && !form.value.agentName) {
-    form.value.agentName = form.value.agentCode;
-  }
   if (!form.value.agentName || !form.value.agentCode) {
     ElMessage.warning(t('AGENT_REQUIRED', '请填写名称与编码'));
     return;
@@ -339,10 +257,8 @@ watch(tab, (value) => {
 
 watch(agentId, () => void load(), { immediate: true });
 
-watch([loading, tab, failure], () => void nextTick(scheduleFrameHeight));
-
 onBeforeRouteLeave(async () => {
-  if (!dirty.value || readonly.value) return true;
+  if (!dirty.value) return true;
   return ElMessageBox.confirm(t('AGENT_UNSAVED_CONFIRM', '有未保存的修改，确定离开吗？'), t('G2_LBL_TIP', '提示'), {
     type: 'warning',
   }).then(() => true, () => false);
@@ -379,7 +295,6 @@ onBeforeRouteLeave(async () => {
 .agent-detail__title h2 { margin: 0; font-size: 18px; font-weight: 600; color: var(--g2-text-primary); }
 .agent-detail__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; }
 .agent-detail__meta code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: var(--g2-text-secondary); }
-.agent-detail__muted { color: var(--g2-text-secondary); font-size: var(--g2-font-size-sm); }
 .agent-detail__tabs {
   flex: 1;
   min-height: 0;

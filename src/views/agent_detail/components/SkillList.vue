@@ -2,7 +2,7 @@
   <div class="skill-list">
     <div class="skill-list__bar">
       <span class="skill-list__count">{{ fill($t('AGENT_SKILL_COUNT', '{n} 个技能'), { n: rows.length }) }}</span>
-      <el-button v-if="!readonly" v-permission="'skill:add'" type="primary" @click="emit('create')">
+      <el-button v-permission="'skill:add'" type="primary" @click="emit('create')">
         {{ $t('G2_BTN_ADD', '添加') }}
       </el-button>
     </div>
@@ -32,7 +32,6 @@
           <StatusSwitch
             :model-value="row.skill.status"
             v-permission="'skill:edit'"
-            :disabled="readonly"
             active-value="ACTIVE"
             inactive-value="INACTIVE"
             :options="STATUS_OPTIONS"
@@ -42,7 +41,7 @@
             @error="(p) => notifyStatusSwitchError(p)"
           />
           <el-button link type="primary" @click="emit('open', row.skill.id)">修改</el-button>
-          <el-button v-if="!readonly" link type="danger" @click="emit('remove', row.skill)">{{ $t('G2_BTN_DELETE', '删除') }}</el-button>
+          <el-button link type="danger" @click="emit('remove', row.skill)">{{ $t('G2_BTN_DELETE', '删除') }}</el-button>
         </div>
       </li>
     </ul>
@@ -62,7 +61,7 @@ const STATUS_OPTIONS = [
   { value: RecordStatus.INACTIVE, label: t('AGENT_STATUS_INACTIVE', '禁用') },
 ];
 
-defineProps<{ rows: SkillRow[]; readonly: boolean }>();
+defineProps<{ rows: SkillRow[] }>();
 const emit = defineEmits<{
   create: [];
   open: [skillId: number];

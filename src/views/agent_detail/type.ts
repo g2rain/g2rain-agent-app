@@ -7,6 +7,7 @@
 export interface SkillProfileVo {
   id: number;
   agentId: number;
+  organId?: number | null;
   skillKey: string;
   skillName: string;
   resourceType: string;
@@ -24,6 +25,7 @@ export type SkillProfilePayload = Partial<Omit<SkillProfileVo, 'updateTime'>>;
 export interface SkillToolBindingVo {
   id: number;
   skillId: number;
+  organId?: number | null;
   toolName: string;
   enabledFlag: number;
   description: string | null;

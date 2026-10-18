@@ -3,18 +3,18 @@
     <div class="profile__main">
       <section class="profile__card">
         <h3>{{ $t('AGENT_PROFILE_BASIC', '基本信息') }}</h3>
-        <el-form :model="form" label-position="top" :disabled="readonly" class="profile__basic">
-          <el-form-item v-if="creating || form.organId != null" :label="$t('G2_FIELD_ORGAN', '所属机构')" required>
-            <OrganSelect v-model="form.organId" :disabled="!creating || readonly" width="100%" />
+        <el-form :model="form" label-position="top" class="profile__basic">
+          <el-form-item v-if="!isPlatform && (creating || form.organId != null)" :label="$t('G2_FIELD_ORGAN', '所属机构')" required>
+            <OrganSelect v-model="form.organId" :disabled="!creating" width="100%" />
           </el-form-item>
           <el-form-item :label="$t('AGENT_FIELD_NAME', '名称')" required>
-            <el-input v-model="form.agentName" maxlength="128" :disabled="codeOnly" />
+            <el-input v-model="form.agentName" maxlength="128" />
           </el-form-item>
           <el-form-item :label="$t('AGENT_FIELD_CODE', '编码')" required>
             <el-input v-model="form.agentCode" maxlength="64" :disabled="!creating" />
           </el-form-item>
           <el-form-item :label="$t('AGENT_FIELD_REMARK', '备注')" class="profile__wide">
-            <el-input v-model="form.description" maxlength="500" :disabled="codeOnly" />
+            <el-input v-model="form.description" maxlength="500" />
           </el-form-item>
         </el-form>
       </section>
@@ -41,7 +41,6 @@
           :locale="locale"
           mode="tab"
           height="220px"
-          :readonly="readonly || codeOnly"
         />
       </section>
     </div>
@@ -69,13 +68,11 @@ import { PROFILE_SECTIONS, type ProfileSectionKey } from '../type';
 const MarkdownEditor = defineAsyncComponent(() => import('@/components/markdown').then((m) => m.MarkdownEditor));
 
 /** 智能体画像：基本信息 + 五段描述。五段描述会进入规划与节点提示词 */
-const props = defineProps<{ readonly: boolean; creating: boolean; locale: string }>();
+defineProps<{ creating: boolean; locale: string }>();
 const form = defineModel<AgentProfilePayload>({ required: true });
 
-/** 平台智能体新建只填编码，名称/备注/画像创建后再改 */
-const codeOnly = computed(
-  () => props.creating && form.value.resourceType === ResourceType.PLATFORM,
-);
+/** 平台智能体归运营方，机构由页面自动带入，不展示 */
+const isPlatform = computed(() => form.value.resourceType === ResourceType.PLATFORM);
 
 const TEXT: Record<ProfileSectionKey, [title: [string, string], purpose: [string, string], hint: [string, string]]> = {
   identityDesc: [

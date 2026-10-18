@@ -20,7 +20,7 @@
     "linkPath": "/chat_conversation"
   },
   {
-    "pageName": "自建智能体",
+    "pageName": "租户智能体",
     "pageCode": "agent_profile-custom",
     "linkPath": "/agent_profile/custom"
   },
@@ -30,7 +30,7 @@
     "linkPath": "/agent_profile/platform"
   },
   {
-    "pageName": "自建智能体",
+    "pageName": "租户智能体",
     "pageCode": "agent_profile",
     "linkPath": "/agent_profile"
   },
@@ -40,32 +40,32 @@
     "linkPath": "/mcp_external_service/extension"
   },
   {
-    "pageName": "客户系统接入",
+    "pageName": "租户系统接入",
     "pageCode": "mcp_external_service-customer",
     "linkPath": "/mcp_external_service/customer"
   },
   {
-    "pageName": "客户系统接入",
+    "pageName": "租户系统接入",
     "pageCode": "mcp_external_service",
     "linkPath": "/mcp_external_service"
   },
   {
-    "pageName": "自有系统工具",
+    "pageName": "平台原生工具",
     "pageCode": "mcp_tool_profile-built_in",
     "linkPath": "/mcp_tool_profile/built_in"
   },
   {
-    "pageName": "扩展系统工具",
+    "pageName": "平台扩展工具",
     "pageCode": "mcp_tool_profile-extension",
     "linkPath": "/mcp_tool_profile/extension"
   },
   {
-    "pageName": "客户系统工具",
+    "pageName": "租户系统工具",
     "pageCode": "mcp_tool_profile-customer",
     "linkPath": "/mcp_tool_profile/customer"
   },
   {
-    "pageName": "客户系统工具",
+    "pageName": "租户系统工具",
     "pageCode": "mcp_tool_profile",
     "linkPath": "/mcp_tool_profile"
   },

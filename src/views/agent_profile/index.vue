@@ -114,7 +114,7 @@ const resourceType = computed(() =>
 const pageTitle = computed(() =>
   resourceType.value === ResourceType.PLATFORM
     ? t('AGENT_MENU_PLATFORM_AGENT', '平台智能体')
-    : t('AGENT_MENU_CUSTOM_AGENT', '自建智能体'),
+    : t('AGENT_MENU_CUSTOM_AGENT', '租户智能体'),
 );
 
 const queryFormRef = ref<InstanceType<typeof QueryForm> | null>(null);

@@ -11,3 +11,4 @@ export * from './status-dot';
 export * from './copy-text';
 export * from './secret-input';
 export * from './json-viewer';
+export * from './fit-height';

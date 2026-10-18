@@ -172,7 +172,7 @@ const resourceType = computed(() =>
 const pageTitle = computed(() =>
   resourceType.value === ResourceType.EXTENSION
     ? t('AGENT_MENU_EXTENSION_SERVICE', '扩展系统接入')
-    : t('AGENT_MENU_CUSTOMER_SERVICE', '客户系统接入'),
+    : t('AGENT_MENU_CUSTOMER_SERVICE', '租户系统接入'),
 );
 
 const queryFormRef = ref<InstanceType<typeof QueryForm> | null>(null);

@@ -1,6 +1,6 @@
 /**
  * 外部服务表 API（g2rain-mcp-registry）。
- * 扩展 / 客户分入口，resourceType 由服务端写死。
+ * 扩展 / 租户分入口，resourceType 由服务端写死。
  */
 import { getHttpClient } from '@runtime/http';
 import { Gateway, ResourceType } from '@runtime/console';

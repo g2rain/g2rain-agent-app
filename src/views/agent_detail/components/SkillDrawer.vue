@@ -16,20 +16,18 @@
           <el-tag size="small" effect="plain" :type="isPlatform ? 'info' : 'primary'">
             {{ isPlatform ? $t('AGENT_RESOURCE_PLATFORM', '平台') : $t('AGENT_RESOURCE_CUSTOM', '私有') }}
           </el-tag>
-          <span v-if="isPlatform" class="skill-drawer__muted">{{ $t('AGENT_PLATFORM_EDITABLE', '运营方可编辑') }}</span>
         </div>
         <div class="skill-drawer__actions">
-          <span v-if="readonly" class="skill-drawer__muted">{{ $t('AGENT_READONLY_PLATFORM', '平台技能只读') }}</span>
           <el-button @click="beforeClose(() => emit('close'))">{{ $t('G2_BTN_CLOSE', '关闭') }}</el-button>
-          <el-button v-if="!readonly" v-permission="'skill:edit'" type="primary" :loading="saving" @click="save">{{ $t('G2_BTN_SAVE', '保存') }}</el-button>
+          <el-button v-permission="'skill:edit'" type="primary" :loading="saving" @click="save">{{ $t('G2_BTN_SAVE', '保存') }}</el-button>
         </div>
       </header>
 
       <el-tabs v-model="tab" class="skill-drawer__tabs">
         <el-tab-pane :label="$t('AGENT_SKILL_TAB_BASIC', '基本信息')" name="basic">
-          <el-form :model="form" label-position="top" :disabled="readonly" class="skill-drawer__form">
-            <el-form-item :label="$t('AGENT_SKILL_KEY', '技能键')" required :error="keyError">
-              <el-input v-model="form.skillKey" maxlength="128" :disabled="!!skillId" placeholder="cms.article.lifecycle" />
+          <el-form :model="form" label-position="top" class="skill-drawer__form">
+            <el-form-item :label="$t('AGENT_SKILL_KEY', '技能键')" required>
+              <el-input v-model="form.skillKey" maxlength="128" :disabled="!!skillId" />
             </el-form-item>
             <el-form-item :label="$t('AGENT_SKILL_NAME', '名称')" required>
               <el-input v-model="form.skillName" maxlength="128" />
@@ -49,7 +47,6 @@
             :locale="locale"
             height="calc(100vh - 220px)"
             mode="split"
-            :readonly="readonly"
           />
         </el-tab-pane>
 
@@ -58,13 +55,13 @@
             {{ $t('AGENT_SKILL_TAB_CONTRACT', '执行契约') }}
             <span v-if="errorCount" class="skill-drawer__badge">⚠ {{ errorCount }}</span>
           </template>
-          <ContractPanel v-if="tab === 'contract'" v-model="contract" :tool-names="enabledToolNames" :tools="toolMeta" :issues="issues" :readonly="readonly" />
+          <ContractPanel v-if="tab === 'contract'" v-model="contract" :tool-names="enabledToolNames" :tools="toolMeta" :issues="issues" />
         </el-tab-pane>
 
         <el-tab-pane :label="`${$t('AGENT_SKILL_TAB_TOOLS', '工具')} ${toolBindings.length}`" name="tools" :disabled="!skillId">
           <div class="skill-drawer__tools-bar">
             <span class="skill-drawer__muted">{{ $t('AGENT_SKILL_TOOLS_HINT', '技能可调用的业务工具；每个工具建议都在执行契约中配置') }}</span>
-            <el-button v-if="!readonly" v-permission="'skill:edit'" @click="pickerOpen = true">{{ $t('AGENT_SKILL_ADD_TOOL', '添加工具') }}</el-button>
+            <el-button v-permission="'skill:edit'" @click="pickerOpen = true">{{ $t('AGENT_SKILL_ADD_TOOL', '添加工具') }}</el-button>
           </div>
           <el-table :data="toolBindings" size="small">
             <el-table-column :label="$t('AGENT_TRACE_TOOL', '工具')" min-width="240">
@@ -84,16 +81,16 @@
             </el-table-column>
             <el-table-column :label="$t('AGENT_FIELD_ENABLED', '启用')" width="80">
               <template #default="{ row }">
-                <el-switch :model-value="row.enabledFlag === 1" :disabled="readonly" size="small"
+                <el-switch :model-value="row.enabledFlag === 1" size="small"
                   @change="(on: string | number | boolean) => toggleTool(row, !!on)" />
               </template>
             </el-table-column>
             <el-table-column :label="$t('AGENT_FIELD_REMARK', '备注')" min-width="200">
               <template #default="{ row }">
-                <el-input v-model="row.description" size="small" :disabled="readonly" @change="saveTool(row)" />
+                <el-input v-model="row.description" size="small" @change="saveTool(row)" />
               </template>
             </el-table-column>
-            <el-table-column v-if="!readonly" width="70">
+            <el-table-column width="70">
               <template #default="{ row }">
                 <el-button link type="danger" @click="removeTool(row)">{{ $t('AGENT_SKILL_REMOVE', '移除') }}</el-button>
               </template>
@@ -122,7 +119,7 @@
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
-import { StatusDot, PageElementPermission, showErrorMessage } from '@/components';
+import { StatusDot, showErrorMessage } from '@/components';
 import { EMPTY, ResourceType, fill } from '@runtime/console';
 import { McpToolProfileApi, ToolPicker, type McpToolProfileVo } from '@/views/mcp_tool_profile';
 import ContractPanel from './ContractPanel.vue';
@@ -143,12 +140,13 @@ const props = defineProps<{
   agentId: number;
   /** 所属智能体类型；新建技能时写入，后端仍会按智能体再写死 */
   agentResourceType?: string;
+  /** 所属智能体的机构；新增技能、绑定工具时带上 */
+  organId?: number | null;
   locale: string;
   initialTab?: string;
 }>();
 const emit = defineEmits<{ close: []; saved: [skillId: number] }>();
 
-const SKILL_KEY_PATTERN = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/;
 const MANUAL_TEMPLATE = '## 目标\n\n## 业务规则\n\n- \n\n## 前置与产出\n\n- ';
 
 const loading = ref(false);
@@ -163,7 +161,6 @@ const toolBindings = ref<SkillToolBindingVo[]>([]);
 const toolMeta = ref<McpToolProfileVo[]>([]);
 
 const isPlatform = computed(() => form.value.resourceType === ResourceType.PLATFORM);
-const readonly = computed(() => isPlatform.value && !PageElementPermission.has('skill:platform'));
 
 const enabledToolNames = computed(() => toolBindings.value.filter((b) => b.enabledFlag === 1).map((b) => b.toolName));
 const issues = computed(() => lintContract(contract.value, enabledToolNames.value));
@@ -172,10 +169,6 @@ const configuredTools = computed(() => {
   const parsed = parseContract(contract.value);
   return new Set(parsed.ok ? Object.keys(parsed.contract.tools ?? {}) : []);
 });
-const keyError = computed(() =>
-  form.value.skillKey && !SKILL_KEY_PATTERN.test(form.value.skillKey) ? t('AGENT_SKILL_KEY_RULE', '小写点分，如 cms.article.lifecycle') : '',
-);
-
 const current = () => JSON.stringify([form.value, manual.value, contract.value]);
 const dirty = computed(() => !loading.value && current() !== snapshot.value);
 
@@ -201,6 +194,7 @@ async function load(): Promise<void> {
     } else {
       form.value = {
         agentId: props.agentId,
+        organId: props.organId ?? undefined,
         resourceType: props.agentResourceType || ResourceType.CUSTOM,
       };
       manual.value = MANUAL_TEMPLATE;
@@ -224,7 +218,7 @@ watch(
 );
 
 async function save(): Promise<void> {
-  if (!form.value.skillKey || !form.value.skillName || keyError.value) {
+  if (!form.value.skillKey || !form.value.skillName) {
     tab.value = 'basic';
     ElMessage.warning(t('AGENT_SKILL_REQUIRED', '请填写技能键与名称'));
     return;
@@ -239,6 +233,7 @@ async function save(): Promise<void> {
     const id = await AgentDetailApi.saveSkill({
       ...form.value,
       agentId: form.value.agentId ?? props.agentId,
+      organId: form.value.organId ?? props.organId ?? undefined,
       skillManual: manual.value,
       skillContract: contract.value,
     });
@@ -260,7 +255,11 @@ async function addTools(tools: McpToolProfileVo[]): Promise<void> {
   pickerOpen.value = false;
   if (!props.skillId) return;
   // 新增后端固定启用，不必传 enabledFlag
-  await Promise.all(tools.map((tool) => AgentDetailApi.saveSkillTool({ skillId: props.skillId!, toolName: tool.name })));
+  await Promise.all(tools.map((tool) => AgentDetailApi.saveSkillTool({
+    skillId: props.skillId!,
+    toolName: tool.name,
+    organId: form.value.organId ?? props.organId ?? undefined,
+  })));
   await refreshTools();
 }
 

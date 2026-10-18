@@ -167,12 +167,12 @@ const resourceType = computed(() => {
 
 const pageTitle = computed(() => {
   if (resourceType.value === ResourceType.BUILT_IN) {
-    return '自有系统工具';
+    return '平台原生工具';
   }
   if (resourceType.value === ResourceType.EXTENSION) {
-    return '扩展系统工具';
+    return '平台扩展工具';
   }
-  return '客户系统工具';
+  return '租户系统工具';
 });
 
 // 组件引用

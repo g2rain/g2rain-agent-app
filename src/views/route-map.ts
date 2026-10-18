@@ -43,7 +43,7 @@ export const routeMap: Record<string, ViewRouteConfig> = {
     '/agent_profile/custom': {
             component: () => import('@/views/agent_profile/index.vue'),
             name: 'AgentProfileCustom',
-            meta: { title: '自建智能体', requiresAuth: true, showInHome: true },
+            meta: { title: '租户智能体', requiresAuth: true, showInHome: true },
         },
     '/agent_profile/platform': {
             component: () => import('@/views/agent_profile/index.vue'),
@@ -53,7 +53,7 @@ export const routeMap: Record<string, ViewRouteConfig> = {
     '/agent_profile': {
             component: () => import('@/views/agent_profile/index.vue'),
             name: 'AgentProfile',
-            meta: { title: '自建智能体', requiresAuth: true, showInHome: false },
+            meta: { title: '租户智能体', requiresAuth: true, showInHome: false },
         },
     '/mcp_external_service/extension': {
             component: () => import('@/views/mcp_external_service/index.vue'),
@@ -63,32 +63,32 @@ export const routeMap: Record<string, ViewRouteConfig> = {
     '/mcp_external_service/customer': {
             component: () => import('@/views/mcp_external_service/index.vue'),
             name: 'McpExternalServiceCustomer',
-            meta: { title: '客户系统接入', requiresAuth: true, showInHome: true },
+            meta: { title: '租户系统接入', requiresAuth: true, showInHome: true },
         },
     '/mcp_external_service': {
             component: () => import('@/views/mcp_external_service/index.vue'),
             name: 'McpExternalService',
-            meta: { title: '客户系统接入', requiresAuth: true, showInHome: false },
+            meta: { title: '租户系统接入', requiresAuth: true, showInHome: false },
         },
     '/mcp_tool_profile/built_in': {
             component: () => import('@/views/mcp_tool_profile/index.vue'),
             name: 'McpToolProfileBuiltIn',
-            meta: { title: '自有系统工具', requiresAuth: true, showInHome: true },
+            meta: { title: '平台原生工具', requiresAuth: true, showInHome: true },
         },
     '/mcp_tool_profile/extension': {
             component: () => import('@/views/mcp_tool_profile/index.vue'),
             name: 'McpToolProfileExtension',
-            meta: { title: '扩展系统工具', requiresAuth: true, showInHome: true },
+            meta: { title: '平台扩展工具', requiresAuth: true, showInHome: true },
         },
     '/mcp_tool_profile/customer': {
             component: () => import('@/views/mcp_tool_profile/index.vue'),
             name: 'McpToolProfileCustomer',
-            meta: { title: '客户系统工具', requiresAuth: true, showInHome: true },
+            meta: { title: '租户系统工具', requiresAuth: true, showInHome: true },
         },
     '/mcp_tool_profile': {
             component: () => import('@/views/mcp_tool_profile/index.vue'),
             name: 'McpToolProfile',
-            meta: { title: '客户系统工具', requiresAuth: true, showInHome: false },
+            meta: { title: '租户系统工具', requiresAuth: true, showInHome: false },
         },
     '/model_service_catalog': {
             component: () => import('@/views/model_service_catalog/index.vue'),

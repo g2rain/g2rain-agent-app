@@ -10,10 +10,10 @@
         <span v-if="warningCount" class="is-warning">{{ fill($t('AGENT_CONTRACT_WARNINGS', '{n} 个提示'), { n: warningCount }) }}</span>
         <span v-if="!errorCount && !warningCount" class="is-ok">{{ $t('AGENT_CONTRACT_OK', '校验通过') }}</span>
       </span>
-      <el-button v-if="view === 'source' && !readonly" size="small" @click="format">{{ $t('AGENT_CONTRACT_FORMAT', '格式化') }}</el-button>
+      <el-button v-if="view === 'source'" size="small" @click="format">{{ $t('AGENT_CONTRACT_FORMAT', '格式化') }}</el-button>
     </div>
 
-    <JsonEditor v-if="view === 'source' || !parsed.ok" v-model="model" :diagnostics="diagnostics" :readonly="readonly" height="560px" />
+    <JsonEditor v-if="view === 'source' || !parsed.ok" v-model="model" :diagnostics="diagnostics" height="560px" />
 
     <div v-else class="contract__structure">
       <nav class="contract__nav">
@@ -84,10 +84,10 @@
 
         <div v-else class="contract__unconfigured">
           <p>{{ fill($t('AGENT_CONTRACT_UNCONFIGURED', '{name} 已绑定，但还没有配置契约。未配置的工具仍可调用，按只读、无参数约束处理。'), { name: selected }) }}</p>
-          <el-button v-if="!readonly" type="primary" plain @click="generate">{{ $t('AGENT_CONTRACT_GENERATE', '按参数定义生成契约骨架') }}</el-button>
+          <el-button type="primary" plain @click="generate">{{ $t('AGENT_CONTRACT_GENERATE', '按参数定义生成契约骨架') }}</el-button>
         </div>
 
-        <div v-if="segmentPath && !readonly" class="contract__segment">
+        <div v-if="segmentPath" class="contract__segment">
           <el-button link type="primary" @click="toggleSegment">
             {{ segmentOpen ? $t('AGENT_CONTRACT_SEGMENT_CLOSE', '收起 JSON') : $t('AGENT_CONTRACT_SEGMENT_EDIT', '编辑这一段的 JSON') }}
           </el-button>
@@ -118,7 +118,7 @@ const JsonEditor = defineAsyncComponent(() => import('@/components/json-editor')
  * 执行契约：结构视图逐个工具查看参数与规则，源码视图编辑整份 JSON；两种视图编辑同一份文本。
  * 契约不是合法 JSON 时只显示源码视图。
  */
-const props = defineProps<{ toolNames: string[]; tools: McpToolProfileVo[]; issues: ContractIssue[]; readonly: boolean }>();
+const props = defineProps<{ toolNames: string[]; tools: McpToolProfileVo[]; issues: ContractIssue[] }>();
 const model = defineModel<string>({ required: true });
 
 const ROOT = '__root';
@@ -302,7 +302,7 @@ function format(): void {
 
 /** 进入源码时直接美化 model（JsonEditor 异步挂载，等 ref 会扑空） */
 watch(view, (value) => {
-  if (value !== 'source' || props.readonly) return;
+  if (value !== 'source') return;
   const pretty = prettyJson(model.value);
   if (pretty != null && pretty !== model.value) model.value = pretty;
 });

@@ -69,12 +69,12 @@ import { McpToolProfileApi } from '../api';
 import type { McpToolProfileVo } from '../type';
 
 /**
- * 按类型 Tab + 分页选工具；勾选跨 Tab 累加。平台技能可隐藏客户 Tab。
+ * 按类型 Tab + 分页选工具；勾选跨 Tab 累加。平台技能可隐藏租户 Tab。
  */
 const props = withDefaults(
   defineProps<{
     visible: boolean;
-    /** 平台技能为 true 时不展示客户系统 Tab */
+    /** 平台技能为 true 时不展示租户系统 Tab */
     hideCustomer?: boolean;
     excluded?: string[];
     title?: string;
@@ -94,9 +94,9 @@ const props = withDefaults(
     emptyText: '',
     cancelText: 'Cancel',
     confirmText: 'Add',
-    builtInLabel: '自有系统',
-    extensionLabel: '扩展系统',
-    customerLabel: '客户系统',
+    builtInLabel: '平台原生',
+    extensionLabel: '平台扩展',
+    customerLabel: '租户系统',
   },
 );
 const emit = defineEmits<{ confirm: [tools: McpToolProfileVo[]]; close: [] }>();
