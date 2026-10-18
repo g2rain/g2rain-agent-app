@@ -273,6 +273,9 @@ async function load(): Promise<void> {
 }
 
 async function saveProfile(): Promise<void> {
+  if (!agentId.value && entryResourceType.value === ResourceType.PLATFORM && !form.value.agentName) {
+    form.value.agentName = form.value.agentCode;
+  }
   if (!form.value.agentName || !form.value.agentCode) {
     ElMessage.warning(t('AGENT_REQUIRED', '请填写名称与编码'));
     return;

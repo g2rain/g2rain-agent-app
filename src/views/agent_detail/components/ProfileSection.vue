@@ -8,13 +8,13 @@
             <OrganSelect v-model="form.organId" :disabled="!creating || readonly" width="100%" />
           </el-form-item>
           <el-form-item :label="$t('AGENT_FIELD_NAME', '名称')" required>
-            <el-input v-model="form.agentName" maxlength="128" />
+            <el-input v-model="form.agentName" maxlength="128" :disabled="codeOnly" />
           </el-form-item>
           <el-form-item :label="$t('AGENT_FIELD_CODE', '编码')" required>
             <el-input v-model="form.agentCode" maxlength="64" :disabled="!creating" />
           </el-form-item>
           <el-form-item :label="$t('AGENT_FIELD_REMARK', '备注')" class="profile__wide">
-            <el-input v-model="form.description" maxlength="500" />
+            <el-input v-model="form.description" maxlength="500" :disabled="codeOnly" />
           </el-form-item>
         </el-form>
       </section>
@@ -41,7 +41,7 @@
           :locale="locale"
           mode="tab"
           height="220px"
-          :readonly="readonly"
+          :readonly="readonly || codeOnly"
         />
       </section>
     </div>
@@ -62,14 +62,20 @@
 import { computed, defineAsyncComponent, ref, type WritableComputedRef } from 'vue';
 import { OrganSelect } from '@g2rain/ui/platform';
 import { t } from '@platform/i18n';
+import { ResourceType } from '@runtime/console';
 import type { AgentProfilePayload } from '@/views/agent_profile';
 import { PROFILE_SECTIONS, type ProfileSectionKey } from '../type';
 
 const MarkdownEditor = defineAsyncComponent(() => import('@/components/markdown').then((m) => m.MarkdownEditor));
 
 /** 智能体画像：基本信息 + 五段描述。五段描述会进入规划与节点提示词 */
-defineProps<{ readonly: boolean; creating: boolean; locale: string }>();
+const props = defineProps<{ readonly: boolean; creating: boolean; locale: string }>();
 const form = defineModel<AgentProfilePayload>({ required: true });
+
+/** 平台智能体新建只填编码，名称/备注/画像创建后再改 */
+const codeOnly = computed(
+  () => props.creating && form.value.resourceType === ResourceType.PLATFORM,
+);
 
 const TEXT: Record<ProfileSectionKey, [title: [string, string], purpose: [string, string], hint: [string, string]]> = {
   identityDesc: [

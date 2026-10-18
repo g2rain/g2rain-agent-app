@@ -1,5 +1,10 @@
 <template>
-  <div ref="host" class="json-editor" :style="{ height }" />
+  <div class="json-editor" :style="{ height }">
+    <div v-if="!readonly" class="json-editor__bar">
+      <el-button size="small" text @click="format">格式化</el-button>
+    </div>
+    <div ref="host" class="json-editor__body" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -43,11 +48,21 @@ const theme = EditorView.theme({
   '&.cm-focused': { outline: 'none' },
 });
 
+/** 合法 JSON 按两空格缩进；不合法则原样返回 */
+function pretty(text: string): string {
+  try {
+    return JSON.stringify(JSON.parse(text), null, 2);
+  } catch {
+    return text;
+  }
+}
+
 onMounted(() => {
+  const doc = pretty(model.value);
   view.value = new EditorView({
     parent: host.value,
     state: EditorState.create({
-      doc: model.value,
+      doc,
       extensions: [
         basicSetup,
         json(),
@@ -62,13 +77,15 @@ onMounted(() => {
       ],
     }),
   });
+  if (!props.readonly && doc !== model.value) model.value = doc;
 });
 
 watch(model, (value) => {
   const current = view.value?.state.doc.toString();
-  if (view.value && value !== current) {
-    view.value.dispatch({ changes: { from: 0, to: view.value.state.doc.length, insert: value } });
-  }
+  if (!view.value || value === current) return;
+  const next = pretty(value);
+  view.value.dispatch({ changes: { from: 0, to: view.value.state.doc.length, insert: next } });
+  if (!props.readonly && next !== value) model.value = next;
 });
 
 watch(
@@ -106,8 +123,21 @@ defineExpose({ format, reveal });
 
 <style scoped>
 .json-editor {
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--g2-border-color-light);
   border-radius: var(--g2-border-radius-base);
   overflow: hidden;
+}
+.json-editor__bar {
+  flex: none;
+  display: flex;
+  justify-content: flex-end;
+  border-bottom: 1px solid var(--g2-border-color-light);
+  background: var(--g2-fill-light);
+}
+.json-editor__body {
+  flex: 1;
+  min-height: 0;
 }
 </style>
