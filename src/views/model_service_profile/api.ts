@@ -23,11 +23,6 @@ export class ModelServiceProfileApi {
     return res.data;
   }
 
-  static async list(params?: ModelServiceProfileQuery): Promise<ModelServiceProfile[]> {
-    const res = await http().get<ModelServiceProfile[]>(`${base}/model_service_profile/list`, params);
-    return res.data || [];
-  }
-
   /** 模型广场候选分页（后端 page 已固定 MARKET） */
   static async marketCatalogPage(params: {
     pageNum: number;
