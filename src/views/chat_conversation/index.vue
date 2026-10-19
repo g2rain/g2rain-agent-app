@@ -43,7 +43,7 @@
       <el-table-column :label="$t('AGENT_CONVERSATION_USER', '用户')" prop="userId" width="120" />
       <el-table-column :label="$t('AGENT_CONVERSATION_CURRENT', '当前任务')" width="140">
         <template #default="{ row }">
-          <StatusDot v-if="row.activeTaskId" tone="running" :label="$t('AGENT_STATUS_RUNNING', '进行中')" />
+          <StatusDot v-if="row.activeTaskId && row.activeTaskStatus" v-bind="describeStatus(row.activeTaskStatus)" />
           <span v-else class="chat_conversation-page__muted">{{ EMPTY }}</span>
         </template>
       </el-table-column>
@@ -95,7 +95,7 @@ import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.t
 import { QueryForm, SortableTable, TableColumn, SortManagerButton } from '@g2rain/ui';
 import { OrganSelect } from '@g2rain/ui/platform';
 import { CopyText, StatusDot, showErrorMessage } from '@/components';
-import { EMPTY, fromNow } from '@runtime/console';
+import { EMPTY, describeStatus, fromNow } from '@runtime/console';
 import { conversationDetailRoute } from '@/views/conversation_detail';
 import { ChatConversationApi } from './api';
 import type { ChatConversation, ChatConversationQuery } from './type';

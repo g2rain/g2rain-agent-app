@@ -8,12 +8,16 @@
       <StatusDot v-bind="describeStatus(task.status)" />
       <span>{{ formatDuration(elapsed(task.startedTime, task.finishedTime)) }}</span>
     </div>
-    <p class="task-summary__goal">{{ task.goalSummary || task.request }}</p>
+    <p class="task-summary__goal">{{ task.goalSummary || task.request || task.taskId }}</p>
     <p v-if="task.finalMessage && failed" class="task-summary__failure">{{ task.finalMessage }}</p>
 
     <section class="task-summary__section">
       <h4>{{ $t('AGENT_CONVERSATION_STEPS', '步骤') }}</h4>
-      <el-skeleton v-if="nodes === null" :rows="2" animated />
+      <div v-if="error" class="task-summary__muted">
+        {{ $t('G2_MSG_LOAD_FAIL', '加载失败') }}
+        <el-button link type="primary" size="small" @click="emit('retry')">{{ $t('G2_BTN_RETRY', '重试') }}</el-button>
+      </div>
+      <el-skeleton v-else-if="nodes === null" :rows="2" animated />
       <ol v-else class="task-summary__steps">
         <li v-for="node in nodes" :key="node.nodeId">
           <StatusDot :tone="describeStatus(node.status).tone" />
@@ -68,9 +72,12 @@ import type { TaskGraphNodeVo, TaskInstanceVo, TaskResumeRecordVo } from '../typ
 const props = defineProps<{
   task: TaskInstanceVo;
   nodes: TaskGraphNodeVo[] | null;
+  /** 明细加载失败 */
+  error: boolean;
   resumes: TaskResumeRecordVo[];
   embed: boolean;
 }>();
+const emit = defineEmits<{ retry: [] }>();
 
 const failed = computed(() => props.task.status === TaskStatus.FAILED || props.task.status === TaskStatus.CANCELED);
 

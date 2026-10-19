@@ -17,13 +17,5 @@ export interface ChatConversationVo {
   createTime: string;
 }
 
-/** 会话详情首屏数据 */
-export interface ConversationBundle {
-  conversation: ChatConversationVo;
-  messages: ChatMessageVo[];
-  /** chat_message 分页总数 */
-  messageTotal: number;
-  tasks: TaskInstanceVo[];
-  /** 各任务的恢复记录，按 taskId 分组 */
-  resumes: Record<string, TaskResumeRecordVo[]>;
-}
+/** 选中任务的按需明细；error 表示加载失败 */
+export type TaskDetail = { task: TaskInstanceVo | null; nodes: TaskGraphNodeVo[] } | 'error';

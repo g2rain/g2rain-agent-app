@@ -39,7 +39,7 @@
           <div class="task-trace__actions">
             <el-button v-if="!embed" size="small" @click="goBack">{{ $t('G2_BTN_BACK', '返回') }}</el-button>
             <el-switch v-if="!terminal" v-model="autoRefresh" size="small" :active-text="$t('AGENT_TRACE_AUTO_REFRESH', '自动刷新')" />
-            <el-button size="small" :loading="loading" @click="load(true)">{{ $t('G2_BTN_REFRESH', '刷新') }}</el-button>
+            <el-button size="small" :loading="loading" @click="load('manual')">{{ $t('G2_BTN_REFRESH', '刷新') }}</el-button>
           </div>
         </div>
         <div class="task-trace__metrics">{{ metricsText }}</div>
@@ -77,7 +77,7 @@ import { computed, defineAsyncComponent, onBeforeUnmount, ref, watch } from 'vue
 import { useRoute, useRouter } from 'vue-router';
 import { t } from '@platform/i18n';
 import { useLocaleStore } from '@platform/stores/locale.store';
-import { CopyText, StatusDot } from '@/components';
+import { CopyText, StatusDot, showErrorMessage } from '@/components';
 import {
   SideEffect,
   TERMINAL_TASK_STATUSES,
@@ -159,26 +159,36 @@ function goBack(): void {
   void router.push({ path: CONVERSATION_PATH });
 }
 
-/** 加载追踪数据；silent 为 true 时保留当前选中与视口（刷新） */
-async function load(silent = false): Promise<void> {
+let loadSeq = 0;
+
+/**
+ * 加载追踪数据。refresh 为刷新方式：刷新时保留当前选中；已有数据时失败不替换页面，
+ * 手动刷新提示错误，自动刷新静默等待下一次。
+ */
+async function load(refresh?: 'manual' | 'auto'): Promise<void> {
+  const seq = ++loadSeq;
   if (!taskId.value) {
     bundle.value = null;
     return;
   }
   loading.value = true;
-  failure.value = '';
+  if (!refresh) failure.value = '';
   try {
     const next = await TaskTraceApi.load(taskId.value);
-    const keep = silent && next && selectedId.value;
+    if (seq !== loadSeq) return;
+    const keep = !!refresh && !!next && !!selectedId.value;
     bundle.value = next;
     if (next && !keep) selectedId.value = defaultSelection(next);
     if (next?.task.agentId && !agentName.value) {
       agentName.value = await TaskTraceApi.agentName(next.task.agentId).catch(() => '');
     }
   } catch (error: unknown) {
-    failure.value = error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载失败');
+    if (seq !== loadSeq) return;
+    const message = error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载失败');
+    if (!refresh || !bundle.value) failure.value = message;
+    else if (refresh === 'manual') showErrorMessage(message);
   } finally {
-    loading.value = false;
+    if (seq === loadSeq) loading.value = false;
   }
 }
 
@@ -199,7 +209,7 @@ watch([autoRefresh, terminal], ([enabled, done]) => {
   stopRefresh();
   if (enabled && !done) {
     timer = setInterval(() => {
-      if (document.visibilityState === 'visible' && !loading.value) void load(true);
+      if (document.visibilityState === 'visible' && !loading.value) void load('auto');
     }, REFRESH_INTERVAL);
   }
 });

@@ -1,15 +1,20 @@
 <template>
   <el-empty v-if="turns.length === 0" :description="$t('AGENT_CONVERSATION_NO_MESSAGE', '这个会话还没有消息')" />
   <ol v-else class="turns">
-    <li v-for="turn in turns" :key="turn.key" class="turn">
-      <div class="turn__time">{{ clock(turn.time) }}</div>
+    <li v-for="(turn, turnIndex) in turns" :key="turn.key" class="turn">
+      <div class="turn__time">
+        {{ clock(turn.time) }}
+        <span v-if="!turn.user && turnIndex === 0 && continued" class="turn__continued">
+          {{ $t('AGENT_CONVERSATION_CONTINUED', '接上页') }}
+        </span>
+      </div>
 
-      <div v-if="turn.user" class="turn__user">
+      <div v-if="turn.user" class="turn__user" :data-mid="turn.user.messageId">
         <div class="turn__bubble">{{ turn.user.content }}</div>
       </div>
 
       <template v-for="(reply, index) in turn.replies" :key="reply.messageId">
-        <div class="turn__reply">
+        <div class="turn__reply" :data-mid="reply.messageId">
           <span class="turn__avatar">AI</span>
           <MarkdownViewer :content="reply.content" :locale="locale" />
         </div>
@@ -27,7 +32,7 @@
         @click="emit('select', task.taskId)"
       >
         <StatusDot v-bind="describeStatus(task.status)" />
-        <span class="turn__task-goal">{{ task.goalSummary || task.request }}</span>
+        <span class="turn__task-goal">{{ task.goalSummary || shortId(task.taskId) }}</span>
         <span v-if="hasWrite(task.taskId)" class="turn__write">{{ $t('AGENT_TRACE_WRITE', '写') }}</span>
         <span class="turn__task-meta">{{ formatDuration(elapsed(task.startedTime, task.finishedTime)) }}</span>
         <span class="turn__task-arrow">›</span>
@@ -40,7 +45,7 @@
 import { defineAsyncComponent } from 'vue';
 import { t } from '@platform/i18n';
 import { StatusDot } from '@/components';
-import { describeStatus, elapsed, formatDuration } from '@runtime/console';
+import { describeStatus, elapsed, formatDuration, shortId } from '@runtime/console';
 import { approvalOutcome, type ApprovalOutcome, type Turn } from '../turns';
 import type { TaskResumeRecordVo } from '../type';
 
@@ -52,6 +57,8 @@ const MarkdownViewer = defineAsyncComponent(() => import('@/components/markdown'
  */
 const props = defineProps<{
   turns: Turn[];
+  /** 窗口之前还有更早的消息：首轮没有用户消息时标注「接上页」 */
+  continued: boolean;
   resumes: Record<string, TaskResumeRecordVo[]>;
   writeTasks: Set<string>;
   selectedTaskId: string | null;
@@ -94,6 +101,7 @@ function markerText(outcome: ApprovalOutcome): string {
 .turn { padding: 16px 0; border-bottom: 1px solid var(--g2-border-color-light); display: flex; flex-direction: column; gap: 10px; }
 .turn:last-child { border-bottom: none; }
 .turn__time { font-size: var(--g2-font-size-sm); color: var(--g2-text-placeholder); font-variant-numeric: tabular-nums; }
+.turn__continued { margin-left: 8px; }
 .turn__user { display: flex; justify-content: flex-end; }
 .turn__bubble {
   max-width: 80%;

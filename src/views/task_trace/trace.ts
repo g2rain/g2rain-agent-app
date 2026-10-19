@@ -13,6 +13,7 @@ import {
   elapsed,
   isBuiltinAction,
   parseJson,
+  toEpoch,
 } from '@runtime/console';
 import { redundantEdges, edgeKey, type DirectedEdge } from '@shared/graph.util';
 import type { DagEdge, DagNode } from '@/components/dag-canvas';
@@ -101,10 +102,22 @@ export function buildGraph(bundle: TraceBundle): { nodes: DagNode<GraphCard>[]; 
   return { nodes, edges };
 }
 
-/** 默认选中：失败任务选第一个失败节点，其余选结果节点 */
+/**
+ * 默认选中最需要关注的节点：运行中、挂起选当前节点；失败选最早出错的节点；其余选结果节点。
+ */
 export function defaultSelection(bundle: TraceBundle): string {
-  if (bundle.task.status === TaskStatus.FAILED) {
-    const failed = bundle.nodes.find((n) => n.status === NodeStatus.FAILED || n.status === NodeStatus.TIMEOUT);
+  const { task, nodes } = bundle;
+  if (task.status === TaskStatus.RUNNING || task.status === TaskStatus.SUSPENDED) {
+    const current = nodes.find((n) => n.nodeId === task.currentNodeId);
+    const waiting = task.status === TaskStatus.SUSPENDED ? NodeStatus.SUSPENDED : NodeStatus.RUNNING;
+    const node = current ?? nodes.find((n) => n.status === waiting);
+    if (node) return node.nodeId;
+  }
+  if (task.status === TaskStatus.FAILED) {
+    const startedAt = (node: TaskGraphNodeVo) => toEpoch(node.startedTime) ?? Number.MAX_SAFE_INTEGER;
+    const failed = nodes
+      .filter((n) => n.status === NodeStatus.FAILED || n.status === NodeStatus.TIMEOUT)
+      .sort((a, b) => startedAt(a) - startedAt(b))[0];
     if (failed) return failed.nodeId;
   }
   return RESULT_ID;

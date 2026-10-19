@@ -13,6 +13,8 @@ export interface ChatConversation extends BaseVo {
   userId: number;
   title: string;
   activeTaskId: string;
+  /** 当前任务状态（查询时回填） */
+  activeTaskStatus: string | null;
   sessionShared: string;
   stateVersion: number;
   lastMessageTime: string;

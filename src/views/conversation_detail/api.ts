@@ -1,72 +1,69 @@
 /**
- * 会话详情 API：聚合各生成器 list / page 接口。
+ * 会话详情 API：直接调用 runtime 接口，不依赖生成器页面模块。
  */
-import { ChatConversationApi } from '@/views/chat_conversation/api';
-import { ChatMessageApi } from '@/views/chat_message/api';
-import { TaskInstanceApi } from '@/views/task_instance/api';
-import { TaskResumeRecordApi } from '@/views/task_resume_record/api';
-import { TaskGraphNodeApi } from '@/views/task_graph_node/api';
+import { getHttpClient } from '@runtime/http';
+import { Gateway } from '@runtime/console';
+import type { PageData } from '@platform/types/api.type';
 import type {
   ChatConversationVo,
   ChatMessageVo,
-  ConversationBundle,
   TaskGraphNodeVo,
   TaskInstanceVo,
   TaskResumeRecordVo,
 } from './type';
 
+const base = Gateway.HARNESS;
+const http = () => getHttpClient('default');
+
+/** 一个消息窗口内任务数的上限（两页消息里的用户消息数远小于此值） */
+const TASK_LIMIT = 200;
+
 export class ConversationDetailApi {
-  /** 分页拉取会话消息 */
-  static async pageMessages(
-    conversationId: string,
-    pageNum: number,
-    pageSize: number,
-  ): Promise<{ records: ChatMessageVo[]; total: number }> {
-    const messagePage = await ChatMessageApi.page({
+  /** 会话；不存在时返回 null */
+  static async conversation(conversationId: string): Promise<ChatConversationVo | null> {
+    const res = await http().get<ChatConversationVo[]>(`${base}/chat_conversation/list`, { conversationId });
+    return res.data?.[0] ?? null;
+  }
+
+  /** 按时间正序分页取消息；id 作为第二排序键，保证同一毫秒内的顺序稳定 */
+  static async messages(conversationId: string, pageNum: number, pageSize: number): Promise<PageData<ChatMessageVo>> {
+    const res = await http().get<PageData<ChatMessageVo>>(`${base}/chat_message/page`, {
       conversationId,
       pageNum,
       pageSize,
-      sorts: ['createdAtMs,asc'],
-    } as Parameters<typeof ChatMessageApi.page>[0]);
-    return {
-      records: (messagePage?.records ?? []) as ChatMessageVo[],
-      total: messagePage?.total ?? 0,
-    };
+      sorts: ['createdAtMs,asc', 'id,asc'],
+    });
+    return res.data;
   }
 
-  /**
-   * 会话、当前页消息、全部任务及各任务的恢复记录；会话不存在时返回 null。
-   */
-  static async load(
-    conversationId: string,
-    pageNum = 1,
-    pageSize = 20,
-  ): Promise<ConversationBundle | null> {
-    const query = { conversationId };
-    const [conversations, messagePage, tasks] = await Promise.all([
-      ChatConversationApi.list(query) as Promise<ChatConversationVo[]>,
-      this.pageMessages(conversationId, pageNum, pageSize),
-      TaskInstanceApi.list(query) as Promise<TaskInstanceVo[]>,
-    ]);
-    const conversation = conversations[0];
-    if (!conversation) return null;
-    const groups = await Promise.all(
-      tasks.map((task) =>
-        TaskResumeRecordApi.list({ taskId: task.taskId }) as Promise<TaskResumeRecordVo[]>,
-      ),
-    );
-    const resumes = Object.fromEntries(tasks.map((task, index) => [task.taskId, groups[index]]));
-    return {
-      conversation,
-      messages: messagePage.records,
-      messageTotal: messagePage.total,
-      tasks,
-      resumes,
-    };
+  /** 由这些用户消息触发的任务（摘要列，不含大字段） */
+  static async tasks(conversationId: string, sourceMessageIds: string[]): Promise<TaskInstanceVo[]> {
+    if (sourceMessageIds.length === 0) return [];
+    const res = await http().get<PageData<TaskInstanceVo>>(`${base}/task_instance/page`, {
+      conversationId,
+      sourceMessageIds,
+      pageNum: 1,
+      pageSize: TASK_LIMIT,
+    });
+    return res.data?.records ?? [];
+  }
+
+  /** 这些任务的恢复记录 */
+  static async resumes(taskIds: string[]): Promise<TaskResumeRecordVo[]> {
+    if (taskIds.length === 0) return [];
+    const res = await http().get<TaskResumeRecordVo[]>(`${base}/task_resume_record/list`, { taskIds });
+    return res.data ?? [];
+  }
+
+  /** 任务详情（含 record 等大字段），选中任务时按需加载 */
+  static async task(taskId: string): Promise<TaskInstanceVo | null> {
+    const res = await http().get<TaskInstanceVo | null>(`${base}/task_instance/by_task/${encodeURIComponent(taskId)}`);
+    return res.data ?? null;
   }
 
   /** 任务步骤，选中任务时按需加载 */
-  static nodes(taskId: string): Promise<TaskGraphNodeVo[]> {
-    return TaskGraphNodeApi.list({ taskId }) as Promise<TaskGraphNodeVo[]>;
+  static async nodes(taskId: string): Promise<TaskGraphNodeVo[]> {
+    const res = await http().get<TaskGraphNodeVo[]>(`${base}/task_graph_node/list`, { taskId });
+    return res.data ?? [];
   }
 }
