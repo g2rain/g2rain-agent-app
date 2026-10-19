@@ -82,8 +82,7 @@ import { computed, ref, watch } from 'vue';
 import type { UploadFile } from 'element-plus';
 import { ElMessage } from 'element-plus';
 import { ResourceType } from '@runtime/console';
-import { McpExternalServiceApi, type McpExternalServiceKind } from '@/views/mcp_external_service/api';
-import type { McpExternalService } from '@/views/mcp_external_service/type';
+import { McpExternalServiceApi, type McpExternalService, type McpExternalServiceKind } from '@/views/mcp_external_service';
 import { McpToolProfileApi, type ConvertedOperation } from '../api';
 
 const props = defineProps<{

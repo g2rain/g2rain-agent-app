@@ -6,7 +6,6 @@ import { Gateway, ResourceType } from '@runtime/console';
 import { AgentProfileApi } from '@/views/agent_profile';
 import type { AgentProfile, AgentProfilePayload } from '@/views/agent_profile';
 import type {
-  CapabilityBundleVo,
   SkillProfilePayload,
   SkillProfileVo,
   SkillToolBindingVo,
@@ -87,8 +86,4 @@ export class AgentDetailApi {
     return remove('skill_tool_binding', id);
   }
 
-  static async bundle(agentId: number): Promise<CapabilityBundleVo> {
-    const res = await http().get<CapabilityBundleVo>(`${base}/agent_profile/${agentId}/capability_bundle`);
-    return res.data ?? { skills: [] };
-  }
 }

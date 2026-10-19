@@ -16,32 +16,12 @@ const http = () => getHttpClient('default');
  */
 export class ModelServiceCatalogApi {
   /**
-   * 获取模型服务目录列表
-   * @param params 查询参数（可选）
-   * @returns 模型服务目录列表
-   */
-  static async list(params?: ModelServiceCatalogQuery): Promise<ModelServiceCatalog[]> {
-    const res = await http().get<ModelServiceCatalog[]>(`${base}/model_service_catalog/list`, params);
-    return res.data || [];
-  }
-
-  /**
    * 分页查询模型服务目录列表
    * @param params 查询参数（继承PageSelectListDto，包含基础查询和业务查询条件）
    * @returns 分页数据
    */
   static async page(params: ModelServiceCatalogQuery & PageSelectListDto): Promise<PageData<ModelServiceCatalog>> {
     const res = await http().get<PageData<ModelServiceCatalog>>(`${base}/model_service_catalog/page`, params);
-    return res.data;
-  }
-
-  /**
-   * 按 ID 查询单条明细
-   * @param id 模型服务目录 ID
-   * @returns 模型服务目录详情
-   */
-  static async getById(id: number): Promise<ModelServiceCatalog> {
-    const res = await http().get<ModelServiceCatalog>(`${base}/model_service_catalog/${id}`);
     return res.data;
   }
 

@@ -38,18 +38,6 @@ export interface SkillRow {
   toolCount: number;
 }
 
-/** runtime 每轮实际加载的能力包（capability_bundle） */
-export interface CapabilityBundleVo {
-  skills: {
-    skillKey: string;
-    skillName: string;
-    semanticDesc: string | null;
-    skillManual: string | null;
-    skillContract: string | null;
-    tools: { toolName: string }[];
-  }[];
-}
-
 /** 智能体画像的五段描述及其长度上限（与表结构一致） */
 export const PROFILE_SECTIONS = [
   { key: 'identityDesc', max: 2000 },
