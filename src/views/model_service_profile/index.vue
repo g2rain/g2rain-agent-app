@@ -46,7 +46,7 @@
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="100" />
       <el-table-column prop="organId" label="所属机构" width="110" />
-      <el-table-column label="模型" min-width="280">
+      <el-table-column label="模型" min-width="350">
         <template #default="{ row }">
           <div>
             {{ row.displayName }}
