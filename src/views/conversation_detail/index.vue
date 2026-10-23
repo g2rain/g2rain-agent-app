@@ -64,8 +64,10 @@
               :resumes="resumes"
               :write-tasks="writeTasks"
               :selected-task-id="selectedTaskId"
+              :selected-trace-id="selectedTraceId"
               :locale="locale"
               @select="selectTask"
+              @trace="selectTrace"
             />
 
             <div class="conversation-detail__edge">
@@ -97,8 +99,15 @@
         </div>
 
         <aside class="conversation-detail__aside">
+          <ProgressSummary
+            v-if="selectedTraceId"
+            :trace-id="selectedTraceId"
+            :steps="selectedProgress"
+            :error="progress[selectedTraceId] === 'error'"
+            @retry="selectTrace(selectedTraceId, true)"
+          />
           <TaskSummary
-            v-if="selectedTask"
+            v-else-if="selectedTask"
             :task="selectedTask"
             :nodes="selectedNodes"
             :error="selectedDetail === 'error'"
@@ -123,10 +132,18 @@ import { CopyText, StatusDot, showErrorMessage, useFitHeight } from '@/component
 import { EMPTY, MessageRole, ResumeAction, describeStatus, formatClock } from '@runtime/console';
 import TurnList from './components/TurnList.vue';
 import TaskSummary from './components/TaskSummary.vue';
+import ProgressSummary from './components/ProgressSummary.vue';
 import { ConversationDetailApi } from './api';
 import { useMessageWindow } from './message-window';
 import { buildTurns } from './turns';
-import type { ChatConversationVo, ChatMessageVo, TaskDetail, TaskInstanceVo, TaskResumeRecordVo } from './type';
+import type {
+  ChatConversationVo,
+  ChatMessageVo,
+  ProgressDetail,
+  TaskDetail,
+  TaskInstanceVo,
+  TaskResumeRecordVo,
+} from './type';
 
 const CONVERSATION_PATH = '/chat_conversation';
 /** 距离滚动边界多少像素时加载相邻页 */
@@ -216,8 +233,11 @@ async function loadTasks(messages: ChatMessageVo[]): Promise<void> {
   }
 }
 
-/** 选中的任务移出窗口后，改选窗口内的第一个（或最后一个）任务 */
+/** 选中的任务（或执行过程）移出窗口后，改选窗口内的第一个（或最后一个）任务 */
 function ensureSelection(prefer: 'first' | 'last' = 'first'): void {
+  if (selectedTraceId.value && traceInWindow(selectedTraceId.value)) return;
+  selectedTraceId.value = null;
+  pruneProgress();
   if (orderedTasks.value.some((task) => task.taskId === selectedTaskId.value)) return;
   const list = orderedTasks.value;
   const target = prefer === 'last' ? list[list.length - 1] : list[0];
@@ -239,6 +259,7 @@ function pruneDetails(): void {
 
 /** 选中任务并按需加载明细；结果按任务存放，快速切换不会串台 */
 async function selectTask(taskId: string, force = false): Promise<void> {
+  selectedTraceId.value = null;
   selectedTaskId.value = taskId;
   const cached = details[taskId];
   if (cached && cached !== 'error' && !force) return;
@@ -255,6 +276,40 @@ function inWindow(taskId: string): boolean {
   return tasks.value.some((task) => task.taskId === taskId);
 }
 
+// ---------------------------------------------------------------- 执行过程（按轮次追踪号按需加载）
+
+const progress = reactive<Record<string, ProgressDetail>>({});
+const selectedTraceId = ref<string | null>(null);
+
+const selectedProgress = computed(() => {
+  const detail = selectedTraceId.value ? progress[selectedTraceId.value] : undefined;
+  return detail && detail !== 'error' ? detail : null;
+});
+
+/** 选中一轮的执行过程，与选中任务互斥；结果按追踪号存放 */
+async function selectTrace(traceId: string, force = false): Promise<void> {
+  selectedTaskId.value = null;
+  selectedTraceId.value = traceId;
+  const cached = progress[traceId];
+  if (cached && cached !== 'error' && !force) return;
+  delete progress[traceId];
+  try {
+    const steps = await ConversationDetailApi.progress(traceId);
+    if (traceInWindow(traceId)) progress[traceId] = steps;
+  } catch {
+    if (traceInWindow(traceId)) progress[traceId] = 'error';
+  }
+}
+
+function traceInWindow(traceId: string): boolean {
+  return win.messages.value.some((message) => message.traceId === traceId);
+}
+
+/** 窗口外的执行过程不再保留 */
+function pruneProgress(): void {
+  for (const traceId of Object.keys(progress)) if (!traceInWindow(traceId)) delete progress[traceId];
+}
+
 // ---------------------------------------------------------------- 加载与刷新
 
 let openSeq = 0;
@@ -267,8 +322,10 @@ async function open(): Promise<void> {
   tasks.value = [];
   resumes.value = {};
   selectedTaskId.value = null;
+  selectedTraceId.value = null;
   statusFilter.value = null;
   Object.keys(details).forEach((key) => delete details[key]);
+  Object.keys(progress).forEach((key) => delete progress[key]);
   if (!conversationId.value) return;
 
   opening.value = true;
@@ -297,7 +354,8 @@ async function refresh(): Promise<void> {
     const [found] = await Promise.all([ConversationDetailApi.conversation(conversationId.value), win.reload()]);
     if (found) conversation.value = found;
     ensureSelection();
-    if (selectedTaskId.value) await selectTask(selectedTaskId.value, true);
+    if (selectedTraceId.value) await selectTrace(selectedTraceId.value, true);
+    else if (selectedTaskId.value) await selectTask(selectedTaskId.value, true);
     await nextTick();
     restoreAnchors(anchors);
     updateEdges();

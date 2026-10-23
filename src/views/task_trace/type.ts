@@ -129,6 +129,10 @@ export interface ChatMessageVo {
   messageType: string;
   content: string;
   createdAtMs: number;
+  /** 本轮追踪号；最终回复据此关联执行过程 */
+  traceId: string | null;
+  /** 本轮耗时；仅最终回复 */
+  elapsedMs: number | null;
 }
 
 /** 一次任务追踪所需的全部原始数据 */
