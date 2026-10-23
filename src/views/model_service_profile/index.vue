@@ -46,7 +46,7 @@
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="100" />
       <el-table-column prop="organId" label="所属机构" width="110" />
-      <el-table-column label="模型" min-width="200">
+      <el-table-column label="模型" min-width="280">
         <template #default="{ row }">
           <div>
             {{ row.displayName }}
@@ -68,7 +68,7 @@
       <el-table-column prop="selectable" label="对话可选" width="100">
         <template #default="{ row }">{{ row.selectable ? '是' : '否' }}</template>
       </el-table-column>
-      <el-table-column prop="status" label="状态" width="140">
+      <el-table-column prop="status" label="状态" width="80">
         <template #default="{ row }">
           <StatusSwitch
             v-model="row.status"
@@ -284,6 +284,9 @@
               </el-form-item>
             </el-col>
           </el-row>
+          <el-form-item v-if="custom.modelType === 'LLM'" label="对话可选">
+            <el-switch v-model="profile.selectable" />
+          </el-form-item>
           <h4>连接</h4>
           <el-form-item label="协议" prop="protocol">
             <el-select v-model="custom.protocol" style="width: 100%">
@@ -300,9 +303,6 @@
               show-password
               :placeholder="isEdit && custom.apiKeyConfigured ? '已配置，留空表示不修改' : '请输入访问密钥'"
             />
-          </el-form-item>
-          <el-form-item v-if="custom.modelType === 'LLM'" label="对话可选">
-            <el-switch v-model="profile.selectable" />
           </el-form-item>
           <el-form-item label="说明" prop="description">
             <el-input v-model="custom.description" type="textarea" :rows="1" placeholder="请输入说明" />
