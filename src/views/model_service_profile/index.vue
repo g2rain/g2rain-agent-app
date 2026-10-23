@@ -76,7 +76,7 @@
             active-value="ACTIVE"
             inactive-value="INACTIVE"
             :options="STATUS_OPTIONS"
-            :api-method="({ nextValue }) => ModelServiceProfileApi.updateStatus(row.id, String(nextValue))"
+            :api-method="changeStatus(row)"
             @success="notifyStatusSwitchSuccess"
             @error="(p) => notifyStatusSwitchError(p)"
           />
@@ -681,6 +681,10 @@ const handleDelete = (row: ModelServiceProfile) => {
     })
     .catch(() => {});
 };
+
+const changeStatus = (row: ModelServiceProfile) =>
+  ({ nextValue }: { nextValue: string | number | boolean }) =>
+    ModelServiceProfileApi.updateStatus(row.id, String(nextValue));
 
 const handleDefault = (row: ModelServiceProfile) => {
   ElMessageBox.confirm(
