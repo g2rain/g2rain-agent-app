@@ -12,7 +12,7 @@ export interface TaskInstanceVo {
   request: string | null;
   shared: string | null;
   prior: string | null;
-  record: string | null;
+  taskRecord: string | null;
   sourceMessageId: string | null;
   status: string;
   currentNodeId: string | null;

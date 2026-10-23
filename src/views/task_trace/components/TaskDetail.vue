@@ -82,7 +82,7 @@ interface RecordEntity {
 }
 
 const entities = computed(() => {
-  const record = parseJson<{ entities?: Record<string, RecordEntity> }>(props.bundle.task.record, {});
+  const record = parseJson<{ entities?: Record<string, RecordEntity> }>(props.bundle.task.taskRecord, {});
   return Object.entries(record.entities ?? {}).map(([key, entity]) => {
     const [type, id] = key.split(':');
     return { key, type, id, name: entity.displayName ?? '' };
