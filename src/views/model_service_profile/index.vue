@@ -48,8 +48,11 @@
       <el-table-column prop="organId" label="所属机构" width="110" />
       <el-table-column label="模型" min-width="200">
         <template #default="{ row }">
-          <div>{{ row.modelName }}</div>
-          <div class="model_service_profile-page__meta">{{ row.provider }} · {{ optionLabel(PROTOCOL_OPTIONS, row.protocol) }}</div>
+          <div>
+            {{ row.displayName }}
+            <el-tag v-if="row.defaultFlag" size="small" type="success" effect="plain">默认</el-tag>
+          </div>
+          <div class="model_service_profile-page__meta">{{ row.modelName }} · {{ row.provider }} · {{ optionLabel(PROTOCOL_OPTIONS, row.protocol) }}</div>
         </template>
       </el-table-column>
       <el-table-column prop="resourceType" label="来源" width="110">
@@ -61,6 +64,9 @@
       </el-table-column>
       <el-table-column prop="modelType" label="类型" width="120">
         <template #default="{ row }">{{ optionLabel(MODEL_TYPE_OPTIONS, row.modelType) }}</template>
+      </el-table-column>
+      <el-table-column prop="selectable" label="对话可选" width="100">
+        <template #default="{ row }">{{ row.selectable ? '是' : '否' }}</template>
       </el-table-column>
       <el-table-column prop="status" label="状态" width="140">
         <template #default="{ row }">
@@ -78,10 +84,11 @@
       </el-table-column>
       <TableColumn prop="createTime" :label="$t('G2_FIELD_CREATE_TIME', '创建时间')" width="180" sortable="custom" />
       <TableColumn prop="updateTime" :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')" width="180" sortable="custom" />
-      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="200">
+      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="260">
         <template #default="{ row }">
           <el-button type="primary" link size="small" @click="handleView(row)">{{ $t('G2_BTN_DETAIL', '详情') }}</el-button>
           <el-button type="primary" v-permission="'model_service_profile:edit'" link size="small" @click="openEdit(row)">{{ $t('G2_BTN_EDIT', '编辑') }}</el-button>
+          <el-button v-if="!row.defaultFlag" type="primary" v-permission="'model_service_profile:default_update'" link size="small" @click="handleDefault(row)">设为默认</el-button>
           <el-button type="danger" v-permission="'model_service_profile:delete'" link size="small" @click="handleDelete(row)">{{ $t('G2_BTN_DELETE', '删除') }}</el-button>
         </template>
         <template #header>
@@ -205,6 +212,12 @@
             <el-form-item v-if="!isEdit || formOrganId != null" label="所属机构" required>
               <OrganSelect v-model="formOrganId" :disabled="isEdit" width="100%" />
             </el-form-item>
+            <el-form-item label="展示名称" required>
+              <el-input v-model="profile.displayName" maxlength="64" placeholder="对话中展示的名称" />
+            </el-form-item>
+            <el-form-item v-if="currentModelType === 'LLM'" label="对话可选">
+              <el-switch v-model="profile.selectable" />
+            </el-form-item>
             <h4>参数</h4>
             <ParamsForm
               v-model:temperature="params.temperature"
@@ -254,6 +267,9 @@
           <el-form-item label="模型名称" prop="modelName">
             <el-input v-model="custom.modelName" placeholder="请输入模型名称" />
           </el-form-item>
+          <el-form-item label="展示名称" prop="displayName">
+            <el-input v-model="profile.displayName" maxlength="64" placeholder="对话中展示的名称" />
+          </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
               <el-form-item label="模型类型" prop="modelType">
@@ -285,6 +301,9 @@
               :placeholder="isEdit && custom.apiKeyConfigured ? '已配置，留空表示不修改' : '请输入访问密钥'"
             />
           </el-form-item>
+          <el-form-item v-if="custom.modelType === 'LLM'" label="对话可选">
+            <el-switch v-model="profile.selectable" />
+          </el-form-item>
           <el-form-item label="说明" prop="description">
             <el-input v-model="custom.description" type="textarea" :rows="1" placeholder="请输入说明" />
           </el-form-item>
@@ -308,7 +327,10 @@
       <el-descriptions :column="1" border>
         <el-descriptions-item :label="$t('G2_FIELD_ID', 'ID')">{{ currentRow?.id }}</el-descriptions-item>
         <el-descriptions-item label="所属机构">{{ currentRow?.organId }}</el-descriptions-item>
+        <el-descriptions-item label="展示名称">{{ currentRow?.displayName }}</el-descriptions-item>
         <el-descriptions-item label="模型名称">{{ currentRow?.modelName }}</el-descriptions-item>
+        <el-descriptions-item label="对话可选">{{ currentRow?.selectable ? '是' : '否' }}</el-descriptions-item>
+        <el-descriptions-item label="默认">{{ currentRow?.defaultFlag ? '是' : '否' }}</el-descriptions-item>
         <el-descriptions-item label="来源">{{ optionLabel(RESOURCE_OPTIONS, currentRow?.resourceType) }}</el-descriptions-item>
         <el-descriptions-item label="类型">{{ optionLabel(MODEL_TYPE_OPTIONS, currentRow?.modelType) }}</el-descriptions-item>
         <el-descriptions-item label="供应商">{{ currentRow?.provider }}</el-descriptions-item>
@@ -424,6 +446,8 @@ const marketDrawerTitle = computed(() => {
 });
 
 const params = reactive({ temperature: 0, topP: 1, maxTokens: 4096, timeoutMs: 120000 });
+/** 广场 / 私有共用的展示字段 */
+const profile = reactive({ displayName: '', selectable: true });
 const custom = reactive({
   catalogId: undefined as number | undefined,
   modelName: '',
@@ -438,6 +462,14 @@ const custom = reactive({
 
 const customRules: FormRules = {
   modelName: [{ required: true, message: '请输入模型名称', trigger: 'blur' }],
+  displayName: [
+    {
+      required: true,
+      trigger: 'blur',
+      validator: (_rule, _value, callback) =>
+        profile.displayName.trim() ? callback() : callback(new Error('请输入展示名称')),
+    },
+  ],
   modelType: [{ required: true, message: '请选择模型类型', trigger: 'change' }],
   provider: [{ required: true, message: '请输入供应商', trigger: 'blur' }],
   protocol: [{ required: true, message: '请选择协议', trigger: 'change' }],
@@ -499,6 +531,7 @@ const goMarketParams = () => {
     ElMessage.warning('该模型已配置');
     return;
   }
+  if (!profile.displayName.trim()) profile.displayName = selectedMarket.value.modelName;
   marketStep.value = 'params';
 };
 
@@ -563,6 +596,7 @@ const openCreate = async (mode: 'market' | 'custom') => {
   editRow.value = null;
   formOrganId.value = undefined;
   resetParams();
+  Object.assign(profile, { displayName: '', selectable: true });
   if (mode === 'market') {
     selectedCatalogId.value = undefined;
     selectedMarket.value = null;
@@ -598,6 +632,7 @@ const openEdit = (row: ModelServiceProfile) => {
   isEdit.value = true;
   editRow.value = row;
   formOrganId.value = row.organId ?? undefined;
+  Object.assign(profile, { displayName: row.displayName || '', selectable: row.selectable !== false });
   Object.assign(params, {
     temperature: Number(row.temperature ?? 0),
     topP: Number(row.topP ?? 1),
@@ -647,13 +682,38 @@ const handleDelete = (row: ModelServiceProfile) => {
     .catch(() => {});
 };
 
+const handleDefault = (row: ModelServiceProfile) => {
+  ElMessageBox.confirm(
+    `确认将「${row.displayName || row.id}」设为默认？同类型原默认将被替换。`,
+    t('G2_LBL_TIP', '提示'),
+    { type: 'warning' },
+  )
+    .then(async () => {
+      try {
+        await ModelServiceProfileApi.updateDefault(row.id);
+        await loadData();
+        ElMessage.success(t('G2_MSG_SAVE_OK', '保存成功'));
+      } catch (error: unknown) {
+        showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败'));
+      }
+    })
+    .catch(() => {});
+};
+
 const submitMarket = async () => {
+  const displayName = profile.displayName.trim();
+  if (!displayName) {
+    ElMessage.warning('请输入展示名称');
+    return;
+  }
   saving.value = true;
   try {
     if (isEdit.value && editRow.value) {
       await ModelServiceProfileApi.save({
         id: editRow.value.id,
         catalogId: editRow.value.catalogId,
+        displayName,
+        selectable: profile.selectable,
         temperature: params.temperature,
         topP: params.topP,
         maxTokens: params.maxTokens,
@@ -671,6 +731,8 @@ const submitMarket = async () => {
       await ModelServiceProfileApi.save({
         organId: formOrganId.value,
         catalogId: selectedCatalogId.value,
+        displayName,
+        selectable: profile.selectable,
         temperature: params.temperature,
         topP: params.topP,
         maxTokens: params.maxTokens,
@@ -700,6 +762,8 @@ const submitCustom = async () => {
   try {
     const payload: ModelServiceProfilePayload = {
       organId: formOrganId.value ?? undefined,
+      displayName: profile.displayName.trim(),
+      selectable: profile.selectable,
       modelName: custom.modelName,
       modelType: custom.modelType,
       provider: custom.provider,
