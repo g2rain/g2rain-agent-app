@@ -8,6 +8,9 @@ import type { BaseSelectListDto, BaseVo } from '@platform/types/api.type';
 export interface ModelServiceProfile extends BaseVo {
   organId?: number;
   catalogId: number;
+  displayName?: string;
+  selectable?: boolean;
+  defaultFlag?: boolean;
   modelName?: string;
   modelType?: string;
   resourceType?: string;
@@ -28,6 +31,8 @@ export interface ModelServiceProfilePayload {
   id?: number;
   organId?: number;
   catalogId?: number;
+  displayName?: string;
+  selectable?: boolean;
   modelName?: string;
   modelType?: string;
   provider?: string;

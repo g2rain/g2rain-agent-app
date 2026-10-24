@@ -145,6 +145,14 @@
   },
   {
     "parentId": null,
+    "pageElementName": "default_update",
+    "pageElementCode": "model_service_profile:default_update",
+    "pageElementType": "button",
+    "pageCode": "model_service_profile",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
     "pageElementName": "删除",
     "pageElementCode": "model_service_profile:delete",
     "pageElementType": "button",

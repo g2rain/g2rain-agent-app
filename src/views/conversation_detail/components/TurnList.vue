@@ -18,6 +18,18 @@
           <span class="turn__avatar">AI</span>
           <MarkdownViewer :content="reply.content" :locale="locale" />
         </div>
+        <button
+          v-if="isFinal(reply)"
+          type="button"
+          class="turn__task turn__progress"
+          :class="{ 'is-active': reply.traceId === selectedTraceId }"
+          @click="emit('trace', reply.traceId!)"
+        >
+          <span class="turn__progress-icon" aria-hidden="true">⏱</span>
+          <span class="turn__task-goal">{{ $t('AGENT_CONVERSATION_PROGRESS', '执行过程') }}</span>
+          <span class="turn__task-meta">{{ formatDuration(reply.elapsedMs) }}</span>
+          <span class="turn__task-arrow">›</span>
+        </button>
         <div v-if="markerAt(turn, index)" class="turn__marker" :class="`is-${markerAt(turn, index)}`">
           {{ markerText(markerAt(turn, index)!) }}
         </div>
@@ -47,7 +59,7 @@ import { t } from '@platform/i18n';
 import { StatusDot } from '@/components';
 import { describeStatus, elapsed, formatDuration, shortId } from '@runtime/console';
 import { approvalOutcome, type ApprovalOutcome, type Turn } from '../turns';
-import type { TaskResumeRecordVo } from '../type';
+import type { ChatMessageVo, TaskResumeRecordVo } from '../type';
 
 const MarkdownViewer = defineAsyncComponent(() => import('@/components/markdown').then((m) => m.MarkdownViewer));
 
@@ -62,9 +74,16 @@ const props = defineProps<{
   resumes: Record<string, TaskResumeRecordVo[]>;
   writeTasks: Set<string>;
   selectedTaskId: string | null;
+  /** 选中查看执行过程的轮次追踪号 */
+  selectedTraceId: string | null;
   locale: string;
 }>();
-const emit = defineEmits<{ select: [taskId: string] }>();
+const emit = defineEmits<{ select: [taskId: string]; trace: [traceId: string] }>();
+
+/** 带追踪号的最终回复才有执行过程入口；节点内的中间文字不算 */
+function isFinal(reply: ChatMessageVo): boolean {
+  return !!reply.traceId && !reply.nodeId && reply.messageType === 'AGENT_REPLY';
+}
 
 function clock(ms: number): string {
   const date = new Date(ms);
@@ -159,4 +178,5 @@ function markerText(outcome: ApprovalOutcome): string {
   border: 1px solid var(--g2-color-warning);
   border-radius: 3px;
 }
+.turn__progress-icon { flex-shrink: 0; font-size: 12px; color: var(--g2-text-placeholder); }
 </style>

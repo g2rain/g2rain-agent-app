@@ -7,6 +7,7 @@ import type { PageData } from '@platform/types/api.type';
 import type {
   ChatConversationVo,
   ChatMessageVo,
+  ChatProgressVo,
   TaskGraphNodeVo,
   TaskInstanceVo,
   TaskResumeRecordVo,
@@ -59,6 +60,12 @@ export class ConversationDetailApi {
   static async task(taskId: string): Promise<TaskInstanceVo | null> {
     const res = await http().get<TaskInstanceVo | null>(`${base}/task_instance/by_task/${encodeURIComponent(taskId)}`);
     return res.data ?? null;
+  }
+
+  /** 一轮的执行过程（含排查信息），选中时按需加载 */
+  static async progress(traceId: string): Promise<ChatProgressVo[]> {
+    const res = await http().get<ChatProgressVo[]>(`${base}/chat_progress/list`, { traceId, sorts: ['seq,asc'] });
+    return res.data ?? [];
   }
 
   /** 任务步骤，选中任务时按需加载 */

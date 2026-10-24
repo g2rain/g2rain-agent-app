@@ -82,7 +82,7 @@ const emit = defineEmits<{ retry: [] }>();
 const failed = computed(() => props.task.status === TaskStatus.FAILED || props.task.status === TaskStatus.CANCELED);
 
 const entities = computed(() => {
-  const record = parseJson<{ entities?: Record<string, { displayName?: string }> }>(props.task.record, {});
+  const record = parseJson<{ entities?: Record<string, { displayName?: string }> }>(props.task.taskRecord, {});
   return Object.entries(record.entities ?? {})
     .filter(([, entity]) => entity.displayName)
     .map(([key, entity]) => ({ key, type: key.split(':')[0], name: entity.displayName ?? '' }));

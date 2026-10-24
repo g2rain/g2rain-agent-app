@@ -51,4 +51,9 @@ export class ModelServiceProfileApi {
   static async updateStatus(id: number, status: string): Promise<void> {
     await http().post(`${base}/model_service_profile/${id}/status`, { status });
   }
+
+  /** 设为默认：同机构同类型只保留一条 */
+  static async updateDefault(id: number): Promise<void> {
+    await http().post(`${base}/model_service_profile/${id}/default`);
+  }
 }
