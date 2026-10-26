@@ -30,7 +30,7 @@
         <div class="skill-list__actions" @click.stop>
           <StatusSwitch
             :model-value="row.skill.status"
-            v-permission="'skill:edit'"
+            permission="skill:edit"
             active-value="ACTIVE"
             inactive-value="INACTIVE"
             :options="STATUS_OPTIONS"

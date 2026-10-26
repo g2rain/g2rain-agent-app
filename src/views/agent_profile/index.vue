@@ -42,7 +42,7 @@
         <template #default="{ row }">
           <StatusSwitch
             :model-value="row.status"
-            v-permission="'agent_profile:status_update'"
+            permission="agent_profile:status_update"
             active-value="ACTIVE"
             inactive-value="INACTIVE"
             :options="STATUS_OPTIONS"

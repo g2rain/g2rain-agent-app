@@ -39,7 +39,7 @@
         <template #default="{ row }">
           <StatusSwitch
             :model-value="row.status"
-            v-permission="'mcp_tool_profile:edit'"
+            permission="mcp_tool_profile:edit"
             active-value="ACTIVE"
             inactive-value="INACTIVE"
             :options="STATUS_OPTIONS"

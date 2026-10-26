@@ -72,7 +72,7 @@
         <template #default="{ row }">
           <StatusSwitch
             v-model="row.status"
-            v-permission="'model_service_profile:status_update'"
+            permission="model_service_profile:status_update"
             active-value="ACTIVE"
             inactive-value="INACTIVE"
             :options="STATUS_OPTIONS"

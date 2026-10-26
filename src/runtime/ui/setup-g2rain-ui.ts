@@ -12,6 +12,7 @@ import { t } from '@platform/i18n';
 import { useAccessTokenStore, useLocaleStore } from '@platform/stores';
 import { OrganApi } from '@/views/organ/api';
 import { DictItemApi } from '@/views/dict/api';
+import { PageElementPermission } from '@/components/permission';
 
 export function setupG2rainUi(app: App): void {
   app.use(G2rainUi, {
@@ -25,6 +26,8 @@ export function setupG2rainUi(app: App): void {
     },
   });
   app.use(G2rainPlatformUi, {
+    // 状态开关按页面元素权限禁用：ENABLED 可操作，VISIBLE / 无权限不可操作
+    permission: { isEnabled: (code) => PageElementPermission.isEnabled(code) },
     onMissingProvider: (name) => {
       if ((import.meta.env as { DEV?: boolean }).DEV) {
         console.warn(`[G2rainUi] missing data provider: ${name}`);
