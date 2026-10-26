@@ -5,9 +5,6 @@
         <el-form-item label="所属机构">
           <OrganSelect v-model="queryForm.organId" />
         </el-form-item>
-        <el-form-item label="服务编码">
-          <el-input v-model="queryForm.code" placeholder="请输入服务编码" clearable style="width: 180px" />
-        </el-form-item>
         <el-form-item label="服务名称">
           <el-input v-model="queryForm.name" placeholder="请输入服务名称" clearable style="width: 180px" />
         </el-form-item>
@@ -35,11 +32,10 @@
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="100" />
       <el-table-column prop="organId" label="所属机构" width="110" />
-      <el-table-column prop="code" label="服务编码" width="160" />
       <el-table-column prop="name" label="服务名称" min-width="160" />
-      <el-table-column label="调用地址" min-width="240">
+      <el-table-column label="调用基址" min-width="240">
         <template #default="{ row }">
-          <code>{{ callUrl(row) }}</code>
+          <code>{{ row.endpoint }}</code>
         </template>
       </el-table-column>
       <el-table-column prop="status" label="状态" width="140">
@@ -58,8 +54,9 @@
         </template>
       </el-table-column>
       <TableColumn prop="updateTime" :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')" width="180" sortable="custom" />
-      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="200">
+      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="260">
         <template #default="{ row }">
+          <el-button type="primary" link size="small" @click="toolsService = row">工具管理</el-button>
           <el-button type="primary" link size="small" @click="handleView(row)">{{ $t('G2_BTN_DETAIL', '详情') }}</el-button>
           <el-button type="primary" v-permission="'mcp_external_service:edit'" link size="small" @click="handleEdit(row)">{{ $t('G2_BTN_EDIT', '编辑') }}</el-button>
           <el-button type="danger" v-permission="'mcp_external_service:delete'" link size="small" @click="handleDelete(row)">{{ $t('G2_BTN_DELETE', '删除') }}</el-button>
@@ -90,17 +87,11 @@
         <el-form-item v-if="!isEdit || editForm.organId != null" label="所属机构" prop="organId">
           <OrganSelect v-model="editForm.organId" :disabled="isEdit" width="100%" />
         </el-form-item>
-        <el-form-item label="服务编码" prop="code">
-          <el-input v-model="editForm.code" placeholder="请输入服务编码" :disabled="isEdit" />
-        </el-form-item>
         <el-form-item label="服务名称" prop="name">
           <el-input v-model="editForm.name" placeholder="请输入服务名称" />
         </el-form-item>
         <el-form-item label="调用基址" prop="endpoint">
-          <el-input v-model="editForm.endpoint" placeholder="https://api.example.com" />
-        </el-form-item>
-        <el-form-item label="上下文路径" prop="contextPath">
-          <el-input v-model="editForm.contextPath" placeholder="/v1（可空）" />
+          <el-input v-model="editForm.endpoint" placeholder="完整基址，如 https://erp.example.com/api" />
         </el-form-item>
         <el-form-item label="说明" prop="description">
           <el-input v-model="editForm.description" type="textarea" :rows="2" placeholder="请输入说明" />
@@ -118,9 +109,8 @@
       <el-descriptions :column="1" border>
         <el-descriptions-item :label="$t('G2_FIELD_ID', 'ID')">{{ currentRow?.id }}</el-descriptions-item>
         <el-descriptions-item label="所属机构">{{ currentRow?.organId }}</el-descriptions-item>
-        <el-descriptions-item label="服务编码">{{ currentRow?.code }}</el-descriptions-item>
         <el-descriptions-item label="服务名称">{{ currentRow?.name }}</el-descriptions-item>
-        <el-descriptions-item label="调用地址">{{ currentRow ? callUrl(currentRow) : '' }}</el-descriptions-item>
+        <el-descriptions-item label="调用基址">{{ currentRow?.endpoint }}</el-descriptions-item>
         <el-descriptions-item label="资源类型">{{ pageTitle }}</el-descriptions-item>
         <el-descriptions-item label="状态">{{ optionLabel(STATUS_OPTIONS, currentRow?.status) }}</el-descriptions-item>
         <el-descriptions-item label="说明">{{ currentRow?.description }}</el-descriptions-item>
@@ -133,6 +123,15 @@
         </span>
       </template>
     </el-dialog>
+
+    <ServiceTools
+      v-if="toolsService"
+      visible
+      :resource-type="resourceType"
+      :service-id="toolsService.id"
+      :service-name="toolsService.name"
+      @close="toolsService = null"
+    />
   </div>
 </template>
 
@@ -147,6 +146,7 @@ import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rai
 import { OrganSelect, StatusSwitch } from '@g2rain/ui/platform';
 import { RecordStatus, ResourceType } from '@runtime/console';
 import { showErrorMessage, notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
+import { ServiceTools } from '@/views/mcp_tool_profile';
 import { McpExternalServiceApi } from './api';
 import type { McpExternalService, McpExternalServicePayload, McpExternalServiceQuery } from './type';
 
@@ -171,8 +171,8 @@ const resourceType = computed(() =>
 
 const pageTitle = computed(() =>
   resourceType.value === ResourceType.EXTENSION
-    ? t('AGENT_MENU_EXTENSION_SERVICE', '扩展系统接入')
-    : t('AGENT_MENU_CUSTOMER_SERVICE', '租户系统接入'),
+    ? t('AGENT_MENU_EXTENSION_TOOL', '平台扩展工具')
+    : t('AGENT_MENU_CUSTOMER_TOOL', '租户系统工具'),
 );
 
 const queryFormRef = ref<InstanceType<typeof QueryForm> | null>(null);
@@ -186,7 +186,6 @@ const baseQueryForm = ref<BaseSelectListDto>({
 
 const queryForm = reactive({
   organId: undefined as number | null | undefined,
-  code: '',
   name: '',
   status: '',
 });
@@ -198,13 +197,6 @@ const pagination = reactive({
 });
 
 const tableData = ref<McpExternalService[]>([]);
-
-function callUrl(row: McpExternalService): string {
-  const path = (row.contextPath || '').trim();
-  if (!row.endpoint) return '';
-  if (!path) return row.endpoint;
-  return `${row.endpoint.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
-}
 
 async function loadData(): Promise<void> {
   try {
@@ -238,7 +230,6 @@ function handleReset(): void {
   baseQueryForm.value.updateTime = undefined;
   baseQueryForm.value.sorts = undefined;
   queryForm.organId = undefined;
-  queryForm.code = '';
   queryForm.name = '';
   queryForm.status = '';
   pagination.pageNum = 1;
@@ -257,6 +248,8 @@ function handlePageChange(page: number): void {
 }
 
 const currentRow = ref<McpExternalService | null>(null);
+/** 正在管理工具的服务 */
+const toolsService = ref<McpExternalService | null>(null);
 const detailDialogVisible = ref(false);
 
 function handleView(row: McpExternalService): void {
@@ -290,10 +283,8 @@ const editFormRef = ref<FormInstance | null>(null);
 const editForm = reactive({
   id: undefined as number | undefined,
   organId: undefined as number | null | undefined,
-  code: '',
   name: '',
   endpoint: '',
-  contextPath: '',
   description: '',
 });
 
@@ -305,7 +296,6 @@ const editRules: FormRules = {
     },
     trigger: 'change',
   }],
-  code: [{ required: true, message: '请输入服务编码', trigger: 'blur' }],
   name: [{ required: true, message: '请输入服务名称', trigger: 'blur' }],
   endpoint: [{ required: true, message: '请输入调用基址', trigger: 'blur' }],
 };
@@ -315,10 +305,8 @@ function handleCreate(): void {
   editFormRef.value?.clearValidate();
   editForm.id = undefined;
   editForm.organId = undefined;
-  editForm.code = '';
   editForm.name = '';
   editForm.endpoint = '';
-  editForm.contextPath = '';
   editForm.description = '';
   editDialogVisible.value = true;
 }
@@ -328,10 +316,8 @@ function handleEdit(row: McpExternalService): void {
   editFormRef.value?.clearValidate();
   editForm.id = row.id;
   editForm.organId = row.organId ?? undefined;
-  editForm.code = row.code;
   editForm.name = row.name;
   editForm.endpoint = row.endpoint;
-  editForm.contextPath = row.contextPath ?? '';
   editForm.description = row.description ?? '';
   editDialogVisible.value = true;
 }
@@ -343,10 +329,8 @@ async function submitEdit(): Promise<void> {
 
   const payload: McpExternalServicePayload = {
     organId: editForm.organId ?? undefined,
-    code: editForm.code.trim(),
     name: editForm.name.trim(),
     endpoint: editForm.endpoint.trim(),
-    contextPath: editForm.contextPath.trim() || '/',
     description: editForm.description,
   };
   if (isEdit.value) {

@@ -9,10 +9,8 @@ import type { BaseSelectListDto, BaseVo } from '@platform/types/api.type';
  */
 export interface McpExternalService extends BaseVo {
   organId?: number;
-  code: string;
   name: string;
   endpoint: string;
-  contextPath: string | null;
   resourceType: string;
   status: string;
   description: string | null;
@@ -24,10 +22,8 @@ export interface McpExternalService extends BaseVo {
 export interface McpExternalServicePayload {
   id?: number; // 更新时传入 ID，新增时不传
   organId?: number;
-  code?: string;
   name?: string;
   endpoint?: string;
-  contextPath?: string;
   resourceType?: string;
   description?: string;
 }
@@ -40,10 +36,8 @@ export interface McpExternalServicePayload {
 export interface McpExternalServiceQuery extends BaseSelectListDto {
   // 业务查询字段
   organId?: number;
-  code?: string;
   name?: string;
   endpoint?: string;
-  contextPath?: string;
   resourceType?: string;
   status?: string;
   description?: string;

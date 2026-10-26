@@ -15,25 +15,20 @@
     <div class="tool-drawer__section">基本信息</div>
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
       <div class="tool-drawer__grid">
-        <el-form-item v-if="mode === 'create' || form.organId != null" label="所属机构" prop="organId">
-          <OrganSelect v-model="form.organId" :disabled="mode !== 'create'" width="100%" />
-        </el-form-item>
-        <el-form-item label="工具名" prop="name">
-          <el-input v-model="form.name" :disabled="locked" maxlength="256" placeholder="MCP tools/call 名称" />
+        <el-form-item label="工具名">
+          <el-input :model-value="form.name" disabled />
         </el-form-item>
         <el-form-item label="标题" prop="title">
           <el-input v-model="form.title" :disabled="mode === 'detail'" maxlength="128" placeholder="给人看的标题" />
         </el-form-item>
-        <el-form-item label="服务编码" prop="serviceCode">
-          <el-input v-model="form.serviceCode" :disabled="locked" maxlength="64" placeholder="所属服务编码" />
+        <el-form-item label="所属服务">
+          <el-input :model-value="form.serviceName" disabled />
         </el-form-item>
-        <el-form-item label="方法" prop="method">
-          <el-select v-model="form.method" :disabled="locked" placeholder="请选择" style="width: 100%">
-            <el-option v-for="item in METHODS" :key="item" :label="item" :value="item" />
-          </el-select>
+        <el-form-item label="方法">
+          <el-input :model-value="form.method" disabled />
         </el-form-item>
-        <el-form-item class="tool-drawer__full" label="路径" prop="path">
-          <el-input v-model="form.path" :disabled="locked" maxlength="512" placeholder="/resource/action" />
+        <el-form-item class="tool-drawer__full" label="路径">
+          <el-input :model-value="form.path" disabled />
         </el-form-item>
         <el-form-item class="tool-drawer__full" label="说明" prop="description">
           <el-input
@@ -56,8 +51,8 @@
         <el-empty v-else :image-size="48" description="没有 inputSchema" />
       </el-tab-pane>
       <el-tab-pane label="OpenAPI" name="openapi">
-        <JsonEditor v-if="mode !== 'detail'" v-model="form.openapiOperation" height="320px" />
-        <JsonViewer v-else-if="form.openapiOperation" :value="form.openapiOperation" :collapsed-depth="2" />
+        <JsonEditor v-if="mode !== 'detail'" v-model="form.openapiDocument" height="320px" />
+        <JsonViewer v-else-if="form.openapiDocument" :value="form.openapiDocument" :collapsed-depth="2" />
         <el-empty v-else :image-size="48" description="没有 OpenAPI" />
       </el-tab-pane>
     </el-tabs>
@@ -74,18 +69,18 @@ import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
 import { ElMessage } from 'element-plus';
 import { t } from '@platform/i18n';
-import { OrganSelect } from '@g2rain/ui/platform';
 import { JsonViewer, showErrorMessage } from '@/components';
 import { McpToolProfileApi } from '../api';
 import type { McpToolProfile } from '../type';
 
 const JsonEditor = defineAsyncComponent(() => import('@/components/json-editor').then((m) => m.JsonEditor));
 
-const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD', 'TRACE'];
-
+/**
+ * 工具详情 / 编辑：工具由导入生成，名称、服务、方法、路径只读。
+ */
 const props = defineProps<{
   visible: boolean;
-  mode: 'create' | 'edit' | 'detail';
+  mode: 'edit' | 'detail';
   resourceType: string;
   row: McpToolProfile | null;
 }>();
@@ -97,39 +92,21 @@ const tab = ref('schema');
 const saving = ref(false);
 const form = reactive({
   id: undefined as number | undefined,
-  organId: undefined as number | null | undefined,
   name: '',
   title: '',
-  serviceCode: '',
-  method: 'GET',
+  serviceName: '',
+  method: '',
   path: '',
   description: '',
   inputSchema: '{}',
-  openapiOperation: '{}',
+  openapiDocument: '{}',
 });
 
-const locked = computed(() => props.mode !== 'create');
-const title = computed(() => {
-  if (props.mode === 'create') return '新增工具';
-  if (props.mode === 'edit') return `编辑工具 · ${form.name}`;
-  return form.title || form.name || '工具详情';
-});
+const title = computed(() => (props.mode === 'edit' ? `编辑工具 · ${form.name}` : form.title || form.name || '工具详情'));
 
-const rules = computed<FormRules>(() => {
-  if (props.mode === 'detail') return {};
-  const required = (message: string) => [{ required: true, message, trigger: 'blur' }];
-  if (props.mode === 'edit') {
-    return { title: required('请输入标题') };
-  }
-  return {
-    organId: [{ required: true, message: '请选择所属机构', trigger: 'change' }],
-    name: required('请输入工具名'),
-    title: required('请输入标题'),
-    serviceCode: required('请输入服务编码'),
-    method: [{ required: true, message: '请选择方法', trigger: 'change' }],
-    path: required('请输入路径'),
-  };
-});
+const rules = computed<FormRules>(() =>
+  props.mode === 'edit' ? { title: [{ required: true, message: '请输入标题', trigger: 'blur' }] } : {},
+);
 
 watch(
   () => props.visible,
@@ -137,48 +114,32 @@ watch(
     if (!visible) return;
     tab.value = 'schema';
     const row = props.row;
-    form.id = props.mode === 'create' ? undefined : row?.id;
-    form.organId = props.mode === 'create' ? undefined : (row?.organId ?? undefined);
+    form.id = row?.id;
     form.name = row?.name ?? '';
     form.title = row?.title ?? '';
-    form.serviceCode = row?.serviceCode ?? '';
-    form.method = row?.method || 'GET';
+    form.serviceName = row?.serviceName ?? '';
+    form.method = row?.method ?? '';
     form.path = row?.path ?? '';
     form.description = row?.description ?? '';
     form.inputSchema = row?.inputSchema || '{}';
-    form.openapiOperation = row?.openapiOperation || '{}';
+    form.openapiDocument = row?.openapiDocument || '{}';
     formRef.value?.clearValidate();
   },
 );
 
 async function submit(): Promise<void> {
   const valid = await formRef.value?.validate().catch(() => false);
-  if (!valid) return;
+  if (!valid || form.id == null) return;
   saving.value = true;
   try {
-    if (props.mode === 'create') {
-      await McpToolProfileApi.save(props.resourceType, {
-        organId: form.organId ?? undefined,
-        name: form.name,
-        title: form.title,
-        serviceCode: form.serviceCode,
-        method: form.method,
-        path: form.path,
-        description: form.description,
-        inputSchema: form.inputSchema,
-        openapiOperation: form.openapiOperation,
-      });
-      ElMessage.success(t('G2_MSG_ADD_OK', '新增成功'));
-    } else {
-      await McpToolProfileApi.save(props.resourceType, {
-        id: form.id,
-        title: form.title,
-        description: form.description,
-        inputSchema: form.inputSchema,
-        openapiOperation: form.openapiOperation,
-      });
-      ElMessage.success(t('G2_MSG_UPDATE_OK', '更新成功'));
-    }
+    await McpToolProfileApi.save(props.resourceType, {
+      id: form.id,
+      title: form.title,
+      description: form.description,
+      inputSchema: form.inputSchema,
+      openapiDocument: form.openapiDocument,
+    });
+    ElMessage.success(t('G2_MSG_UPDATE_OK', '更新成功'));
     emit('done');
     emit('close');
   } catch (error: unknown) {

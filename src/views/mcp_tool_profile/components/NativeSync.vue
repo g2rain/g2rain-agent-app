@@ -3,7 +3,7 @@
     <el-form label-width="88px">
       <el-form-item label="微服务">
         <el-select
-          v-model="serviceCode"
+          v-model="serviceId"
           filterable
           clearable
           style="width: 100%"
@@ -13,14 +13,14 @@
         >
           <el-option
             v-for="item in services"
-            :key="item.serviceCode"
+            :key="item.id"
             :label="`${item.name || item.serviceCode}（${item.serviceCode}）`"
-            :value="item.serviceCode"
+            :value="item.id"
           />
         </el-select>
       </el-form-item>
       <el-form-item label="范围">
-        <el-checkbox v-model="importAll" :disabled="!serviceCode">导入该服务全部接口</el-checkbox>
+        <el-checkbox v-model="importAll" :disabled="serviceId == null">导入该服务全部接口</el-checkbox>
       </el-form-item>
     </el-form>
 
@@ -38,7 +38,7 @@
       <el-table-column prop="path" label="路径" min-width="220" />
       <el-table-column prop="name" label="名称" min-width="160" />
     </el-table>
-    <div v-if="!importAll" class="built-in-sync__pager">
+    <div v-if="!importAll" class="native-sync__pager">
       <el-pagination
         v-model:current-page="pageNum"
         v-model:page-size="pageSize"
@@ -62,6 +62,7 @@ import { getHttpClient } from '@runtime/http';
 import { McpToolProfileApi } from '../api';
 
 interface ServiceRow {
+  id: number;
   serviceCode: string;
   name?: string;
 }
@@ -78,7 +79,7 @@ const emit = defineEmits<{ close: []; done: [] }>();
 
 const services = ref<ServiceRow[]>([]);
 const servicesLoading = ref(false);
-const serviceCode = ref('');
+const serviceId = ref<number | undefined>();
 const importAll = ref(false);
 const rows = ref<ApiRow[]>([]);
 const selected = ref<ApiRow[]>([]);
@@ -89,7 +90,7 @@ const pageSize = ref(20);
 const total = ref(0);
 
 const canSubmit = computed(() => {
-  if (!serviceCode.value) return false;
+  if (serviceId.value == null) return false;
   return importAll.value || selected.value.length > 0;
 });
 
@@ -97,7 +98,7 @@ watch(
   () => props.visible,
   (visible) => {
     if (!visible) return;
-    serviceCode.value = '';
+    serviceId.value = undefined;
     importAll.value = false;
     rows.value = [];
     selected.value = [];
@@ -129,7 +130,8 @@ function onSelect(value: ApiRow[]): void {
 }
 
 async function loadApis(): Promise<void> {
-  if (!serviceCode.value) {
+  const service = services.value.find((item) => item.id === serviceId.value);
+  if (!service) {
     rows.value = [];
     total.value = 0;
     return;
@@ -138,7 +140,7 @@ async function loadApis(): Promise<void> {
   try {
     const http = getHttpClient('default');
     const res = await http.get<{ records: ApiRow[]; total: number }>('/basis/resource_api/page', {
-      serviceCode: serviceCode.value,
+      serviceCode: service.serviceCode,
       pageNum: pageNum.value,
       pageSize: pageSize.value,
     });
@@ -152,8 +154,8 @@ async function loadApis(): Promise<void> {
 async function submit(): Promise<void> {
   submitting.value = true;
   try {
-    const result = await McpToolProfileApi.syncBuiltIn({
-      serviceCode: serviceCode.value,
+    const result = await McpToolProfileApi.syncNative({
+      serviceId: serviceId.value!,
       importAll: importAll.value,
       resourceApiIds: importAll.value ? undefined : selected.value.map((row) => row.id),
     });
@@ -167,5 +169,5 @@ async function submit(): Promise<void> {
 </script>
 
 <style scoped>
-.built-in-sync__pager { margin-top: 12px; display: flex; justify-content: flex-end; }
+.native-sync__pager { margin-top: 12px; display: flex; justify-content: flex-end; }
 </style>

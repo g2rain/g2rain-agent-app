@@ -58,37 +58,27 @@ export const routeMap: Record<string, ViewRouteConfig> = {
     '/mcp_external_service/extension': {
             component: () => import('@/views/mcp_external_service/index.vue'),
             name: 'McpExternalServiceExtension',
-            meta: { title: '扩展系统接入', requiresAuth: true, showInHome: true },
+            meta: { title: '平台扩展工具', requiresAuth: true, showInHome: true },
         },
     '/mcp_external_service/customer': {
             component: () => import('@/views/mcp_external_service/index.vue'),
             name: 'McpExternalServiceCustomer',
-            meta: { title: '租户系统接入', requiresAuth: true, showInHome: true },
+            meta: { title: '租户系统工具', requiresAuth: true, showInHome: true },
         },
     '/mcp_external_service': {
             component: () => import('@/views/mcp_external_service/index.vue'),
             name: 'McpExternalService',
-            meta: { title: '租户系统接入', requiresAuth: true, showInHome: false },
+            meta: { title: '租户系统工具', requiresAuth: true, showInHome: false },
         },
-    '/mcp_tool_profile/built_in': {
+    '/mcp_tool_profile/native': {
             component: () => import('@/views/mcp_tool_profile/index.vue'),
-            name: 'McpToolProfileBuiltIn',
+            name: 'McpToolProfileNative',
             meta: { title: '平台原生工具', requiresAuth: true, showInHome: true },
-        },
-    '/mcp_tool_profile/extension': {
-            component: () => import('@/views/mcp_tool_profile/index.vue'),
-            name: 'McpToolProfileExtension',
-            meta: { title: '平台扩展工具', requiresAuth: true, showInHome: true },
-        },
-    '/mcp_tool_profile/customer': {
-            component: () => import('@/views/mcp_tool_profile/index.vue'),
-            name: 'McpToolProfileCustomer',
-            meta: { title: '租户系统工具', requiresAuth: true, showInHome: true },
         },
     '/mcp_tool_profile': {
             component: () => import('@/views/mcp_tool_profile/index.vue'),
             name: 'McpToolProfile',
-            meta: { title: '租户系统工具', requiresAuth: true, showInHome: false },
+            meta: { title: '平台原生工具', requiresAuth: true, showInHome: false },
         },
     '/model_service_catalog': {
             component: () => import('@/views/model_service_catalog/index.vue'),

@@ -65,14 +65,6 @@
   },
   {
     "parentId": null,
-    "pageElementName": "新增",
-    "pageElementCode": "mcp_tool_profile:add",
-    "pageElementType": "button",
-    "pageCode": "mcp_tool_profile",
-    "status": "ENABLED"
-  },
-  {
-    "parentId": null,
     "pageElementName": "删除",
     "pageElementCode": "mcp_tool_profile:delete",
     "pageElementType": "button",

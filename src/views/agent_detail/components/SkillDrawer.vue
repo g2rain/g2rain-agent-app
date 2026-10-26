@@ -121,7 +121,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
 import { StatusDot, showErrorMessage } from '@/components';
 import { EMPTY, ResourceType } from '@runtime/console';
-import { McpToolProfileApi, ToolPicker, type McpToolProfileVo } from '@/views/mcp_tool_profile';
+import { McpToolProfileApi, ToolPicker, type McpToolMetaVo, type McpToolOptionVo } from '@/views/mcp_tool_profile';
 import ContractPanel from './ContractPanel.vue';
 import { AgentDetailApi } from '../api';
 import { parseContract } from '../contract';
@@ -158,7 +158,7 @@ const manual = ref('');
 const contract = ref('');
 const snapshot = ref('');
 const toolBindings = ref<SkillToolBindingVo[]>([]);
-const toolMeta = ref<McpToolProfileVo[]>([]);
+const toolMeta = ref<McpToolMetaVo[]>([]);
 
 const isPlatform = computed(() => form.value.resourceType === ResourceType.PLATFORM);
 
@@ -181,7 +181,7 @@ async function load(): Promise<void> {
   loading.value = true;
   tab.value = props.initialTab ?? 'basic';
   try {
-    toolMeta.value = await McpToolProfileApi.listAll().catch(() => []);
+    toolMeta.value = [];
     if (props.skillId) {
       const [skill, tools] = await Promise.all([
         AgentDetailApi.skill(props.skillId),
@@ -191,6 +191,7 @@ async function load(): Promise<void> {
       manual.value = skill?.skillManual ?? '';
       contract.value = skill?.skillContract ?? '{}';
       toolBindings.value = tools;
+      await loadMeta();
     } else {
       form.value = {
         agentId: props.agentId,
@@ -247,11 +248,22 @@ async function save(): Promise<void> {
   }
 }
 
-async function refreshTools(): Promise<void> {
-  if (props.skillId) toolBindings.value = await AgentDetailApi.skillTools(props.skillId);
+/** 补查尚未取过元数据的已绑定工具 */
+async function loadMeta(): Promise<void> {
+  const known = new Set(toolMeta.value.map((m) => m.name));
+  const missing = [...new Set(toolBindings.value.map((b) => b.toolName))].filter((name) => !known.has(name));
+  if (missing.length === 0) return;
+  const metas = await McpToolProfileApi.metas(missing).catch(() => []);
+  toolMeta.value = [...toolMeta.value, ...metas];
 }
 
-async function addTools(tools: McpToolProfileVo[]): Promise<void> {
+async function refreshTools(): Promise<void> {
+  if (!props.skillId) return;
+  toolBindings.value = await AgentDetailApi.skillTools(props.skillId);
+  await loadMeta();
+}
+
+async function addTools(tools: McpToolOptionVo[]): Promise<void> {
   pickerOpen.value = false;
   if (!props.skillId) return;
   // 新增后端固定启用，不必传 enabledFlag
