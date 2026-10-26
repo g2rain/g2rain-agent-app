@@ -36,7 +36,7 @@ export class McpToolProfileApi {
     return res.data;
   }
 
-  /** 更新扩展 / 租户工具；原生工具不支持编辑 */
+  /** 更新工具：只改标题、说明与契约；工具一律由同步 / 导入生成，不支持单条新增 */
   static async save(resourceType: string, payload: McpToolProfilePayload): Promise<number> {
     const http = getHttpClient('default');
     const res = await http.post<number>(`${base}/mcp_tool_profile/${kindOf(resourceType)}/save`, payload);

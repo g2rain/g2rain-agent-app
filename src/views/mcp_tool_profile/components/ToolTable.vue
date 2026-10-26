@@ -56,7 +56,6 @@
         <template #default="{ row }">
           <el-button type="primary" link size="small" @click="openDrawer(row, 'detail')">{{ $t('G2_BTN_DETAIL', '详情') }}</el-button>
           <el-button
-            v-if="editable"
             type="primary"
             v-permission="'mcp_tool_profile:edit'"
             link
@@ -100,10 +99,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
-import { RecordStatus, ResourceType } from '@runtime/console';
+import { RecordStatus } from '@runtime/console';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { QueryForm, SortableTable, SortManagerButton, TableColumn } from '@g2rain/ui';
 import { OrganSelect, StatusSwitch } from '@g2rain/ui/platform';
@@ -125,9 +124,6 @@ const STATUS_OPTIONS = [
   { value: RecordStatus.ACTIVE, label: '启用' },
   { value: RecordStatus.INACTIVE, label: '禁用' },
 ];
-
-/** 原生工具由同步生成，服务端不提供编辑 */
-const editable = computed(() => props.resourceType !== ResourceType.NATIVE);
 
 const queryFormRef = ref<InstanceType<typeof QueryForm> | null>(null);
 const baseQueryForm = ref<BaseSelectListDto>({
