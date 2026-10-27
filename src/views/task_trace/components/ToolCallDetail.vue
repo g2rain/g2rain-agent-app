@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { t } from '@platform/i18n';
-import { CopyText, JsonViewer, StatusDot, showErrorMessage } from '@/components';
+import { CopyText, JsonViewer, StatusDot } from '@/components';
 import { EMPTY, SideEffect, describeStatus, formatDuration } from '@runtime/console';
 import { TaskTraceApi } from '../api';
 import type { TaskNodePayloadVo, ToolCallRecordVo } from '../type';
@@ -75,8 +75,8 @@ async function loadPayload(): Promise<void> {
   loadingPayload.value = true;
   try {
     payload.value = await TaskTraceApi.payload(payloadId);
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载失败'));
+  } catch {
+    // 请求失败已由 http 层统一提示
   } finally {
     loadingPayload.value = false;
   }

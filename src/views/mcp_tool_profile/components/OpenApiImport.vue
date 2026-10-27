@@ -55,7 +55,6 @@
 import { computed, ref, watch } from 'vue';
 import type { UploadFile } from 'element-plus';
 import { ElMessage } from 'element-plus';
-import { showErrorMessage } from '@/components';
 import { McpToolProfileApi, type ConvertedOperation } from '../api';
 
 /**
@@ -124,8 +123,6 @@ async function next(): Promise<void> {
     operations.value = parsed.map((item, index) => ({ ...item, key: `${item.method}:${item.path}:${index}` }));
     selected.value = [];
     step.value = 1;
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : '解析失败');
   } finally {
     previewing.value = false;
   }
@@ -138,8 +135,6 @@ async function confirm(): Promise<void> {
     ElMessage.success(`新增 ${result.created}，更新 ${result.updated}，跳过 ${result.skipped}`);
     emit('done');
     emit('close');
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : '导入失败');
   } finally {
     submitting.value = false;
   }

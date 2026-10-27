@@ -77,7 +77,7 @@ import { computed, defineAsyncComponent, onBeforeUnmount, ref, watch } from 'vue
 import { useRoute, useRouter } from 'vue-router';
 import { t } from '@platform/i18n';
 import { useLocaleStore } from '@platform/stores/locale.store';
-import { CopyText, StatusDot, showErrorMessage } from '@/components';
+import { CopyText, StatusDot } from '@/components';
 import {
   SideEffect,
   TERMINAL_TASK_STATUSES,
@@ -186,7 +186,6 @@ async function load(refresh?: 'manual' | 'auto'): Promise<void> {
     if (seq !== loadSeq) return;
     const message = error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载失败');
     if (!refresh || !bundle.value) failure.value = message;
-    else if (refresh === 'manual') showErrorMessage(message);
   } finally {
     if (seq === loadSeq) loading.value = false;
   }

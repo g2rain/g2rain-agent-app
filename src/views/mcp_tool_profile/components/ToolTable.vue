@@ -106,7 +106,7 @@ import { RecordStatus } from '@runtime/console';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { QueryForm, SortableTable, SortManagerButton, TableColumn } from '@g2rain/ui';
 import { OrganSelect, StatusSwitch } from '@g2rain/ui/platform';
-import { notifyStatusSwitchError, notifyStatusSwitchSuccess, showErrorMessage } from '@/components';
+import { notifyStatusSwitchError, notifyStatusSwitchSuccess } from '@/components';
 import { McpToolProfileApi } from '../api';
 import type { McpToolProfile, McpToolProfileQuery } from '../type';
 import ToolDrawer from './ToolDrawer.vue';
@@ -153,8 +153,8 @@ async function loadData(): Promise<void> {
     } as PageSelectListDto & McpToolProfileQuery);
     tableData.value = pageData.records;
     pagination.total = pageData.total;
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败'));
+  } catch {
+    // 请求失败已由 http 层统一提示
   }
 }
 
@@ -171,7 +171,6 @@ function handleReset(): void {
   baseQueryForm.value.id = undefined;
   baseQueryForm.value.createTime = undefined;
   baseQueryForm.value.updateTime = undefined;
-  baseQueryForm.value.sorts = undefined;
   queryForm.organId = undefined;
   queryForm.name = '';
   queryForm.status = '';
@@ -201,16 +200,12 @@ function openDrawer(row: McpToolProfile, mode: 'edit' | 'detail'): void {
 function handleDelete(row: McpToolProfile): void {
   ElMessageBox.confirm(`确认删除工具「${row.name || row.id}」吗？`, t('G2_LBL_TIP', '提示'), { type: 'warning' })
     .then(async () => {
-      try {
-        await McpToolProfileApi.remove(row.id);
-        if (tableData.value.length === 1 && pagination.pageNum > 1) {
-          pagination.pageNum--;
-        }
-        await loadData();
-        ElMessage.success(t('G2_MSG_DELETE_OK', '删除成功'));
-      } catch (error: unknown) {
-        showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_DELETE_FAIL', '删除失败'));
+      await McpToolProfileApi.remove(row.id);
+      if (tableData.value.length === 1 && pagination.pageNum > 1) {
+        pagination.pageNum--;
       }
+      await loadData();
+      ElMessage.success(t('G2_MSG_DELETE_OK', '删除成功'));
     })
     .catch(() => {});
 }

@@ -359,7 +359,7 @@ import { t } from '@platform/i18n';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
 import { OrganSelect, StatusSwitch } from '@g2rain/ui/platform';
-import { showErrorMessage, notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
+import { notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
 import ParamsForm from './components/ParamsForm.vue';
 import { ModelServiceProfileApi } from './api';
 import type {
@@ -500,8 +500,8 @@ const loadMarketPage = async () => {
     });
     market.value = pageData.records || [];
     pickPagination.total = pageData.total || 0;
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败'));
+  } catch {
+    // 请求失败已由 http 层统一提示
   } finally {
     pickLoading.value = false;
   }
@@ -548,8 +548,8 @@ const loadData = async () => {
     tableData.value = pageData.records;
     pagination.total = pageData.total;
     configuredIds.value = new Set(pageData.records.map((r) => r.catalogId));
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败'));
+  } catch {
+    // 请求失败已由 http 层统一提示
   }
 };
 
@@ -566,7 +566,6 @@ const handleReset = () => {
   baseQueryForm.value.id = undefined;
   baseQueryForm.value.createTime = undefined;
   baseQueryForm.value.updateTime = undefined;
-  baseQueryForm.value.sorts = undefined;
   queryForm.organId = undefined;
   queryForm.modelName = '';
   queryForm.modelType = '';
@@ -605,13 +604,9 @@ const openCreate = async (mode: 'market' | 'custom') => {
     pickKeyword.value = '';
     pickPagination.pageNum = 1;
     pickPagination.pageSize = 7;
-    try {
-      await loadConfiguredIds();
-      await loadMarketPage();
-      marketDialogVisible.value = true;
-    } catch (error: unknown) {
-      showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败'));
-    }
+    await loadConfiguredIds();
+    await loadMarketPage();
+    marketDialogVisible.value = true;
   } else {
     Object.assign(custom, {
       catalogId: undefined,
@@ -670,14 +665,10 @@ const handleDelete = (row: ModelServiceProfile) => {
       : `确认删除配置「${row.modelName || row.id}」吗？`;
   ElMessageBox.confirm(tip, t('G2_LBL_TIP', '提示'), { type: 'warning' })
     .then(async () => {
-      try {
-        await ModelServiceProfileApi.remove(row.id);
-        if (tableData.value.length === 1 && pagination.pageNum > 1) pagination.pageNum--;
-        await loadData();
-        ElMessage.success(t('G2_MSG_DELETE_OK', '删除成功'));
-      } catch (error: unknown) {
-        showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_DELETE_FAIL', '删除失败'));
-      }
+      await ModelServiceProfileApi.remove(row.id);
+      if (tableData.value.length === 1 && pagination.pageNum > 1) pagination.pageNum--;
+      await loadData();
+      ElMessage.success(t('G2_MSG_DELETE_OK', '删除成功'));
     })
     .catch(() => {});
 };
@@ -693,13 +684,9 @@ const handleDefault = (row: ModelServiceProfile) => {
     { type: 'warning' },
   )
     .then(async () => {
-      try {
-        await ModelServiceProfileApi.updateDefault(row.id);
-        await loadData();
-        ElMessage.success(t('G2_MSG_SAVE_OK', '保存成功'));
-      } catch (error: unknown) {
-        showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败'));
-      }
+      await ModelServiceProfileApi.updateDefault(row.id);
+      await loadData();
+      ElMessage.success(t('G2_MSG_SAVE_OK', '保存成功'));
     })
     .catch(() => {});
 };
@@ -746,8 +733,6 @@ const submitMarket = async () => {
     ElMessage.success(t('G2_MSG_SAVE_OK', '保存成功'));
     marketDialogVisible.value = false;
     await loadData();
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败'));
   } finally {
     saving.value = false;
   }
@@ -788,8 +773,6 @@ const submitCustom = async () => {
     ElMessage.success(t('G2_MSG_SAVE_OK', '保存成功'));
     customDialogVisible.value = false;
     await loadData();
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败'));
   } finally {
     saving.value = false;
   }

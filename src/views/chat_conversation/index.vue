@@ -94,7 +94,7 @@ import { t } from '@platform/i18n';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { QueryForm, SortableTable, TableColumn, SortManagerButton } from '@g2rain/ui';
 import { OrganSelect } from '@g2rain/ui/platform';
-import { CopyText, StatusDot, showErrorMessage } from '@/components';
+import { CopyText, StatusDot } from '@/components';
 import { EMPTY, describeStatus, fromNow } from '@runtime/console';
 import { conversationDetailRoute } from '@/views/conversation_detail';
 import { ChatConversationApi } from './api';
@@ -134,8 +134,8 @@ const loadData = async () => {
     } as PageSelectListDto & ChatConversationQuery);
     tableData.value = pageData.records;
     pagination.total = pageData.total;
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败'));
+  } catch {
+    // 请求失败已由 http 层统一提示
   } finally {
     loading.value = false;
   }
@@ -154,7 +154,6 @@ const handleReset = () => {
   baseQueryForm.value.id = undefined;
   baseQueryForm.value.createTime = undefined;
   baseQueryForm.value.updateTime = undefined;
-  baseQueryForm.value.sorts = undefined;
   queryForm.organId = undefined;
   queryForm.title = '';
   pagination.pageNum = 1;

@@ -34,7 +34,7 @@
             active-value="ACTIVE"
             inactive-value="INACTIVE"
             :options="STATUS_OPTIONS"
-            :api-method="({ nextValue }) => AgentDetailApi.updateSkillStatus(row.skill, String(nextValue))"
+            :api-method="changeStatus(row)"
             @update:model-value="(value) => (row.skill.status = String(value))"
             @success="notifyStatusSwitchSuccess"
             @error="(p) => notifyStatusSwitchError(p)"
@@ -66,6 +66,10 @@ const emit = defineEmits<{
   open: [skillId: number];
   remove: [skill: SkillProfileVo];
 }>();
+
+const changeStatus = (row: SkillRow) =>
+  ({ nextValue }: { nextValue: string | number | boolean }) =>
+    AgentDetailApi.updateSkillStatus(row.skill, String(nextValue));
 
 function resourceText(type: string): string {
   return type === ResourceType.PLATFORM ? t('AGENT_RESOURCE_PLATFORM', '平台') : t('AGENT_RESOURCE_CUSTOM', '私有');

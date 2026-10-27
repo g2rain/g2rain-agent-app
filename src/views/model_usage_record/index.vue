@@ -100,11 +100,9 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
-import { t } from '@platform/i18n';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { QueryForm, SortableTable, TableColumn, SortManagerButton } from '@g2rain/ui';
 import { OrganSelect } from '@g2rain/ui/platform';
-import { showErrorMessage } from '@/components';
 import { ModelUsageRecordApi } from './api';
 import type { ModelUsageProfileOption, ModelUsageRecord, ModelUsageRecordQuery } from './type';
 
@@ -155,8 +153,8 @@ const loadData = async () => {
     } as PageSelectListDto & ModelUsageRecordQuery);
     tableData.value = pageData.records;
     pagination.total = pageData.total;
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败'));
+  } catch {
+    // 请求失败已由 http 层统一提示
   }
 };
 
@@ -173,7 +171,6 @@ const handleReset = () => {
   baseQueryForm.value.id = undefined;
   baseQueryForm.value.createTime = undefined;
   baseQueryForm.value.updateTime = undefined;
-  baseQueryForm.value.sorts = undefined;
   queryForm.organId = undefined;
   queryForm.profileId = undefined;
   queryForm.modelName = '';

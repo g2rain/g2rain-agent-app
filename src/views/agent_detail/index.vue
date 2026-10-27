@@ -82,7 +82,7 @@ import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
 import { useLocaleStore } from '@platform/stores/locale.store';
-import { showErrorMessage, useFitHeight } from '@/components';
+import { useFitHeight } from '@/components';
 import { useAccessTokenStore } from '@platform/stores';
 import { ResourceType } from '@runtime/console';
 import ProfileSection from './components/ProfileSection.vue';
@@ -210,8 +210,6 @@ async function saveProfile(): Promise<void> {
     ElMessage.success(t('G2_MSG_SAVE_OK', '保存成功'));
     if (!agentId.value) await router.replace(agentDetailRoute(id, 'profile', entryResourceType.value));
     else await load();
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败'));
   } finally {
     saving.value = false;
   }
@@ -234,12 +232,8 @@ async function confirmRemove(): Promise<void> {
   const skill = removal.skill;
   removal.open = false;
   if (!skill) return;
-  try {
-    await AgentDetailApi.removeSkill(skill.id);
-    await loadSkills();
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_DELETE_FAIL', '删除失败'));
-  }
+  await AgentDetailApi.removeSkill(skill.id);
+  await loadSkills();
 }
 
 watch(

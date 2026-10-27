@@ -119,7 +119,7 @@
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
-import { StatusDot, showErrorMessage } from '@/components';
+import { StatusDot } from '@/components';
 import { EMPTY, ResourceType } from '@runtime/console';
 import { McpToolProfileApi, ToolPicker, type McpToolMetaVo, type McpToolOptionVo } from '@/views/mcp_tool_profile';
 import ContractPanel from './ContractPanel.vue';
@@ -202,8 +202,8 @@ async function load(): Promise<void> {
       contract.value = JSON.stringify({ mode: 'REACT', delegatable: false, outputs: {}, tools: {} }, null, 2);
       toolBindings.value = [];
     }
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载失败'));
+  } catch {
+    // 请求失败已由 http 层统一提示
   } finally {
     loading.value = false;
     snapshot.value = current();
@@ -241,8 +241,6 @@ async function save(): Promise<void> {
     snapshot.value = current();
     ElMessage.success(t('G2_MSG_SAVE_OK', '保存成功'));
     emit('saved', id);
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败'));
   } finally {
     saving.value = false;
   }

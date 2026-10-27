@@ -69,7 +69,7 @@ import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
 import { ElMessage } from 'element-plus';
 import { t } from '@platform/i18n';
-import { JsonViewer, showErrorMessage } from '@/components';
+import { JsonViewer } from '@/components';
 import { McpToolProfileApi } from '../api';
 import type { McpToolProfile } from '../type';
 
@@ -142,8 +142,6 @@ async function submit(): Promise<void> {
     ElMessage.success(t('G2_MSG_UPDATE_OK', '更新成功'));
     emit('done');
     emit('close');
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败'));
   } finally {
     saving.value = false;
   }

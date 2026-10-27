@@ -91,7 +91,7 @@ import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.t
 import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
 import { OrganSelect, StatusSwitch } from '@g2rain/ui/platform';
 import { RecordStatus, ResourceType } from '@runtime/console';
-import { showErrorMessage, notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
+import { notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
 import { agentDetailRoute } from '@/views/agent_detail';
 import { AgentProfileApi } from './api';
 import type { AgentProfile, AgentProfileQuery } from './type';
@@ -147,8 +147,8 @@ async function loadData(): Promise<void> {
     } as PageSelectListDto & AgentProfileQuery);
     tableData.value = pageData.records.map((row) => ({ ...row }));
     pagination.total = pageData.total;
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败'));
+  } catch {
+    // 请求失败已由 http 层统一提示
   }
 }
 
@@ -165,7 +165,6 @@ function handleReset(): void {
   baseQueryForm.value.id = undefined;
   baseQueryForm.value.createTime = undefined;
   baseQueryForm.value.updateTime = undefined;
-  baseQueryForm.value.sorts = undefined;
   queryForm.organId = undefined;
   queryForm.agentName = '';
   queryForm.status = '';
@@ -199,14 +198,10 @@ function handleDelete(row: AgentProfile): void {
     { type: 'warning' },
   )
     .then(async () => {
-      try {
-        await AgentProfileApi.remove(row.id);
-        if (tableData.value.length === 1 && pagination.pageNum > 1) pagination.pageNum--;
-        await loadData();
-        ElMessage.success(t('G2_MSG_DELETE_OK', '删除成功'));
-      } catch (error: unknown) {
-        showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_DELETE_FAIL', '删除失败'));
-      }
+      await AgentProfileApi.remove(row.id);
+      if (tableData.value.length === 1 && pagination.pageNum > 1) pagination.pageNum--;
+      await loadData();
+      ElMessage.success(t('G2_MSG_DELETE_OK', '删除成功'));
     })
     .catch(() => {});
 }

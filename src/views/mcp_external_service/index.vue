@@ -145,7 +145,7 @@ import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.t
 import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
 import { OrganSelect, StatusSwitch } from '@g2rain/ui/platform';
 import { RecordStatus, ResourceType } from '@runtime/console';
-import { showErrorMessage, notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
+import { notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
 import { ServiceTools } from '@/views/mcp_tool_profile';
 import { McpExternalServiceApi } from './api';
 import type { McpExternalService, McpExternalServicePayload, McpExternalServiceQuery } from './type';
@@ -210,8 +210,8 @@ async function loadData(): Promise<void> {
     } as PageSelectListDto & McpExternalServiceQuery);
     tableData.value = pageData.records.map((row) => ({ ...row }));
     pagination.total = pageData.total;
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败'));
+  } catch {
+    // 请求失败已由 http 层统一提示
   }
 }
 
@@ -228,7 +228,6 @@ function handleReset(): void {
   baseQueryForm.value.id = undefined;
   baseQueryForm.value.createTime = undefined;
   baseQueryForm.value.updateTime = undefined;
-  baseQueryForm.value.sorts = undefined;
   queryForm.organId = undefined;
   queryForm.name = '';
   queryForm.status = '';
@@ -262,16 +261,12 @@ function handleDelete(row: McpExternalService): void {
     type: 'warning',
   })
     .then(async () => {
-      try {
-        await McpExternalServiceApi.remove(row.id);
-        if (tableData.value.length === 1 && pagination.pageNum > 1) {
-          pagination.pageNum--;
-        }
-        await loadData();
-        ElMessage.success(t('G2_MSG_DELETE_OK', '删除成功'));
-      } catch (error: unknown) {
-        showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_DELETE_FAIL', '删除失败'));
+      await McpExternalServiceApi.remove(row.id);
+      if (tableData.value.length === 1 && pagination.pageNum > 1) {
+        pagination.pageNum--;
       }
+      await loadData();
+      ElMessage.success(t('G2_MSG_DELETE_OK', '删除成功'));
     })
     .catch(() => {});
 }
@@ -337,14 +332,10 @@ async function submitEdit(): Promise<void> {
     payload.id = editForm.id;
   }
 
-  try {
-    await McpExternalServiceApi.save(resourceType.value, payload);
-    ElMessage.success(isEdit.value ? t('G2_MSG_UPDATE_OK', '更新成功') : t('G2_MSG_ADD_OK', '新增成功'));
-    await loadData();
-    editDialogVisible.value = false;
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败'));
-  }
+  await McpExternalServiceApi.save(resourceType.value, payload);
+  ElMessage.success(isEdit.value ? t('G2_MSG_UPDATE_OK', '更新成功') : t('G2_MSG_ADD_OK', '新增成功'));
+  await loadData();
+  editDialogVisible.value = false;
 }
 
 watch(
