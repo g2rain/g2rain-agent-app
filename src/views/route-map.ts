@@ -94,6 +94,11 @@ export const routeMap: Record<string, ViewRouteConfig> = {
             component: () => import('@/views/model_usage_record/index.vue'),
             name: 'ModelUsageRecord',
             meta: { title: '用量统计', requiresAuth: true, showInHome: true },
+        },
+    '/chat_prompt_template': {
+            component: () => import('@/views/chat_prompt_template/index.vue'),
+            name: 'ChatPromptTemplate',
+            meta: { title: '问题模板', requiresAuth: true, showInHome: true },
         }
 };
 
