@@ -24,7 +24,6 @@ export interface ChatPromptTemplatePayload {
   organId?: number;
   promptText?: string;
   sortOrder?: number;
-  status?: string;
   description?: string;
 }
 

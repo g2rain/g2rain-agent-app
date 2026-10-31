@@ -222,7 +222,6 @@ const submitEdit = async () => {
     sortOrder: editForm.sortOrder,
   };
   if (isEdit.value) payload.id = editForm.id;
-  else payload.status = 'ACTIVE';
   await ChatPromptTemplateApi.save(payload);
   ElMessage.success(isEdit.value ? t('G2_MSG_UPDATE_OK', '更新成功') : t('G2_MSG_ADD_OK', '新增成功'));
   await loadData();
