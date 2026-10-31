@@ -74,6 +74,11 @@
       "pageName": "用量统计",
       "pageCode": "model_usage_record",
       "linkPath": "/model_usage_record"
+    },
+    {
+      "pageName": "问题模板",
+      "pageCode": "chat_prompt_template",
+      "linkPath": "/chat_prompt_template"
     }
   ],
   "pageElements": [
@@ -115,6 +120,38 @@
       "pageElementCode": "agent:edit",
       "pageElementType": "button",
       "pageCode": "agent_detail",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "新增",
+      "pageElementCode": "chat_prompt_template:add",
+      "pageElementType": "button",
+      "pageCode": "chat_prompt_template",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "删除",
+      "pageElementCode": "chat_prompt_template:delete",
+      "pageElementType": "button",
+      "pageCode": "chat_prompt_template",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "编辑",
+      "pageElementCode": "chat_prompt_template:edit",
+      "pageElementType": "button",
+      "pageCode": "chat_prompt_template",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
+      "pageElementName": "状态变更",
+      "pageElementCode": "chat_prompt_template:status_update",
+      "pageElementType": "switch",
+      "pageCode": "chat_prompt_template",
       "status": "ENABLED"
     },
     {

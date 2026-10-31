@@ -73,5 +73,10 @@
     "pageName": "用量统计",
     "pageCode": "model_usage_record",
     "linkPath": "/model_usage_record"
+  },
+  {
+    "pageName": "问题模板",
+    "pageCode": "chat_prompt_template",
+    "linkPath": "/chat_prompt_template"
   }
 ]
