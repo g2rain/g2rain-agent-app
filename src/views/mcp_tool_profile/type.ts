@@ -9,6 +9,7 @@ import type { BaseSelectListDto, BaseVo } from '@platform/types/api.type';
  */
 export interface McpToolProfile extends BaseVo {
   organId: number;
+  organName?: string;
   name: string;
   title: string;
   resourceType: string;

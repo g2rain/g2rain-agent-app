@@ -6,7 +6,7 @@
         <span v-if="call.sideEffect === SideEffect.WRITE" class="call-detail__write">{{ $t('AGENT_TRACE_WRITE', '写') }}</span>
         <span>{{ formatDuration(call.durationMs) }}</span>
         <span v-if="call.round !== null">· {{ $t('AGENT_TRACE_ROUND', { n: call.round }, '第 {n} 轮') }}</span>
-        <CopyText :text="call.callId" :length="8" :copied-text="$t('AGENT_COPIED', '已复制')" />
+        <CopyText :text="call.callId" :length="8" :copied-text="$t('G2_MSG_COPIED', '已复制')" />
       </div>
       <el-tabs v-model="tab">
         <el-tab-pane :label="$t('AGENT_TRACE_TAB_OVERVIEW', '概要')" name="overview">
@@ -66,7 +66,7 @@ const response = computed(() => payload.value?.payloadData ?? props.call?.respon
 const businessText = computed(() => {
   const value = props.call?.businessOk;
   if (value === null || value === undefined) return t('AGENT_TRACE_BUSINESS_UNKNOWN', '无法判断');
-  return value ? t('AGENT_TRACE_BUSINESS_PASS', '成功') : t('AGENT_TRACE_BUSINESS_FAIL', '失败');
+  return value ? t('G2_LBL_SUCCESS', '成功') : t('AGENT_TRACE_BUSINESS_FAIL', '失败');
 });
 
 async function loadPayload(): Promise<void> {

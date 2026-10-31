@@ -2,14 +2,14 @@
   <el-drawer
     :model-value="visible"
     size="960px"
-    :title="`导入接口 · ${serviceName}`"
+    :title="$t('AGENT_IMPORT_TITLE', { name: serviceName }, '导入接口 · {name}')"
     destroy-on-close
     @close="emit('close')"
   >
     <el-steps :active="step" finish-status="success" align-center class="openapi-import__steps">
       <el-step :title="$t('AGENT_IMPORT_STEP_SOURCE', '来源')" />
       <el-step :title="$t('AGENT_IMPORT_STEP_SELECT', '选择')" />
-      <el-step :title="$t('AGENT_IMPORT_STEP_CONFIRM', '确认')" />
+      <el-step :title="$t('G2_ACT_CONFIRM', '确认')" />
     </el-steps>
 
     <div v-show="step === 0" class="openapi-import__pane">
@@ -23,18 +23,18 @@
     <div v-show="step === 1" class="openapi-import__pane">
       <el-table :data="operations" border row-key="key" @selection-change="onSelect">
         <el-table-column type="selection" width="48" :selectable="selectable" />
-        <el-table-column prop="method" label="方法" width="90" />
-        <el-table-column prop="path" label="路径" min-width="200" />
-        <el-table-column prop="toolName" label="工具名" min-width="220" />
-        <el-table-column prop="name" label="名称" min-width="140" />
-        <el-table-column prop="problem" label="问题" min-width="160" />
+        <el-table-column prop="method" :label="$t('AGENT_FIELD_HTTP_METHOD', 'HTTP方法')" width="90" />
+        <el-table-column prop="path" :label="$t('AGENT_FIELD_HTTP_PATH', 'HTTP路径')" min-width="200" />
+        <el-table-column prop="toolName" :label="$t('AGENT_FIELD_TOOL_NAME', '工具名称')" min-width="220" />
+        <el-table-column prop="name" :label="$t('G2_FIELD_TITLE', '标题')" min-width="140" />
+        <el-table-column prop="problem" :label="$t('G2_FIELD_QUESTION', '问题')" min-width="160" />
       </el-table>
     </div>
 
     <div v-show="step === 2" class="openapi-import__pane">
       <el-descriptions :column="1" border>
         <el-descriptions-item :label="$t('AGENT_IMPORT_TARGET_SERVICE', '目标服务')">{{ serviceName }}</el-descriptions-item>
-        <el-descriptions-item label="已选">{{ selected.length }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_IMPORT_SELECTED', '已选')">{{ selected.length }}</el-descriptions-item>
       </el-descriptions>
     </div>
 
@@ -42,7 +42,7 @@
       <el-button @click="emit('close')">{{ $t('G2_BTN_CANCEL', '取消') }}</el-button>
       <el-button v-if="step > 0" @click="step -= 1">{{ $t('AGENT_IMPORT_PREV', '上一步') }}</el-button>
       <el-button v-if="step < 2" type="primary" :loading="previewing" :disabled="!canNext" @click="next">
-        {{ $t('AGENT_IMPORT_NEXT', '下一步') }}
+        {{ $t('G2_BTN_NEXT', '下一步') }}
       </el-button>
       <el-button v-else type="primary" :loading="submitting" :disabled="selected.length === 0" @click="confirm">
         {{ $t('AGENT_IMPORT_CONFIRM', '确认导入') }}

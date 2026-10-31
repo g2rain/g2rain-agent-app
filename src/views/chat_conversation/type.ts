@@ -9,6 +9,7 @@ import type { BaseSelectListDto, BaseVo } from '@platform/types/api.type';
  */
 export interface ChatConversation extends BaseVo {
   organId: number;
+  organName?: string;
   conversationId: string;
   userId: number;
   title: string;

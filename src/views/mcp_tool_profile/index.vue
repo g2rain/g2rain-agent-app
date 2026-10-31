@@ -1,6 +1,6 @@
 <template>
   <div class="mcp_tool_profile-page">
-    <ToolTable ref="tableRef" :resource-type="ResourceType.NATIVE" title="平台原生工具">
+    <ToolTable ref="tableRef" :resource-type="ResourceType.NATIVE" :title="$t('AGENT_MCP_NATIVE_TITLE', '平台原生工具')">
       <template #actions>
         <el-button v-permission="'mcp_tool:sync'" @click="syncOpen = true">
           {{ $t('AGENT_MCP_TOOL_SYNC', '同步平台接口') }}

@@ -15,29 +15,29 @@
     <div class="tool-drawer__section">基本信息</div>
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
       <div class="tool-drawer__grid">
-        <el-form-item label="工具名">
+        <el-form-item :label="$t('AGENT_FIELD_TOOL_NAME', '工具名称')">
           <el-input :model-value="form.name" disabled />
         </el-form-item>
-        <el-form-item label="标题" prop="title">
-          <el-input v-model="form.title" :disabled="mode === 'detail'" maxlength="128" placeholder="给人看的标题" />
+        <el-form-item :label="$t('G2_FIELD_TITLE', '标题')" prop="title">
+          <el-input v-model="form.title" :disabled="mode === 'detail'" maxlength="128" :placeholder="$t('G2_FIELD_TITLE', '标题')" />
         </el-form-item>
-        <el-form-item label="所属服务">
+        <el-form-item :label="$t('G2_FIELD_SERVICE_NAME', '服务名称')">
           <el-input :model-value="form.serviceName" disabled />
         </el-form-item>
-        <el-form-item label="方法">
+        <el-form-item :label="$t('AGENT_FIELD_HTTP_METHOD', 'HTTP方法')">
           <el-input :model-value="form.method" disabled />
         </el-form-item>
-        <el-form-item class="tool-drawer__full" label="路径">
+        <el-form-item class="tool-drawer__full" :label="$t('AGENT_FIELD_HTTP_PATH', 'HTTP路径')">
           <el-input :model-value="form.path" disabled />
         </el-form-item>
-        <el-form-item class="tool-drawer__full" label="说明" prop="description">
+        <el-form-item class="tool-drawer__full" :label="$t('G2_FIELD_DESCRIPTION', '说明')" prop="description">
           <el-input
             v-model="form.description"
             type="textarea"
             :rows="3"
             :disabled="mode === 'detail'"
             maxlength="500"
-            placeholder="给模型看的说明"
+            :placeholder="$t('AGENT_PH_TOOL_DESC_MODEL', '给模型看的说明')"
           />
         </el-form-item>
       </div>
@@ -48,18 +48,18 @@
       <el-tab-pane label="inputSchema" name="schema">
         <JsonEditor v-if="mode !== 'detail'" v-model="form.inputSchema" height="320px" />
         <JsonViewer v-else-if="form.inputSchema" :value="form.inputSchema" :collapsed-depth="2" />
-        <el-empty v-else :image-size="48" description="没有 inputSchema" />
+        <el-empty v-else :image-size="48" :description="$t('AGENT_EMPTY_INPUT_SCHEMA', '没有 inputSchema')" />
       </el-tab-pane>
       <el-tab-pane label="OpenAPI" name="openapi">
         <JsonEditor v-if="mode !== 'detail'" v-model="form.openapiDocument" height="320px" />
         <JsonViewer v-else-if="form.openapiDocument" :value="form.openapiDocument" :collapsed-depth="2" />
-        <el-empty v-else :image-size="48" description="没有 OpenAPI" />
+        <el-empty v-else :image-size="48" :description="$t('AGENT_EMPTY_OPENAPI', '没有 OpenAPI')" />
       </el-tab-pane>
     </el-tabs>
 
     <template #footer>
-      <el-button @click="emit('close')">{{ mode === 'detail' ? '关闭' : '取消' }}</el-button>
-      <el-button v-if="mode !== 'detail'" type="primary" :loading="saving" @click="submit">保存</el-button>
+      <el-button @click="emit('close')">{{ mode === 'detail' ? $t('G2_BTN_CLOSE', '关闭') : $t('G2_BTN_CANCEL', '取消') }}</el-button>
+      <el-button v-if="mode !== 'detail'" type="primary" :loading="saving" @click="submit">{{ $t('G2_BTN_SAVE', '保存') }}</el-button>
     </template>
   </el-drawer>
 </template>
@@ -105,7 +105,7 @@ const form = reactive({
 const title = computed(() => (props.mode === 'edit' ? `编辑工具 · ${form.name}` : form.title || form.name || '工具详情'));
 
 const rules = computed<FormRules>(() =>
-  props.mode === 'edit' ? { title: [{ required: true, message: '请输入标题', trigger: 'blur' }] } : {},
+  props.mode === 'edit' ? { title: [{ required: true, message: t('G2_PH_TITLE', '请输入标题'), trigger: 'blur' }] } : {},
 );
 
 watch(

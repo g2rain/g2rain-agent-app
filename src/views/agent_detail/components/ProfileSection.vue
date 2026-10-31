@@ -7,13 +7,13 @@
           <el-form-item v-if="!isPlatform && (creating || form.organId != null)" :label="$t('G2_FIELD_ORGAN', '所属机构')" required>
             <OrganSelect v-model="form.organId" :disabled="!creating" width="100%" />
           </el-form-item>
-          <el-form-item :label="$t('AGENT_FIELD_NAME', '名称')" required>
+          <el-form-item :label="$t('G2_FIELD_NAME', '名称')" required>
             <el-input v-model="form.agentName" maxlength="128" />
           </el-form-item>
-          <el-form-item :label="$t('AGENT_FIELD_CODE', '编码')" required>
+          <el-form-item :label="$t('G2_FIELD_CODE', '编码')" required>
             <el-input v-model="form.agentCode" maxlength="64" :disabled="!creating" />
           </el-form-item>
-          <el-form-item :label="$t('AGENT_FIELD_REMARK', '备注')" class="profile__wide">
+          <el-form-item :label="$t('G2_FIELD_REMARK', '备注')" class="profile__wide">
             <el-input v-model="form.description" maxlength="500" />
           </el-form-item>
         </el-form>

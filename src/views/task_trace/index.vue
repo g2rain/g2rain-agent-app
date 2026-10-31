@@ -109,7 +109,7 @@ const localeStore = useLocaleStore();
 const taskId = computed(() => (typeof route.query.taskId === 'string' ? route.query.taskId : ''));
 const embed = computed(() => route.query.embed === '1');
 const locale = computed(() => localeStore.locale || 'zh-CN');
-const copiedText = computed(() => t('AGENT_COPIED', '已复制'));
+const copiedText = computed(() => t('G2_MSG_COPIED', '已复制'));
 
 const bundle = ref<TraceBundle | null>(null);
 const agentName = ref('');

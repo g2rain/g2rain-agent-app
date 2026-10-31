@@ -2,15 +2,15 @@
   <div class="model_usage_record-page">
     <el-card class="model_usage_record-page__search" shadow="never">
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
-        <el-form-item label="所属机构">
+        <el-form-item :label="$t('G2_FIELD_ORGAN', '所属机构')">
           <OrganSelect v-model="queryForm.organId" />
         </el-form-item>
-        <el-form-item label="模型配置">
+        <el-form-item :label="$t('AGENT_TITLE_MODEL_PROFILE', '模型配置')">
           <el-select
             v-model="queryForm.profileId"
             clearable
             filterable
-            placeholder="请选择模型配置"
+            :placeholder="$t('AGENT_PH_MODEL_PROFILE', '请选择模型配置')"
             style="width: 220px"
           >
             <el-option
@@ -21,11 +21,11 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="模型名称">
-          <el-input v-model="queryForm.modelName" placeholder="请输入模型名称" clearable style="width: 200px" />
+        <el-form-item :label="$t('G2_FIELD_MODEL_NAME', '模型名称')">
+          <el-input v-model="queryForm.modelName" :placeholder="$t('G2_PH_MODEL_NAME', '请输入模型名称')" clearable style="width: 200px" />
         </el-form-item>
-        <el-form-item label="供应商">
-          <el-input v-model="queryForm.provider" placeholder="请输入供应商" clearable style="width: 160px" />
+        <el-form-item :label="$t('AGENT_FIELD_PROVIDER', '供应商')">
+          <el-input v-model="queryForm.provider" :placeholder="$t('AGENT_PH_PROVIDER', '请输入供应商')" clearable style="width: 160px" />
         </el-form-item>
         <template #actions>
           <el-form-item>
@@ -38,22 +38,26 @@
 
     <div class="model_usage_record-page__header">
       <div class="model_usage_record-page__title-group">
-        <h2>用量统计</h2>
+        <h2>{{ $t('AGENT_TITLE_MODEL_USAGE', '用量记录') }}</h2>
       </div>
     </div>
 
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="100" />
-      <el-table-column prop="organId" label="所属机构" width="110" />
-      <TableColumn prop="createTime" label="时间" width="180" sortable="custom" />
-      <el-table-column prop="modelName" label="模型" min-width="160" />
-      <el-table-column prop="provider" label="供应商" width="120" />
-      <el-table-column prop="protocol" label="协议" width="110">
-        <template #default="{ row }">{{ optionLabel(PROTOCOL_OPTIONS, row.protocol) }}</template>
+      <el-table-column :label="$t('G2_FIELD_ORGAN', '所属机构')" width="120">
+        <template #default="{ row }">
+          {{ row.organName || row.organId }}
+        </template>
       </el-table-column>
-      <el-table-column prop="promptTokens" label="输入" width="100" />
-      <el-table-column prop="completionTokens" label="输出" width="100" />
-      <el-table-column prop="totalTokens" label="合计" width="100" />
+      <TableColumn prop="createTime" :label="$t('AGENT_FIELD_TIME', '时间')" width="180" sortable="custom" />
+      <el-table-column prop="modelName" :label="$t('G2_FIELD_MODEL', '模型')" min-width="160" />
+      <el-table-column prop="provider" :label="$t('AGENT_FIELD_PROVIDER', '供应商')" width="120" />
+      <el-table-column prop="protocol" :label="$t('AGENT_FIELD_PROTOCOL', '协议')" width="110">
+        <template #default="{ row }"><DictText :value="row.protocol" usage-code="MODEL_PROTOCOL" /></template>
+      </el-table-column>
+      <el-table-column prop="promptTokens" :label="$t('AGENT_FIELD_TOKENS_IN', '输入')" width="100" />
+      <el-table-column prop="completionTokens" :label="$t('AGENT_FIELD_TOKENS_OUT', '输出')" width="100" />
+      <el-table-column prop="totalTokens" :label="$t('AGENT_FIELD_TOKENS_TOTAL', '合计')" width="100" />
       <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="100">
         <template #default="{ row }">
           <el-button type="primary" link size="small" @click="handleView(row)">{{ $t('G2_BTN_DETAIL', '详情') }}</el-button>
@@ -79,17 +83,17 @@
       />
     </div>
 
-    <el-dialog v-model="detailDialogVisible" title="用量明细" width="520px">
+    <el-dialog v-model="detailDialogVisible" :title="$t('AGENT_USAGE_DETAIL', '用量明细')" width="520px">
       <el-descriptions :column="1" border>
         <el-descriptions-item :label="$t('G2_FIELD_ID', 'ID')">{{ currentRow?.id }}</el-descriptions-item>
-        <el-descriptions-item label="所属机构">{{ currentRow?.organId }}</el-descriptions-item>
-        <el-descriptions-item label="时间">{{ currentRow?.createTime }}</el-descriptions-item>
-        <el-descriptions-item label="模型">{{ currentRow?.modelName }}</el-descriptions-item>
-        <el-descriptions-item label="供应商">{{ currentRow?.provider }}</el-descriptions-item>
-        <el-descriptions-item label="协议">{{ optionLabel(PROTOCOL_OPTIONS, currentRow?.protocol) }}</el-descriptions-item>
-        <el-descriptions-item label="输入 tokens">{{ currentRow?.promptTokens }}</el-descriptions-item>
-        <el-descriptions-item label="输出 tokens">{{ currentRow?.completionTokens }}</el-descriptions-item>
-        <el-descriptions-item label="合计 tokens">{{ currentRow?.totalTokens }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('G2_FIELD_ORGAN', '所属机构')">{{ currentRow?.organName || currentRow?.organId }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_TIME', '时间')">{{ currentRow?.createTime }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('G2_FIELD_MODEL', '模型')">{{ currentRow?.modelName }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_PROVIDER', '供应商')">{{ currentRow?.provider }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_PROTOCOL', '协议')"><DictText :value="currentRow?.protocol" usage-code="MODEL_PROTOCOL" /></el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_TOKENS_IN_FULL', '输入 tokens')">{{ currentRow?.promptTokens }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_TOKENS_OUT_FULL', '输出 tokens')">{{ currentRow?.completionTokens }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_TOKENS_TOTAL_FULL', '合计 tokens')">{{ currentRow?.totalTokens }}</el-descriptions-item>
       </el-descriptions>
       <template #footer>
         <el-button type="primary" @click="detailDialogVisible = false">{{ $t('G2_BTN_CLOSE', '关闭') }}</el-button>
@@ -102,22 +106,9 @@
 import { onMounted, reactive, ref } from 'vue';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { QueryForm, SortableTable, TableColumn, SortManagerButton } from '@g2rain/ui';
-import { OrganSelect } from '@g2rain/ui/platform';
+import { OrganSelect, DictText } from '@g2rain/ui/platform';
 import { ModelUsageRecordApi } from './api';
 import type { ModelUsageProfileOption, ModelUsageRecord, ModelUsageRecordQuery } from './type';
-
-type EnumOption = { value: string; label: string };
-
-const PROTOCOL_OPTIONS: EnumOption[] = [
-  { value: 'OPENAI', label: 'OpenAI' },
-  { value: 'ANTHROPIC', label: 'Anthropic' },
-  { value: 'GEMINI', label: 'Gemini' },
-];
-
-const optionLabel = (options: EnumOption[], value?: string | null): string => {
-  if (!value) return '';
-  return options.find((item) => item.value === value)?.label ?? value;
-};
 
 const queryFormRef = ref<InstanceType<typeof QueryForm> | null>(null);
 

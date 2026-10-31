@@ -3,26 +3,38 @@
   <div class="model_service_profile-page">
     <el-card class="model_service_profile-page__search" shadow="never">
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
-        <el-form-item label="所属机构">
+        <el-form-item :label="$t('G2_FIELD_ORGAN', '所属机构')">
           <OrganSelect v-model="queryForm.organId" />
         </el-form-item>
-        <el-form-item label="模型名称">
-          <el-input v-model="queryForm.modelName" placeholder="请输入模型名称" clearable style="width: 200px" />
+        <el-form-item :label="$t('G2_FIELD_MODEL_NAME', '模型名称')">
+          <el-input v-model="queryForm.modelName" :placeholder="$t('G2_PH_MODEL_NAME', '请输入模型名称')" clearable style="width: 200px" />
         </el-form-item>
-        <el-form-item label="模型类型">
-          <el-select v-model="queryForm.modelType" placeholder="请选择模型类型" clearable style="width: 200px">
-            <el-option v-for="item in MODEL_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <el-form-item :label="$t('AGENT_FIELD_MODEL_TYPE', '模型类型')">
+          <DictSelect
+            v-model="queryForm.modelType"
+            usage-code="MODEL_TYPE"
+            :placeholder="$t('AGENT_PH_MODEL_TYPE', '请选择模型类型')"
+            clearable
+            width="200px"
+          />
         </el-form-item>
-        <el-form-item label="来源">
-          <el-select v-model="queryForm.resourceType" placeholder="请选择来源" clearable style="width: 160px">
-            <el-option v-for="item in RESOURCE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <el-form-item :label="$t('AGENT_FIELD_RESOURCE', '来源')">
+          <DictSelect
+            v-model="queryForm.resourceType"
+            usage-code="MODEL_RESOURCE_TYPE"
+            :placeholder="$t('AGENT_PH_RESOURCE', '请选择来源')"
+            clearable
+            width="160px"
+          />
         </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="queryForm.status" placeholder="请选择状态" clearable style="width: 160px">
-            <el-option v-for="item in STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <el-form-item :label="$t('G2_FIELD_STATUS', '状态')">
+          <DictSelect
+            v-model="queryForm.status"
+            usage-code="ENABLE_STATUS"
+            :placeholder="$t('G2_PH_STATUS', '请选择状态')"
+            clearable
+            width="160px"
+          />
         </el-form-item>
         <template #actions>
           <el-form-item>
@@ -35,47 +47,56 @@
 
     <div class="model_service_profile-page__header">
       <div class="model_service_profile-page__title-group">
-        <h2>模型配置</h2>
+        <h2>{{ $t('AGENT_TITLE_MODEL_PROFILE', '模型配置') }}</h2>
       </div>
       <div class="model_service_profile-page__actions">
-        <el-button type="primary" v-permission="'model_service_profile:add'" @click="openCreate('market')">模型广场</el-button>
-        <el-button v-permission="'model_service_profile:add'" @click="openCreate('custom')">私有模型</el-button>
+        <el-button type="primary" v-permission="'model_service_profile:add'" @click="openCreate('market')">{{ $t('AGENT_BTN_MARKET', '模型广场') }}</el-button>
+        <el-button v-permission="'model_service_profile:add'" @click="openCreate('custom')">{{ $t('AGENT_BTN_PRIVATE', '私有模型') }}</el-button>
       </div>
     </div>
 
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="100" />
-      <el-table-column prop="organId" label="所属机构" width="110" />
-      <el-table-column label="模型" min-width="350">
+      <el-table-column :label="$t('G2_FIELD_ORGAN', '所属机构')" width="120">
+        <template #default="{ row }">
+          {{ row.organName || row.organId }}
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('G2_FIELD_MODEL', '模型')" min-width="350">
         <template #default="{ row }">
           <div>
             {{ row.displayName }}
-            <el-tag v-if="row.defaultFlag" size="small" type="success" effect="plain">默认</el-tag>
+            <el-tag v-if="row.defaultFlag" size="small" type="success" effect="plain">{{ $t('AGENT_FIELD_DEFAULT', '默认') }}</el-tag>
           </div>
-          <div class="model_service_profile-page__meta">{{ row.modelName }} · {{ row.provider }} · {{ optionLabel(PROTOCOL_OPTIONS, row.protocol) }}</div>
+          <div class="model_service_profile-page__meta">
+            {{ row.modelName }} · {{ row.provider }} ·
+            <DictText :value="row.protocol" usage-code="MODEL_PROTOCOL" />
+          </div>
         </template>
       </el-table-column>
-      <el-table-column prop="resourceType" label="来源" width="110">
+      <el-table-column prop="resourceType" :label="$t('AGENT_FIELD_RESOURCE', '来源')" width="110">
         <template #default="{ row }">
           <el-tag size="small" effect="plain" :type="row.resourceType === 'MARKET' ? 'info' : 'primary'">
-            {{ optionLabel(RESOURCE_OPTIONS, row.resourceType) }}
+            <DictText :value="row.resourceType" usage-code="MODEL_RESOURCE_TYPE" />
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="modelType" label="类型" width="120">
-        <template #default="{ row }">{{ optionLabel(MODEL_TYPE_OPTIONS, row.modelType) }}</template>
+      <el-table-column prop="modelType" :label="$t('G2_FIELD_TYPE', '类型')" width="120">
+        <template #default="{ row }">
+          <DictText :value="row.modelType" usage-code="MODEL_TYPE" />
+        </template>
       </el-table-column>
-      <el-table-column prop="selectable" label="对话可选" width="100">
-        <template #default="{ row }">{{ row.selectable ? '是' : '否' }}</template>
+      <el-table-column prop="selectable" :label="$t('AGENT_FIELD_SELECTABLE', '对话可选')" width="160">
+        <template #default="{ row }">{{ row.selectable ? $t('G2_LBL_YES', '是') : $t('G2_LBL_NO', '否') }}</template>
       </el-table-column>
-      <el-table-column prop="status" label="状态" width="80">
+      <el-table-column prop="status" :label="$t('G2_FIELD_STATUS', '状态')" width="100">
         <template #default="{ row }">
           <StatusSwitch
             v-model="row.status"
             permission="model_service_profile:status_update"
             active-value="ACTIVE"
             inactive-value="INACTIVE"
-            :options="STATUS_OPTIONS"
+            usage-code="ENABLE_STATUS"
             :api-method="changeStatus(row)"
             @success="notifyStatusSwitchSuccess"
             @error="(p) => notifyStatusSwitchError(p)"
@@ -84,11 +105,11 @@
       </el-table-column>
       <TableColumn prop="createTime" :label="$t('G2_FIELD_CREATE_TIME', '创建时间')" width="180" sortable="custom" />
       <TableColumn prop="updateTime" :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')" width="180" sortable="custom" />
-      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="260">
+      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="280">
         <template #default="{ row }">
           <el-button type="primary" link size="small" @click="handleView(row)">{{ $t('G2_BTN_DETAIL', '详情') }}</el-button>
           <el-button type="primary" v-permission="'model_service_profile:edit'" link size="small" @click="openEdit(row)">{{ $t('G2_BTN_EDIT', '编辑') }}</el-button>
-          <el-button v-if="!row.defaultFlag" type="primary" v-permission="'model_service_profile:default_update'" link size="small" @click="handleDefault(row)">设为默认</el-button>
+          <el-button v-if="!row.defaultFlag" type="primary" v-permission="'model_service_profile:default_update'" link size="small" @click="handleDefault(row)">{{ $t('AGENT_BTN_SET_DEFAULT', '设为默认') }}</el-button>
           <el-button type="danger" v-permission="'model_service_profile:delete'" link size="small" @click="handleDelete(row)">{{ $t('G2_BTN_DELETE', '删除') }}</el-button>
         </template>
         <template #header>
@@ -123,25 +144,19 @@
         <!-- 步骤一：只选模型 -->
         <template v-if="!isEdit && marketStep === 'pick'">
           <div class="model_service_profile-page__pick-bar">
-            <el-select
+            <DictSelect
               v-model="pickType"
+              usage-code="MODEL_TYPE"
+              :placeholder="$t('AGENT_FIELD_MODEL_TYPE', '模型类型')"
               clearable
-              placeholder="模型类型"
               class="model_service_profile-page__pick-type"
-              @change="onPickFilterChange"
-            >
-              <el-option
-                v-for="item in MODEL_TYPE_OPTIONS"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
+              @update:model-value="onPickFilterChange"
+            />
             <el-input
               v-model="pickKeyword"
               clearable
               class="model_service_profile-page__pick-search"
-              placeholder="搜索模型名"
+              :placeholder="$t('AGENT_PH_SEARCH_MODEL', '搜索模型名')"
               @change="onPickFilterChange"
               @clear="onPickFilterChange"
             />
@@ -171,7 +186,7 @@
                 effect="plain"
                 class="model_service_profile-page__pick-status"
               >
-                {{ configuredIds.has(item.id) ? '已配置' : '未配置' }}
+                {{ configuredIds.has(item.id) ? $t('G2_LBL_CONFIGURED', '已配置') : $t('G2_LBL_UNCONFIGURED', '未配置') }}
               </el-tag>
             </el-radio>
           </el-radio-group>
@@ -206,19 +221,19 @@
                 </template>
               </div>
             </div>
-            <el-button v-if="!isEdit" link type="primary" @click="marketStep = 'pick'">重选</el-button>
+            <el-button v-if="!isEdit" link type="primary" @click="marketStep = 'pick'">{{ $t('AGENT_BTN_RESELECT', '重选') }}</el-button>
           </div>
           <el-form label-width="140px">
-            <el-form-item v-if="!isEdit || formOrganId != null" label="所属机构" required>
+            <el-form-item v-if="!isEdit || formOrganId != null" :label="$t('G2_FIELD_ORGAN', '所属机构')" required>
               <OrganSelect v-model="formOrganId" :disabled="isEdit" width="100%" />
             </el-form-item>
-            <el-form-item label="展示名称" required>
-              <el-input v-model="profile.displayName" maxlength="64" placeholder="对话中展示的名称" />
+            <el-form-item :label="$t('AGENT_FIELD_DISPLAY_NAME', '展示名称')" required>
+              <el-input v-model="profile.displayName" maxlength="64" :placeholder="$t('AGENT_PH_DISPLAY_NAME', '对话中展示的名称')" />
             </el-form-item>
-            <el-form-item v-if="currentModelType === 'LLM'" label="对话可选">
+            <el-form-item v-if="currentModelType === 'LLM'" :label="$t('AGENT_FIELD_SELECTABLE', '对话可选')">
               <el-switch v-model="profile.selectable" />
             </el-form-item>
-            <h4>参数</h4>
+            <h4>{{ $t('AGENT_SECTION_PARAMS', '参数') }}</h4>
             <ParamsForm
               v-model:temperature="params.temperature"
               v-model:top-p="params.topP"
@@ -231,14 +246,14 @@
       </div>
       <template #footer>
         <el-button @click="marketDialogVisible = false">{{ $t('G2_BTN_CANCEL', '取消') }}</el-button>
-        <el-button v-if="!isEdit && marketStep === 'params'" @click="marketStep = 'pick'">上一步</el-button>
+        <el-button v-if="!isEdit && marketStep === 'params'" @click="marketStep = 'pick'">{{ $t('AGENT_IMPORT_PREV', '上一步') }}</el-button>
         <el-button
           v-if="!isEdit && marketStep === 'pick'"
           type="primary"
           :disabled="!selectedCatalogId || configuredIds.has(Number(selectedCatalogId))"
           @click="goMarketParams"
         >
-          下一步
+          {{ $t('G2_BTN_NEXT', '下一步') }}
         </el-button>
         <el-button
           v-else
@@ -254,60 +269,56 @@
     <!-- 私有模型 -->
     <el-drawer
       v-model="customDialogVisible"
-      :title="isEdit ? '编辑私有模型' : '接入私有模型'"
+      :title="isEdit ? $t('AGENT_PRIVATE_DLG_EDIT', '编辑私有模型') : $t('AGENT_PRIVATE_DLG_ADD', '接入私有模型')"
       size="720px"
       destroy-on-close
     >
       <div class="model_service_profile-page__drawer">
-        <el-form ref="customFormRef" :model="custom" :rules="customRules" label-width="100px">
-          <el-form-item v-if="!isEdit || formOrganId != null" label="所属机构" required>
+        <el-form ref="customFormRef" :model="custom" :rules="customRules" label-width="150px">
+          <el-form-item v-if="!isEdit || formOrganId != null" :label="$t('G2_FIELD_ORGAN', '所属机构')" required>
             <OrganSelect v-model="formOrganId" :disabled="isEdit" width="100%" />
           </el-form-item>
-          <h4>模型</h4>
-          <el-form-item label="模型名称" prop="modelName">
-            <el-input v-model="custom.modelName" placeholder="请输入模型名称" />
+          <h4>{{ $t('G2_FIELD_MODEL', '模型') }}</h4>
+          <el-form-item :label="$t('G2_FIELD_MODEL_NAME', '模型名称')" prop="modelName">
+            <el-input v-model="custom.modelName" :placeholder="$t('G2_PH_MODEL_NAME', '请输入模型名称')" />
           </el-form-item>
-          <el-form-item label="展示名称" prop="displayName">
-            <el-input v-model="profile.displayName" maxlength="64" placeholder="对话中展示的名称" />
+          <el-form-item :label="$t('AGENT_FIELD_DISPLAY_NAME', '展示名称')" prop="displayName">
+            <el-input v-model="profile.displayName" maxlength="64" :placeholder="$t('AGENT_PH_DISPLAY_NAME', '对话中展示的名称')" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
-              <el-form-item label="模型类型" prop="modelType">
-                <el-select v-model="custom.modelType" style="width: 100%">
-                  <el-option v-for="item in MODEL_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
+              <el-form-item :label="$t('AGENT_FIELD_MODEL_TYPE', '模型类型')" prop="modelType">
+                <DictSelect v-model="custom.modelType" usage-code="MODEL_TYPE" width="100%" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="供应商" prop="provider">
-                <el-input v-model="custom.provider" placeholder="请输入供应商" />
+              <el-form-item :label="$t('AGENT_FIELD_PROVIDER', '供应商')" prop="provider">
+                <el-input v-model="custom.provider" :placeholder="$t('AGENT_PH_PROVIDER', '请输入供应商')" />
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item v-if="custom.modelType === 'LLM'" label="对话可选">
+          <el-form-item v-if="custom.modelType === 'LLM'" :label="$t('AGENT_FIELD_SELECTABLE', '对话可选')">
             <el-switch v-model="profile.selectable" />
           </el-form-item>
-          <h4>连接</h4>
-          <el-form-item label="协议" prop="protocol">
-            <el-select v-model="custom.protocol" style="width: 100%">
-              <el-option v-for="item in PROTOCOL_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
+          <h4>{{ $t('AGENT_SECTION_CONN', '连接') }}</h4>
+          <el-form-item :label="$t('AGENT_FIELD_PROTOCOL', '协议')" prop="protocol">
+            <DictSelect v-model="custom.protocol" usage-code="MODEL_PROTOCOL" :placeholder="$t('AGENT_PH_PROTOCOL', '请选择协议')" width="100%" />
           </el-form-item>
-          <el-form-item label="服务地址" prop="baseUrl">
-            <el-input v-model="custom.baseUrl" placeholder="请输入服务地址" />
+          <el-form-item :label="$t('AGENT_FIELD_ENDPOINT', '服务地址')" prop="baseUrl">
+            <el-input v-model="custom.baseUrl" :placeholder="$t('AGENT_PH_ENDPOINT', '请输入服务地址')" />
           </el-form-item>
-          <el-form-item label="访问密钥" prop="apiKey">
+          <el-form-item :label="$t('AGENT_FIELD_API_KEY', '访问密钥')" prop="apiKey">
             <el-input
               v-model="custom.apiKey"
               type="password"
               show-password
-              :placeholder="isEdit && custom.apiKeyConfigured ? '已配置，留空表示不修改' : '请输入访问密钥'"
+              :placeholder="isEdit && custom.apiKeyConfigured ? $t('AGENT_PH_API_KEY_KEEP', '已配置，留空表示不修改') : $t('AGENT_PH_API_KEY', '请输入访问密钥')"
             />
           </el-form-item>
-          <el-form-item label="说明" prop="description">
-            <el-input v-model="custom.description" type="textarea" :rows="1" placeholder="请输入说明" />
+          <el-form-item :label="$t('G2_FIELD_DESCRIPTION', '说明')" prop="description">
+            <el-input v-model="custom.description" type="textarea" :rows="1" :placeholder="$t('AGENT_PH_DESCRIPTION', '请输入说明')" />
           </el-form-item>
-          <h4>参数</h4>
+          <h4>{{ $t('AGENT_SECTION_PARAMS', '参数') }}</h4>
           <ParamsForm
             v-model:temperature="params.temperature"
             v-model:top-p="params.topP"
@@ -323,26 +334,34 @@
       </template>
     </el-drawer>
 
-    <el-dialog v-model="detailDialogVisible" title="模型配置明细" width="560px">
+    <el-dialog v-model="detailDialogVisible" :title="$t('AGENT_PROFILE_DETAIL', '模型配置明细')" width="560px">
       <el-descriptions :column="1" border>
         <el-descriptions-item :label="$t('G2_FIELD_ID', 'ID')">{{ currentRow?.id }}</el-descriptions-item>
-        <el-descriptions-item label="所属机构">{{ currentRow?.organId }}</el-descriptions-item>
-        <el-descriptions-item label="展示名称">{{ currentRow?.displayName }}</el-descriptions-item>
-        <el-descriptions-item label="模型名称">{{ currentRow?.modelName }}</el-descriptions-item>
-        <el-descriptions-item label="对话可选">{{ currentRow?.selectable ? '是' : '否' }}</el-descriptions-item>
-        <el-descriptions-item label="默认">{{ currentRow?.defaultFlag ? '是' : '否' }}</el-descriptions-item>
-        <el-descriptions-item label="来源">{{ optionLabel(RESOURCE_OPTIONS, currentRow?.resourceType) }}</el-descriptions-item>
-        <el-descriptions-item label="类型">{{ optionLabel(MODEL_TYPE_OPTIONS, currentRow?.modelType) }}</el-descriptions-item>
-        <el-descriptions-item label="供应商">{{ currentRow?.provider }}</el-descriptions-item>
-        <el-descriptions-item label="协议">{{ optionLabel(PROTOCOL_OPTIONS, currentRow?.protocol) }}</el-descriptions-item>
-        <el-descriptions-item label="服务地址">{{ currentRow?.baseUrl }}</el-descriptions-item>
-        <el-descriptions-item label="访问密钥">{{ currentRow?.apiKeyConfigured ? '已配置' : '未配置' }}</el-descriptions-item>
-        <el-descriptions-item label="采样温度">{{ currentRow?.temperature ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('G2_FIELD_ORGAN', '所属机构')">{{ currentRow?.organName || currentRow?.organId }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_DISPLAY_NAME', '展示名称')">{{ currentRow?.displayName }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('G2_FIELD_MODEL_NAME', '模型名称')">{{ currentRow?.modelName }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_SELECTABLE', '对话可选')">{{ currentRow?.selectable ? $t('G2_LBL_YES', '是') : $t('G2_LBL_NO', '否') }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_DEFAULT', '默认')">{{ currentRow?.defaultFlag ? $t('G2_LBL_YES', '是') : $t('G2_LBL_NO', '否') }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_RESOURCE', '来源')">
+          <DictText :value="currentRow?.resourceType" usage-code="MODEL_RESOURCE_TYPE" />
+        </el-descriptions-item>
+        <el-descriptions-item :label="$t('G2_FIELD_TYPE', '类型')">
+          <DictText :value="currentRow?.modelType" usage-code="MODEL_TYPE" />
+        </el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_PROVIDER', '供应商')">{{ currentRow?.provider }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_PROTOCOL', '协议')">
+          <DictText :value="currentRow?.protocol" usage-code="MODEL_PROTOCOL" />
+        </el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_ENDPOINT', '服务地址')">{{ currentRow?.baseUrl }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_API_KEY', '访问密钥')">{{ currentRow?.apiKeyConfigured ? $t('G2_LBL_CONFIGURED', '已配置') : $t('G2_LBL_UNCONFIGURED', '未配置') }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_TEMPERATURE', '采样温度')">{{ currentRow?.temperature ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="Top P">{{ currentRow?.topP ?? '-' }}</el-descriptions-item>
-        <el-descriptions-item label="最大 Token">{{ currentRow?.maxTokens ?? '-' }}</el-descriptions-item>
-        <el-descriptions-item label="超时">{{ Math.round((currentRow?.timeoutMs || 0) / 1000) }} s</el-descriptions-item>
-        <el-descriptions-item label="状态">{{ optionLabel(STATUS_OPTIONS, currentRow?.status) }}</el-descriptions-item>
-        <el-descriptions-item label="说明">{{ currentRow?.description }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_MAX_TOKENS', '最大 Token')">{{ currentRow?.maxTokens ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_TIMEOUT', '超时')">{{ Math.round((currentRow?.timeoutMs || 0) / 1000) }} s</el-descriptions-item>
+        <el-descriptions-item :label="$t('G2_FIELD_STATUS', '状态')">
+          <DictText :value="currentRow?.status" usage-code="ENABLE_STATUS" />
+        </el-descriptions-item>
+        <el-descriptions-item :label="$t('G2_FIELD_DESCRIPTION', '说明')">{{ currentRow?.description }}</el-descriptions-item>
       </el-descriptions>
       <template #footer>
         <el-button type="primary" @click="detailDialogVisible = false">{{ $t('G2_BTN_CLOSE', '关闭') }}</el-button>
@@ -358,7 +377,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
-import { OrganSelect, StatusSwitch } from '@g2rain/ui/platform';
+import { OrganSelect, DictSelect, DictText, StatusSwitch } from '@g2rain/ui/platform';
 import { notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
 import ParamsForm from './components/ParamsForm.vue';
 import { ModelServiceProfileApi } from './api';
@@ -375,17 +394,6 @@ const MODEL_TYPE_OPTIONS: EnumOption[] = [
   { value: 'LLM', label: '大语言模型' },
   { value: 'VECTOR', label: '向量模型' },
   { value: 'RERANK', label: '重排序模型' },
-];
-
-const PROTOCOL_OPTIONS: EnumOption[] = [
-  { value: 'OPENAI', label: 'OpenAI' },
-  { value: 'ANTHROPIC', label: 'Anthropic' },
-  { value: 'GEMINI', label: 'Gemini' },
-];
-
-const STATUS_OPTIONS: EnumOption[] = [
-  { value: 'ACTIVE', label: '启用' },
-  { value: 'INACTIVE', label: '禁用' },
 ];
 
 const RESOURCE_OPTIONS: EnumOption[] = [
@@ -441,8 +449,10 @@ const pickPagination = reactive({ pageNum: 1, pageSize: 7, total: 0 });
 const pickLoading = ref(false);
 
 const marketDrawerTitle = computed(() => {
-  if (isEdit.value) return '编辑模型配置';
-  return marketStep.value === 'pick' ? '选择广场模型' : '配置参数';
+  if (isEdit.value) return t('AGENT_PROFILE_DLG_EDIT', '编辑模型配置');
+  return marketStep.value === 'pick'
+    ? t('AGENT_PROFILE_DLG_PICK', '选择广场模型')
+    : t('AGENT_PROFILE_DLG_PARAMS', '配置参数');
 });
 
 const params = reactive({ temperature: 0, topP: 1, maxTokens: 4096, timeoutMs: 120000 });
@@ -461,19 +471,21 @@ const custom = reactive({
 });
 
 const customRules: FormRules = {
-  modelName: [{ required: true, message: '请输入模型名称', trigger: 'blur' }],
+  modelName: [{ required: true, message: t('G2_PH_MODEL_NAME', '请输入模型名称'), trigger: 'blur' }],
   displayName: [
     {
       required: true,
       trigger: 'blur',
       validator: (_rule, _value, callback) =>
-        profile.displayName.trim() ? callback() : callback(new Error('请输入展示名称')),
+        profile.displayName.trim()
+          ? callback()
+          : callback(new Error(t('AGENT_PH_DISPLAY_NAME', '请输入展示名称'))),
     },
   ],
-  modelType: [{ required: true, message: '请选择模型类型', trigger: 'change' }],
-  provider: [{ required: true, message: '请输入供应商', trigger: 'blur' }],
-  protocol: [{ required: true, message: '请选择协议', trigger: 'change' }],
-  baseUrl: [{ required: true, message: '请输入服务地址', trigger: 'blur' }],
+  modelType: [{ required: true, message: t('AGENT_PH_MODEL_TYPE', '请选择模型类型'), trigger: 'change' }],
+  provider: [{ required: true, message: t('AGENT_PH_PROVIDER', '请输入供应商'), trigger: 'blur' }],
+  protocol: [{ required: true, message: t('AGENT_PH_PROTOCOL', '请选择协议'), trigger: 'change' }],
+  baseUrl: [{ required: true, message: t('AGENT_PH_ENDPOINT', '请输入服务地址'), trigger: 'blur' }],
 };
 
 const currentModelType = computed(() => {
@@ -524,11 +536,11 @@ const onPickSelect = (id: number | string | undefined) => {
 
 const goMarketParams = () => {
   if (!selectedCatalogId.value || !selectedMarket.value) {
-    ElMessage.warning('请先选择广场模型');
+    ElMessage.warning(t('AGENT_WARN_PICK_MARKET', '请先选择广场模型'));
     return;
   }
   if (configuredIds.value.has(selectedCatalogId.value)) {
-    ElMessage.warning('该模型已配置');
+    ElMessage.warning(t('AGENT_WARN_ALREADY_CONFIGURED', '该模型已配置'));
     return;
   }
   if (!profile.displayName.trim()) profile.displayName = selectedMarket.value.modelName;
@@ -661,8 +673,8 @@ const handleView = (row: ModelServiceProfile) => {
 const handleDelete = (row: ModelServiceProfile) => {
   const tip =
     row.resourceType === 'CUSTOM'
-      ? `确认删除私有模型「${row.modelName || row.id}」？将同时删除对应目录。`
-      : `确认删除配置「${row.modelName || row.id}」吗？`;
+      ? t('AGENT_DEL_CONFIRM_MODEL', { name: row.modelName || row.id }, '确认删除模型「{name}」吗？')
+      : t('AGENT_DEL_CONFIRM_MODEL', { name: row.modelName || row.id }, '确认删除模型「{name}」吗？');
   ElMessageBox.confirm(tip, t('G2_LBL_TIP', '提示'), { type: 'warning' })
     .then(async () => {
       await ModelServiceProfileApi.remove(row.id);
@@ -694,7 +706,7 @@ const handleDefault = (row: ModelServiceProfile) => {
 const submitMarket = async () => {
   const displayName = profile.displayName.trim();
   if (!displayName) {
-    ElMessage.warning('请输入展示名称');
+    ElMessage.warning(t('AGENT_PH_DISPLAY_NAME', '请输入展示名称'));
     return;
   }
   saving.value = true;
@@ -712,11 +724,11 @@ const submitMarket = async () => {
       });
     } else {
       if (!selectedCatalogId.value) {
-        ElMessage.warning('请选择广场模型');
+        ElMessage.warning(t('AGENT_WARN_PICK_MARKET', '请选择广场模型'));
         return;
       }
       if (formOrganId.value == null) {
-        ElMessage.warning('请选择所属机构');
+        ElMessage.warning(t('G2_PH_ORGAN', '请选择所属机构'));
         return;
       }
       await ModelServiceProfileApi.save({
@@ -743,7 +755,7 @@ const submitCustom = async () => {
   const valid = await customFormRef.value.validate().catch(() => false);
   if (!valid) return;
   if (!isEdit.value && formOrganId.value == null) {
-    ElMessage.warning('请选择所属机构');
+    ElMessage.warning(t('G2_PH_ORGAN', '请选择所属机构'));
     return;
   }
 

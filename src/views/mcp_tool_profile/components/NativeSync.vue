@@ -1,14 +1,14 @@
 <template>
-  <el-drawer :model-value="visible" size="960px" title="同步平台接口" destroy-on-close @close="emit('close')">
-    <el-form label-width="88px">
-      <el-form-item label="微服务">
+  <el-drawer :model-value="visible" size="960px" :title="$t('AGENT_MCP_TOOL_SYNC', '同步平台接口')" destroy-on-close @close="emit('close')">
+    <el-form label-width="140px">
+      <el-form-item :label="$t('AGENT_FIELD_MICROSERVICE', '微服务')">
         <el-select
           v-model="serviceId"
           filterable
           clearable
           style="width: 100%"
           :loading="servicesLoading"
-          placeholder="选择 service_registry"
+          :placeholder="$t('AGENT_PH_SERVICE_REGISTRY', '选择 service_registry')"
           @change="onServiceChange"
         >
           <el-option
@@ -19,8 +19,8 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="范围">
-        <el-checkbox v-model="importAll" :disabled="serviceId == null">导入该服务全部接口</el-checkbox>
+      <el-form-item :label="$t('AGENT_FIELD_SCOPE', '范围')">
+        <el-checkbox v-model="importAll" :disabled="serviceId == null">{{ $t('AGENT_SYNC_IMPORT_ALL', '导入该服务全部接口') }}</el-checkbox>
       </el-form-item>
     </el-form>
 
@@ -34,9 +34,9 @@
       @selection-change="onSelect"
     >
       <el-table-column type="selection" width="48" />
-      <el-table-column prop="method" label="方法" width="90" />
-      <el-table-column prop="path" label="路径" min-width="220" />
-      <el-table-column prop="name" label="名称" min-width="160" />
+      <el-table-column prop="method" :label="$t('AGENT_FIELD_HTTP_METHOD', 'HTTP方法')" width="120" />
+      <el-table-column prop="path" :label="$t('AGENT_FIELD_HTTP_PATH', 'HTTP路径')" min-width="220" />
+      <el-table-column prop="name" :label="$t('G2_FIELD_NAME', '名称')" min-width="160" />
     </el-table>
     <div v-if="!importAll" class="native-sync__pager">
       <el-pagination
@@ -49,8 +49,8 @@
     </div>
 
     <template #footer>
-      <el-button @click="emit('close')">取消</el-button>
-      <el-button type="primary" :loading="submitting" :disabled="!canSubmit" @click="submit">同步</el-button>
+      <el-button @click="emit('close')">{{ $t('G2_BTN_CANCEL', '取消') }}</el-button>
+      <el-button type="primary" :loading="submitting" :disabled="!canSubmit" @click="submit">{{ $t('G2_BTN_SYNC', '同步') }}</el-button>
     </template>
   </el-drawer>
 </template>

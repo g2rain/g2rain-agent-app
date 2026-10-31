@@ -1,5 +1,5 @@
 <template>
-  <el-drawer :model-value="visible" size="80%" :title="`工具管理 · ${serviceName}`" destroy-on-close @close="emit('close')">
+  <el-drawer :model-value="visible" size="80%" :title="$t('AGENT_TOOL_MANAGE_TITLE', { name: serviceName }, '工具管理 · {name}')" destroy-on-close @close="emit('close')">
     <ToolTable ref="tableRef" :resource-type="resourceType" :service-id="serviceId">
       <template #actions>
         <el-button type="primary" v-permission="'mcp_tool_profile:import'" @click="importOpen = true">

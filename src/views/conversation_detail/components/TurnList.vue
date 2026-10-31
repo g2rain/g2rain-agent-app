@@ -26,7 +26,7 @@
           @click="emit('trace', reply.traceId!)"
         >
           <span class="turn__progress-icon" aria-hidden="true">⏱</span>
-          <span class="turn__task-goal">{{ $t('AGENT_CONVERSATION_PROGRESS', '执行过程') }}</span>
+          <span class="turn__task-goal">{{ $t('G2_LBL_PROGRESS', '执行过程') }}</span>
           <span class="turn__task-meta">{{ formatDuration(reply.elapsedMs) }}</span>
           <span class="turn__task-arrow">›</span>
         </button>

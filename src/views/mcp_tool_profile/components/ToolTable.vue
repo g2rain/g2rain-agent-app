@@ -2,16 +2,20 @@
   <div class="tool-table">
     <el-card class="tool-table__search" shadow="never">
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
-        <el-form-item v-if="serviceId == null" label="所属机构">
+        <el-form-item v-if="serviceId == null" :label="$t('G2_FIELD_ORGAN', '所属机构')">
           <OrganSelect v-model="queryForm.organId" />
         </el-form-item>
-        <el-form-item label="Tool名称">
-          <el-input v-model="queryForm.name" placeholder="请输入Tool名称" clearable style="width: 200px" />
+        <el-form-item :label="$t('AGENT_FIELD_TOOL_NAME', '工具名称')">
+          <el-input v-model="queryForm.name" :placeholder="$t('AGENT_FIELD_TOOL_NAME', '工具名称')" clearable style="width: 200px" />
         </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="queryForm.status" placeholder="请选择状态" clearable style="width: 200px">
-            <el-option v-for="item in STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <el-form-item :label="$t('G2_FIELD_STATUS', '状态')">
+          <DictSelect
+            v-model="queryForm.status"
+            usage-code="ENABLE_STATUS"
+            :placeholder="$t('G2_PH_STATUS', '请选择状态')"
+            clearable
+            width="200px"
+          />
         </el-form-item>
         <template #actions>
           <el-form-item>
@@ -29,21 +33,25 @@
 
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="120" />
-      <el-table-column v-if="serviceId == null" prop="organId" label="所属机构" width="110" />
-      <el-table-column prop="name" label="Tool名称" min-width="220" />
-      <el-table-column prop="title" label="Tool标题" min-width="160" />
-      <el-table-column v-if="serviceId == null" prop="serviceName" label="所属服务" width="160" />
-      <el-table-column prop="method" label="HTTP方法" width="100" />
-      <el-table-column prop="path" label="HTTP路径" min-width="200" />
-      <el-table-column prop="status" label="状态" width="140">
+      <el-table-column v-if="serviceId == null" :label="$t('G2_FIELD_ORGAN', '所属机构')" width="120">
+        <template #default="{ row }">
+          {{ row.organName || row.organId }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="name" :label="$t('AGENT_FIELD_TOOL_NAME', '工具名称')" min-width="220" />
+      <el-table-column prop="title" :label="$t('G2_FIELD_TITLE', '标题')" min-width="160" />
+      <el-table-column v-if="serviceId == null" prop="serviceName" :label="$t('G2_FIELD_SERVICE_NAME', '服务名称')" width="160" />
+      <el-table-column prop="method" :label="$t('AGENT_FIELD_HTTP_METHOD', 'HTTP方法')" width="120" />
+      <el-table-column prop="path" :label="$t('AGENT_FIELD_HTTP_PATH', 'HTTP路径')" min-width="200" />
+      <el-table-column prop="status" :label="$t('G2_FIELD_STATUS', '状态')" width="140">
         <template #default="{ row }">
           <StatusSwitch
             :model-value="row.status"
             permission="mcp_tool_profile:edit"
             active-value="ACTIVE"
             inactive-value="INACTIVE"
-            :options="STATUS_OPTIONS"
-            :api-method="({ nextValue }) => McpToolProfileApi.updateStatus(row.id, String(nextValue))"
+            usage-code="ENABLE_STATUS"
+            :api-method="changeStatus(row)"
             @update:model-value="(value) => (row.status = String(value))"
             @success="notifyStatusSwitchSuccess"
             @error="(payload) => notifyStatusSwitchError(payload)"
@@ -102,10 +110,9 @@
 import { onMounted, reactive, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
-import { RecordStatus } from '@runtime/console';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { QueryForm, SortableTable, SortManagerButton, TableColumn } from '@g2rain/ui';
-import { OrganSelect, StatusSwitch } from '@g2rain/ui/platform';
+import { OrganSelect, DictSelect, StatusSwitch } from '@g2rain/ui/platform';
 import { notifyStatusSwitchError, notifyStatusSwitchSuccess } from '@/components';
 import { McpToolProfileApi } from '../api';
 import type { McpToolProfile, McpToolProfileQuery } from '../type';
@@ -120,10 +127,10 @@ const props = defineProps<{
   title?: string;
 }>();
 
-const STATUS_OPTIONS = [
-  { value: RecordStatus.ACTIVE, label: '启用' },
-  { value: RecordStatus.INACTIVE, label: '禁用' },
-];
+// 状态开关回调：放在 script 里，避免模板内直接引用类导致 IDE 类型误报
+const changeStatus = (row: McpToolProfile) =>
+  ({ nextValue }: { nextValue: string | number | boolean }) =>
+    McpToolProfileApi.updateStatus(row.id, String(nextValue));
 
 const queryFormRef = ref<InstanceType<typeof QueryForm> | null>(null);
 const baseQueryForm = ref<BaseSelectListDto>({
@@ -198,7 +205,7 @@ function openDrawer(row: McpToolProfile, mode: 'edit' | 'detail'): void {
 }
 
 function handleDelete(row: McpToolProfile): void {
-  ElMessageBox.confirm(`确认删除工具「${row.name || row.id}」吗？`, t('G2_LBL_TIP', '提示'), { type: 'warning' })
+  ElMessageBox.confirm(t('AGENT_DEL_CONFIRM_TOOL', { name: row.name || row.id }, '确认删除工具「{name}」吗？'), t('G2_LBL_TIP', '提示'), { type: 'warning' })
     .then(async () => {
       await McpToolProfileApi.remove(row.id);
       if (tableData.value.length === 1 && pagination.pageNum > 1) {

@@ -5,4 +5,5 @@
 export interface OrganIdNameMap {
   organId: number;
   organName: string;
+  [key: string]: unknown;
 }

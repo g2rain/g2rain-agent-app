@@ -2,7 +2,7 @@
   <div class="task-detail">
     <div class="task-detail__head">
       <StatusDot v-bind="describeStatus(bundle.task.status)" />
-      <span class="task-detail__title">{{ $t('AGENT_TRACE_RESULT', '结果') }}</span>
+      <span class="task-detail__title">{{ $t('G2_FIELD_RESULT', '结果') }}</span>
       <span class="task-detail__meta">{{ formatDuration(elapsed(bundle.task.startedTime, bundle.task.finishedTime)) }}</span>
     </div>
     <el-tabs v-model="tab">

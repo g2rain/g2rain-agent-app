@@ -7,6 +7,7 @@ import type { BaseSelectListDto, BaseVo } from '@platform/types/api.type';
 /** 列表/明细（联表目录字段） */
 export interface ModelServiceProfile extends BaseVo {
   organId?: number;
+  organName?: string;
   catalogId: number;
   displayName?: string;
   selectable?: boolean;

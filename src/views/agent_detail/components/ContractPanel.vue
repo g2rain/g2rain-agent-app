@@ -155,7 +155,7 @@ const toolGroups = computed(() => {
     };
   });
   return [
-    { title: t('AGENT_CONTRACT_QUERY_TOOLS', '查询'), tools: items.filter((i) => !i.write) },
+    { title: t('G2_BTN_QUERY', '查询'), tools: items.filter((i) => !i.write) },
     { title: t('AGENT_CONTRACT_WRITE_TOOLS', '写入'), tools: items.filter((i) => i.write) },
   ].filter((group) => group.tools.length > 0);
 });

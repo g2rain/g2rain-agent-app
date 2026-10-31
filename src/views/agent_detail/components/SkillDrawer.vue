@@ -29,7 +29,7 @@
             <el-form-item :label="$t('AGENT_SKILL_KEY', '技能键')" required>
               <el-input v-model="form.skillKey" maxlength="128" :disabled="!!skillId" />
             </el-form-item>
-            <el-form-item :label="$t('AGENT_SKILL_NAME', '名称')" required>
+            <el-form-item :label="$t('G2_FIELD_NAME', '名称')" required>
               <el-input v-model="form.skillName" maxlength="128" />
             </el-form-item>
             <el-form-item :label="$t('AGENT_SKILL_SEMANTIC', '语义描述')" class="skill-drawer__wide">
@@ -70,13 +70,13 @@
                 <span v-if="isWriteName(row.toolName)" class="skill-drawer__write">{{ $t('AGENT_TRACE_WRITE', '写') }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('AGENT_TOOL_TITLE', '标题')" min-width="160">
+            <el-table-column :label="$t('G2_FIELD_TITLE', '标题')" min-width="160">
               <template #default="{ row }">{{ toolMeta.find((m) => m.name === row.toolName)?.title ?? EMPTY }}</template>
             </el-table-column>
             <el-table-column :label="$t('AGENT_SKILL_TAB_CONTRACT', '执行契约')" width="110">
               <template #default="{ row }">
-                <StatusDot v-if="configuredTools.has(row.toolName)" tone="success" :label="$t('AGENT_CONTRACT_CONFIGURED', '已配置')" />
-                <StatusDot v-else tone="waiting" :label="$t('AGENT_CONTRACT_NOT_CONFIGURED', '未配置')" />
+                <StatusDot v-if="configuredTools.has(row.toolName)" tone="success" :label="$t('G2_LBL_CONFIGURED', '已配置')" />
+                <StatusDot v-else tone="waiting" :label="$t('G2_LBL_UNCONFIGURED', '未配置')" />
               </template>
             </el-table-column>
             <el-table-column :label="$t('AGENT_FIELD_ENABLED', '启用')" width="80">
@@ -85,7 +85,7 @@
                   @change="(on: string | number | boolean) => toggleTool(row, !!on)" />
               </template>
             </el-table-column>
-            <el-table-column :label="$t('AGENT_FIELD_REMARK', '备注')" min-width="200">
+            <el-table-column :label="$t('G2_FIELD_REMARK', '备注')" min-width="200">
               <template #default="{ row }">
                 <el-input v-model="row.description" size="small" @change="saveTool(row)" />
               </template>
@@ -108,7 +108,7 @@
       :search-placeholder="$t('AGENT_TOOL_SEARCH', '搜索工具名或标题')"
       :empty-text="$t('AGENT_TOOL_EMPTY', '没有可用的工具')"
       :cancel-text="$t('G2_BTN_CANCEL', '取消')"
-      :confirm-text="$t('AGENT_SKILL_ADD_CONFIRM', '添加')"
+      :confirm-text="$t('G2_BTN_ADD', '添加')"
       @confirm="addTools"
       @close="pickerOpen = false"
     />

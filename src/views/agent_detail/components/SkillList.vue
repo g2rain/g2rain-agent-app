@@ -33,13 +33,13 @@
             permission="skill:edit"
             active-value="ACTIVE"
             inactive-value="INACTIVE"
-            :options="STATUS_OPTIONS"
+            usage-code="ENABLE_STATUS"
             :api-method="changeStatus(row)"
             @update:model-value="(value) => (row.skill.status = String(value))"
             @success="notifyStatusSwitchSuccess"
             @error="(p) => notifyStatusSwitchError(p)"
           />
-          <el-button link type="primary" @click="emit('open', row.skill.id)">修改</el-button>
+          <el-button link type="primary" @click="emit('open', row.skill.id)">{{ $t('AGENT_BTN_EDIT', '修改') }}</el-button>
           <el-button link type="danger" @click="emit('remove', row.skill)">{{ $t('G2_BTN_DELETE', '删除') }}</el-button>
         </div>
       </li>
@@ -54,11 +54,6 @@ import { RecordStatus, ResourceType } from '@runtime/console';
 import { notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
 import { AgentDetailApi } from '../api';
 import type { SkillProfileVo, SkillRow } from '../type';
-
-const STATUS_OPTIONS = [
-  { value: RecordStatus.ACTIVE, label: t('AGENT_STATUS_ACTIVE', '启用') },
-  { value: RecordStatus.INACTIVE, label: t('AGENT_STATUS_INACTIVE', '禁用') },
-];
 
 defineProps<{ rows: SkillRow[] }>();
 const emit = defineEmits<{

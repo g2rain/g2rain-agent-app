@@ -6,6 +6,7 @@ import type { BaseSelectListDto, BaseVo } from '@platform/types/api.type';
 
 export interface ModelUsageRecord extends BaseVo {
   organId?: number;
+  organName?: string;
   profileId: number;
   catalogId?: number;
   protocol?: string;

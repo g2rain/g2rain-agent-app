@@ -5,26 +5,20 @@
       <!-- 基础查询表单（BaseSelectListDto） -->
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
         <!-- 业务特定查询字段 -->
-        <el-form-item label="模型名称">
-          <el-input v-model="queryForm.modelName" placeholder="请输入模型名称" clearable style="width: 200px" />
+        <el-form-item :label="$t('G2_FIELD_MODEL_NAME', '模型名称')">
+          <el-input v-model="queryForm.modelName" :placeholder="$t('G2_PH_MODEL_NAME', '请输入模型名称')" clearable style="width: 200px" />
         </el-form-item>
-        <el-form-item label="模型类型">
-          <el-select v-model="queryForm.modelType" placeholder="请选择模型类型" clearable style="width: 200px">
-            <el-option v-for="item in MODEL_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <el-form-item :label="$t('AGENT_FIELD_MODEL_TYPE', '模型类型')">
+          <DictSelect v-model="queryForm.modelType" usage-code="MODEL_TYPE" :placeholder="$t('AGENT_PH_MODEL_TYPE', '请选择模型类型')" clearable width="200px" />
         </el-form-item>
-        <el-form-item label="模型供应商">
-          <el-input v-model="queryForm.provider" placeholder="请输入模型供应商" clearable style="width: 200px" />
+        <el-form-item :label="$t('AGENT_FIELD_PROVIDER', '供应商')">
+          <el-input v-model="queryForm.provider" :placeholder="$t('AGENT_FIELD_PROVIDER', '供应商')" clearable style="width: 200px" />
         </el-form-item>
-        <el-form-item label="模型协议">
-          <el-select v-model="queryForm.protocol" placeholder="请选择模型协议" clearable style="width: 200px">
-            <el-option v-for="item in PROTOCOL_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <el-form-item :label="$t('AGENT_FIELD_PROTOCOL', '协议')">
+          <DictSelect v-model="queryForm.protocol" usage-code="MODEL_PROTOCOL" :placeholder="$t('AGENT_PH_PROTOCOL', '请选择协议')" clearable width="200px" />
         </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="queryForm.status" placeholder="请选择状态" clearable style="width: 200px">
-            <el-option v-for="item in STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <el-form-item :label="$t('G2_FIELD_STATUS', '状态')">
+          <DictSelect v-model="queryForm.status" usage-code="ENABLE_STATUS" :placeholder="$t('G2_PH_STATUS', '请选择状态')" clearable width="200px" />
         </el-form-item>
 
         <!-- 操作按钮 -->
@@ -40,31 +34,31 @@
     <!-- 标题和操作按钮 -->
     <div class="model_service_catalog-page__header">
       <div class="model_service_catalog-page__title-group">
-        <h2>管理模型广场</h2>
+        <h2>{{ $t('AGENT_TITLE_MODEL_CATALOG', '模型目录') }}</h2>
       </div>
-      <el-button type="primary" v-permission="'model_service_catalog:add'" @click="handleCreate">新增模型</el-button>
+      <el-button type="primary" v-permission="'model_service_catalog:add'" @click="handleCreate">{{ $t('AGENT_BTN_ADD', '新增') }}</el-button>
     </div>
 
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="120" />
-      <el-table-column prop="modelName" label="模型名称" width="180" />
-      <el-table-column prop="modelType" label="模型类型" width="120">
-        <template #default="{ row }">{{ optionLabel(MODEL_TYPE_OPTIONS, row.modelType) }}</template>
+      <el-table-column prop="modelName" :label="$t('G2_FIELD_MODEL_NAME', '模型名称')" width="180" />
+      <el-table-column prop="modelType" :label="$t('AGENT_FIELD_MODEL_TYPE', '模型类型')" width="120">
+        <template #default="{ row }"><DictText :value="row.modelType" usage-code="MODEL_TYPE" /></template>
       </el-table-column>
-      <el-table-column prop="provider" label="模型供应商" width="180" />
-      <el-table-column prop="protocol" label="模型协议" width="120">
-        <template #default="{ row }">{{ optionLabel(PROTOCOL_OPTIONS, row.protocol) }}</template>
+      <el-table-column prop="provider" :label="$t('AGENT_FIELD_PROVIDER', '供应商')" width="180" />
+      <el-table-column prop="protocol" :label="$t('AGENT_FIELD_PROTOCOL', '协议')" width="120">
+        <template #default="{ row }"><DictText :value="row.protocol" usage-code="MODEL_PROTOCOL" /></template>
       </el-table-column>
-      <el-table-column prop="baseUrl" label="模型服务地址" min-width="200" />
-      <el-table-column prop="status" label="状态" width="140">
+      <el-table-column prop="baseUrl" :label="$t('AGENT_FIELD_ENDPOINT', '服务地址')" min-width="200" />
+      <el-table-column prop="status" :label="$t('G2_FIELD_STATUS', '状态')" width="140">
         <template #default="{ row }">
           <StatusSwitch
             v-model="row.status"
             permission="model_service_catalog:status_update"
             active-value="ACTIVE"
             inactive-value="INACTIVE"
-            :options="STATUS_OPTIONS"
-            :api-method="({ nextValue }) => ModelServiceCatalogApi.updateStatus(row.id, String(nextValue))"
+            usage-code="ENABLE_STATUS"
+            :api-method="changeStatus(row)"
             @success="notifyStatusSwitchSuccess"
             @error="(p) => notifyStatusSwitchError(p)"
           />
@@ -101,28 +95,24 @@
     </div>
 
     <!-- 新增 / 编辑弹窗 -->
-    <el-dialog v-model="editDialogVisible" :title="isEdit ? '编辑模型' : '新增模型'" width="520px">
+    <el-dialog v-model="editDialogVisible" :title="isEdit ? $t('AGENT_CATALOG_DLG_EDIT', '编辑模型') : $t('AGENT_CATALOG_DLG_ADD', '新增模型')" width="520px">
       <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="130px">
-        <el-form-item label="模型名称" prop="modelName">
-          <el-input v-model="editForm.modelName" placeholder="请输入模型名称" />
+        <el-form-item :label="$t('G2_FIELD_MODEL_NAME', '模型名称')" prop="modelName">
+          <el-input v-model="editForm.modelName" :placeholder="$t('G2_PH_MODEL_NAME', '请输入模型名称')" />
         </el-form-item>
-        <el-form-item label="模型类型" prop="modelType">
-          <el-select v-model="editForm.modelType" placeholder="请选择模型类型" style="width: 100%">
-            <el-option v-for="item in MODEL_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <el-form-item :label="$t('AGENT_FIELD_MODEL_TYPE', '模型类型')" prop="modelType">
+          <DictSelect v-model="editForm.modelType" usage-code="MODEL_TYPE" :placeholder="$t('AGENT_PH_MODEL_TYPE', '请选择模型类型')" width="100%" />
         </el-form-item>
-        <el-form-item label="模型供应商" prop="provider">
-          <el-input v-model="editForm.provider" placeholder="请输入模型供应商" />
+        <el-form-item :label="$t('AGENT_FIELD_PROVIDER', '供应商')" prop="provider">
+          <el-input v-model="editForm.provider" :placeholder="$t('AGENT_FIELD_PROVIDER', '供应商')" />
         </el-form-item>
-        <el-form-item label="模型协议" prop="protocol">
-          <el-select v-model="editForm.protocol" placeholder="请选择模型协议" style="width: 100%">
-            <el-option v-for="item in PROTOCOL_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <el-form-item :label="$t('AGENT_FIELD_PROTOCOL', '协议')" prop="protocol">
+          <DictSelect v-model="editForm.protocol" usage-code="MODEL_PROTOCOL" :placeholder="$t('AGENT_PH_PROTOCOL', '请选择协议')" width="100%" />
         </el-form-item>
-        <el-form-item label="模型服务地址" prop="baseUrl">
-          <el-input v-model="editForm.baseUrl" placeholder="请输入模型服务地址" />
+        <el-form-item :label="$t('AGENT_FIELD_ENDPOINT', '服务地址')" prop="baseUrl">
+          <el-input v-model="editForm.baseUrl" :placeholder="$t('AGENT_PH_ENDPOINT', '请输入模型服务地址')" />
         </el-form-item>
-        <el-form-item label="访问密钥" prop="apiKey">
+        <el-form-item :label="$t('AGENT_FIELD_API_KEY', '访问密钥')" prop="apiKey">
           <el-input
             v-model="editForm.apiKey"
             type="password"
@@ -130,8 +120,8 @@
             :placeholder="apiKeyPlaceholder"
           />
         </el-form-item>
-        <el-form-item label="说明" prop="description">
-          <el-input v-model="editForm.description" type="textarea" :rows="3" placeholder="请输入说明" />
+        <el-form-item :label="$t('G2_FIELD_DESCRIPTION', '说明')" prop="description">
+          <el-input v-model="editForm.description" type="textarea" :rows="3" :placeholder="$t('AGENT_PH_DESCRIPTION', '请输入说明')" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -143,17 +133,23 @@
     </el-dialog>
 
     <!-- 明细弹窗 -->
-    <el-dialog v-model="detailDialogVisible" title="模型明细" width="520px">
+    <el-dialog v-model="detailDialogVisible" :title="$t('AGENT_CATALOG_DETAIL', '模型明细')" width="520px">
       <el-descriptions :column="1" border>
         <el-descriptions-item :label="$t('G2_FIELD_ID', 'ID')">{{ currentRow?.id }}</el-descriptions-item>
-        <el-descriptions-item label="模型名称">{{ currentRow?.modelName }}</el-descriptions-item>
-        <el-descriptions-item label="模型类型">{{ optionLabel(MODEL_TYPE_OPTIONS, currentRow?.modelType) }}</el-descriptions-item>
-        <el-descriptions-item label="模型供应商">{{ currentRow?.provider }}</el-descriptions-item>
-        <el-descriptions-item label="模型协议">{{ optionLabel(PROTOCOL_OPTIONS, currentRow?.protocol) }}</el-descriptions-item>
-        <el-descriptions-item label="模型服务地址">{{ currentRow?.baseUrl }}</el-descriptions-item>
-        <el-descriptions-item label="访问密钥">{{ currentRow?.apiKeyConfigured ? '已配置' : '未配置' }}</el-descriptions-item>
-        <el-descriptions-item label="状态">{{ optionLabel(STATUS_OPTIONS, currentRow?.status) }}</el-descriptions-item>
-        <el-descriptions-item label="说明">{{ currentRow?.description }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('G2_FIELD_MODEL_NAME', '模型名称')">{{ currentRow?.modelName }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_MODEL_TYPE', '模型类型')">
+          <DictText :value="currentRow?.modelType" usage-code="MODEL_TYPE" />
+        </el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_PROVIDER', '供应商')">{{ currentRow?.provider }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_PROTOCOL', '协议')">
+          <DictText :value="currentRow?.protocol" usage-code="MODEL_PROTOCOL" />
+        </el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_ENDPOINT', '服务地址')">{{ currentRow?.baseUrl }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_API_KEY', '访问密钥')">{{ currentRow?.apiKeyConfigured ? '已配置' : '未配置' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('G2_FIELD_STATUS', '状态')">
+          <DictText :value="currentRow?.status" usage-code="ENABLE_STATUS" />
+        </el-descriptions-item>
+        <el-descriptions-item :label="$t('G2_FIELD_DESCRIPTION', '说明')">{{ currentRow?.description }}</el-descriptions-item>
         <el-descriptions-item :label="$t('G2_FIELD_CREATE_TIME', '创建时间')">{{ currentRow?.createTime }}</el-descriptions-item>
         <el-descriptions-item :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')">{{ currentRow?.updateTime }}</el-descriptions-item>
       </el-descriptions>
@@ -176,33 +172,13 @@ import type { ModelServiceCatalog, ModelServiceCatalogPayload, ModelServiceCatal
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 
 import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
-import { StatusSwitch } from '@g2rain/ui/platform';
+import { DictSelect, DictText, StatusSwitch } from '@g2rain/ui/platform';
 import { notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
 
-/** 枚举选项（后期改为字典查询） */
-type EnumOption = { value: string; label: string };
-
-const MODEL_TYPE_OPTIONS: EnumOption[] = [
-  { value: 'LLM', label: '大语言模型' },
-  { value: 'VECTOR', label: '向量模型' },
-  { value: 'RERANK', label: '重排序模型' },
-];
-
-const PROTOCOL_OPTIONS: EnumOption[] = [
-  { value: 'OPENAI', label: 'OpenAI' },
-  { value: 'ANTHROPIC', label: 'Anthropic' },
-  { value: 'GEMINI', label: 'Gemini' },
-];
-
-const STATUS_OPTIONS: EnumOption[] = [
-  { value: 'ACTIVE', label: '启用' },
-  { value: 'INACTIVE', label: '禁用' },
-];
-
-const optionLabel = (options: EnumOption[], value?: string | null): string => {
-  if (!value) return '';
-  return options.find((item) => item.value === value)?.label ?? value;
-};
+// 状态开关回调：放在 script 里，避免模板内直接引用类导致 IDE 类型误报
+const changeStatus = (row: ModelServiceCatalog) =>
+  ({ nextValue }: { nextValue: string | number | boolean }) =>
+    ModelServiceCatalogApi.updateStatus(row.id, String(nextValue));
 
 // 组件引用
 const queryFormRef = ref<InstanceType<typeof QueryForm> | null>(null);
@@ -313,7 +289,7 @@ const handleView = (row: ModelServiceCatalog) => {
 
 // 删除数据记录
 const handleDelete = (row: ModelServiceCatalog) => {
-  ElMessageBox.confirm(`确认删除模型「${row.modelName || row.id}」吗？`, t('G2_LBL_TIP', '提示'), {
+  ElMessageBox.confirm(t('AGENT_DEL_CONFIRM_MODEL', { name: row.modelName || row.id }, '确认删除模型「{name}」吗？'), t('G2_LBL_TIP', '提示'), {
     type: 'warning',
   })
     .then(async () => {
@@ -351,17 +327,19 @@ const editForm = reactive({
 });
 
 const apiKeyPlaceholder = computed(() => {
-  if (!isEdit.value) return '请输入访问密钥';
-  return editForm.apiKeyConfigured ? '已配置，留空表示不修改' : '未配置，请输入访问密钥';
+  if (!isEdit.value) return t('AGENT_PH_API_KEY', '请输入访问密钥');
+  return editForm.apiKeyConfigured
+    ? t('AGENT_PH_API_KEY_KEEP', '已配置，留空表示不修改')
+    : t('AGENT_PH_API_KEY_MISSING', '未配置，请输入访问密钥');
 });
 
 // 表单校验规则
 const editRules: FormRules = {
-  modelName: [{ required: true, message: '请输入模型名称', trigger: 'blur' }],
-  modelType: [{ required: true, message: '请选择模型类型', trigger: 'change' }],
-  provider: [{ required: true, message: '请输入模型供应商', trigger: 'blur' }],
-  protocol: [{ required: true, message: '请选择模型协议', trigger: 'change' }],
-  baseUrl: [{ required: true, message: '请输入模型服务地址', trigger: 'blur' }],
+  modelName: [{ required: true, message: t('G2_PH_MODEL_NAME', '请输入模型名称'), trigger: 'blur' }],
+  modelType: [{ required: true, message: t('AGENT_PH_MODEL_TYPE', '请选择模型类型'), trigger: 'change' }],
+  provider: [{ required: true, message: t('AGENT_PH_PROVIDER', '请输入供应商'), trigger: 'blur' }],
+  protocol: [{ required: true, message: t('AGENT_PH_PROTOCOL', '请选择协议'), trigger: 'change' }],
+  baseUrl: [{ required: true, message: t('AGENT_PH_ENDPOINT', '请输入模型服务地址'), trigger: 'blur' }],
 };
 
 // 打开创建弹窗

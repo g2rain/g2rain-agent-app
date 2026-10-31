@@ -2,16 +2,20 @@
   <div class="agent_profile-page">
     <el-card class="agent_profile-page__search" shadow="never">
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
-        <el-form-item label="所属机构">
+        <el-form-item :label="$t('G2_FIELD_ORGAN', '所属机构')">
           <OrganSelect v-model="queryForm.organId" />
         </el-form-item>
-        <el-form-item label="名称">
-          <el-input v-model="queryForm.agentName" placeholder="名称 / 编码" clearable style="width: 200px" />
+        <el-form-item :label="$t('G2_FIELD_NAME', '名称')">
+          <el-input v-model="queryForm.agentName" :placeholder="$t('G2_PH_NAME', '请输入名称')" clearable style="width: 200px" />
         </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="queryForm.status" placeholder="请选择" clearable style="width: 140px">
-            <el-option v-for="item in STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <el-form-item :label="$t('G2_FIELD_STATUS', '状态')">
+          <DictSelect
+            v-model="queryForm.status"
+            usage-code="ENABLE_STATUS"
+            :placeholder="$t('G2_PH_STATUS', '请选择状态')"
+            clearable
+            width="140px"
+          />
         </el-form-item>
         <template #actions>
           <el-form-item>
@@ -26,27 +30,31 @@
       <div class="agent_profile-page__title-group">
         <h2>{{ pageTitle }}</h2>
       </div>
-      <el-button type="primary" v-permission="'agent_profile:add'" @click="handleCreate">新增</el-button>
+      <el-button type="primary" v-permission="'agent_profile:add'" @click="handleCreate">{{ $t('AGENT_BTN_ADD', '新增') }}</el-button>
     </div>
 
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="100" />
-      <el-table-column prop="organId" label="所属机构" width="110" />
-      <el-table-column label="智能体" min-width="220">
+      <el-table-column :label="$t('G2_FIELD_ORGAN', '所属机构')" width="120">
+        <template #default="{ row }">
+          {{ row.organName || row.organId }}
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('AGENT_FIELD_AGENT', '智能体')" min-width="220">
         <template #default="{ row }">
           <div>{{ row.agentName }}</div>
           <div class="agent_profile-page__meta">{{ row.agentCode }}</div>
         </template>
       </el-table-column>
-      <el-table-column prop="status" label="状态" width="140">
+      <el-table-column prop="status" :label="$t('G2_FIELD_STATUS', '状态')" width="140">
         <template #default="{ row }">
           <StatusSwitch
             :model-value="row.status"
             permission="agent_profile:status_update"
             active-value="ACTIVE"
             inactive-value="INACTIVE"
-            :options="STATUS_OPTIONS"
-            :api-method="({ nextValue }) => AgentProfileApi.updateStatus(row.id, String(nextValue))"
+            usage-code="ENABLE_STATUS"
+            :api-method="changeStatus(row)"
             @update:model-value="(value) => (row.status = String(value))"
             @success="notifyStatusSwitchSuccess"
             @error="(p) => notifyStatusSwitchError(p)"
@@ -56,7 +64,7 @@
       <TableColumn prop="updateTime" :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')" width="180" sortable="custom" />
       <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="180">
         <template #default="{ row }">
-          <el-button type="primary" v-permission="'agent_profile:edit'" link size="small" @click="handleEdit(row)">修改</el-button>
+          <el-button type="primary" v-permission="'agent_profile:edit'" link size="small" @click="handleEdit(row)">{{ $t('AGENT_BTN_EDIT', '修改') }}</el-button>
           <el-button type="danger" v-permission="'agent_profile:delete'" link size="small" @click="handleDelete(row)">{{ $t('G2_BTN_DELETE', '删除') }}</el-button>
         </template>
         <template #header>
@@ -89,19 +97,17 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
-import { OrganSelect, StatusSwitch } from '@g2rain/ui/platform';
-import { RecordStatus, ResourceType } from '@runtime/console';
+import { OrganSelect, DictSelect, StatusSwitch } from '@g2rain/ui/platform';
+import { ResourceType } from '@runtime/console';
 import { notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
 import { agentDetailRoute } from '@/views/agent_detail';
 import { AgentProfileApi } from './api';
 import type { AgentProfile, AgentProfileQuery } from './type';
 
-type EnumOption = { value: string; label: string };
-
-const STATUS_OPTIONS: EnumOption[] = [
-  { value: RecordStatus.ACTIVE, label: '启用' },
-  { value: RecordStatus.INACTIVE, label: '禁用' },
-];
+// 状态开关回调：放在 script 里，避免模板内直接引用类导致 IDE 类型误报
+const changeStatus = (row: AgentProfile) =>
+  ({ nextValue }: { nextValue: string | number | boolean }) =>
+    AgentProfileApi.updateStatus(row.id, String(nextValue));
 
 const route = useRoute();
 const router = useRouter();
@@ -193,7 +199,7 @@ function handleEdit(row: AgentProfile): void {
 
 function handleDelete(row: AgentProfile): void {
   ElMessageBox.confirm(
-    `确认删除智能体「${row.agentName}」？将同时删除其下技能与工具绑定。`,
+    t('AGENT_DEL_CONFIRM_AGENT', { name: row.agentName }, '确认删除智能体「{name}」吗？'),
     t('G2_LBL_TIP', '提示'),
     { type: 'warning' },
   )
