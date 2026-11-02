@@ -2,7 +2,7 @@
   <div class="task-summary">
     <div class="task-summary__head">
       <span class="task-summary__label">{{ $t('AGENT_CONVERSATION_TASK', '任务') }}</span>
-      <CopyText :text="task.taskId" :length="8" :copied-text="$t('AGENT_COPIED', '已复制')" />
+      <CopyText :text="task.taskId" :length="8" :copied-text="$t('G2_MSG_COPIED', '已复制')" />
     </div>
     <div class="task-summary__status">
       <StatusDot v-bind="describeStatus(task.status)" />
@@ -28,7 +28,7 @@
     </section>
 
     <section v-if="resumes.length > 0" class="task-summary__section">
-      <h4>{{ $t('AGENT_CONVERSATION_APPROVALS', '确认') }}</h4>
+      <h4>{{ $t('G2_ACT_CONFIRM', '确认') }}</h4>
       <ul class="task-summary__approvals">
         <li v-for="resume in resumes" :key="resume.resumeId" :class="`is-${approvalOutcome(resume)}`">
           {{ approvalText(resume) }}

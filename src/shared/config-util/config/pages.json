@@ -35,37 +35,27 @@
     "linkPath": "/agent_profile"
   },
   {
-    "pageName": "扩展系统接入",
+    "pageName": "平台扩展工具",
     "pageCode": "mcp_external_service-extension",
     "linkPath": "/mcp_external_service/extension"
   },
   {
-    "pageName": "租户系统接入",
+    "pageName": "租户系统工具",
     "pageCode": "mcp_external_service-customer",
     "linkPath": "/mcp_external_service/customer"
   },
   {
-    "pageName": "租户系统接入",
+    "pageName": "租户系统工具",
     "pageCode": "mcp_external_service",
     "linkPath": "/mcp_external_service"
   },
   {
     "pageName": "平台原生工具",
-    "pageCode": "mcp_tool_profile-built_in",
-    "linkPath": "/mcp_tool_profile/built_in"
+    "pageCode": "mcp_tool_profile-native",
+    "linkPath": "/mcp_tool_profile/native"
   },
   {
-    "pageName": "平台扩展工具",
-    "pageCode": "mcp_tool_profile-extension",
-    "linkPath": "/mcp_tool_profile/extension"
-  },
-  {
-    "pageName": "租户系统工具",
-    "pageCode": "mcp_tool_profile-customer",
-    "linkPath": "/mcp_tool_profile/customer"
-  },
-  {
-    "pageName": "租户系统工具",
+    "pageName": "平台原生工具",
     "pageCode": "mcp_tool_profile",
     "linkPath": "/mcp_tool_profile"
   },
@@ -83,5 +73,10 @@
     "pageName": "用量统计",
     "pageCode": "model_usage_record",
     "linkPath": "/model_usage_record"
+  },
+  {
+    "pageName": "问题模板",
+    "pageCode": "chat_prompt_template",
+    "linkPath": "/chat_prompt_template"
   }
 ]

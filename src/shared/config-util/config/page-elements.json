@@ -42,6 +42,38 @@
   {
     "parentId": null,
     "pageElementName": "新增",
+    "pageElementCode": "chat_prompt_template:add",
+    "pageElementType": "button",
+    "pageCode": "chat_prompt_template",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
+    "pageElementName": "删除",
+    "pageElementCode": "chat_prompt_template:delete",
+    "pageElementType": "button",
+    "pageCode": "chat_prompt_template",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
+    "pageElementName": "编辑",
+    "pageElementCode": "chat_prompt_template:edit",
+    "pageElementType": "button",
+    "pageCode": "chat_prompt_template",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
+    "pageElementName": "状态变更",
+    "pageElementCode": "chat_prompt_template:status_update",
+    "pageElementType": "switch",
+    "pageCode": "chat_prompt_template",
+    "status": "ENABLED"
+  },
+  {
+    "parentId": null,
+    "pageElementName": "新增",
     "pageElementCode": "mcp_external_service:add",
     "pageElementType": "button",
     "pageCode": "mcp_external_service",
@@ -61,14 +93,6 @@
     "pageElementCode": "mcp_external_service:edit",
     "pageElementType": "button",
     "pageCode": "mcp_external_service",
-    "status": "ENABLED"
-  },
-  {
-    "parentId": null,
-    "pageElementName": "新增",
-    "pageElementCode": "mcp_tool_profile:add",
-    "pageElementType": "button",
-    "pageCode": "mcp_tool_profile",
     "status": "ENABLED"
   },
   {

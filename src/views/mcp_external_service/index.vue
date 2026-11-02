@@ -2,19 +2,20 @@
   <div class="mcp_external_service-page">
     <el-card class="mcp_external_service-page__search" shadow="never">
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
-        <el-form-item label="所属机构">
+        <el-form-item :label="$t('G2_FIELD_ORGAN', '所属机构')">
           <OrganSelect v-model="queryForm.organId" />
         </el-form-item>
-        <el-form-item label="服务编码">
-          <el-input v-model="queryForm.code" placeholder="请输入服务编码" clearable style="width: 180px" />
+        <el-form-item :label="$t('G2_FIELD_SERVICE_NAME', '服务名称')">
+          <el-input v-model="queryForm.name" :placeholder="$t('G2_FIELD_SERVICE_NAME', '服务名称')" clearable style="width: 180px" />
         </el-form-item>
-        <el-form-item label="服务名称">
-          <el-input v-model="queryForm.name" placeholder="请输入服务名称" clearable style="width: 180px" />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="queryForm.status" placeholder="请选择" clearable style="width: 140px">
-            <el-option v-for="item in STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <el-form-item :label="$t('G2_FIELD_STATUS', '状态')">
+          <DictSelect
+            v-model="queryForm.status"
+            usage-code="ENABLE_STATUS"
+            :placeholder="$t('G2_PH_STATUS', '请选择状态')"
+            clearable
+            width="140px"
+          />
         </el-form-item>
         <template #actions>
           <el-form-item>
@@ -29,28 +30,31 @@
       <div class="mcp_external_service-page__title-group">
         <h2>{{ pageTitle }}</h2>
       </div>
-      <el-button type="primary" v-permission="'mcp_external_service:add'" @click="handleCreate">新增</el-button>
+      <el-button type="primary" v-permission="'mcp_external_service:add'" @click="handleCreate">{{ $t('AGENT_BTN_ADD', '新增') }}</el-button>
     </div>
 
     <SortableTable :data="tableData" border stripe style="width: 100%" :enable-multi-sort="true" @sort-change="handleSortChange">
       <el-table-column prop="id" :label="$t('G2_FIELD_ID', 'ID')" width="100" />
-      <el-table-column prop="organId" label="所属机构" width="110" />
-      <el-table-column prop="code" label="服务编码" width="160" />
-      <el-table-column prop="name" label="服务名称" min-width="160" />
-      <el-table-column label="调用地址" min-width="240">
+      <el-table-column :label="$t('G2_FIELD_ORGAN', '所属机构')" width="120">
         <template #default="{ row }">
-          <code>{{ callUrl(row) }}</code>
+          {{ row.organName || row.organId }}
         </template>
       </el-table-column>
-      <el-table-column prop="status" label="状态" width="140">
+      <el-table-column prop="name" :label="$t('G2_FIELD_SERVICE_NAME', '服务名称')" min-width="160" />
+      <el-table-column :label="$t('AGENT_FIELD_BASE_URL', '调用基址')" min-width="240">
+        <template #default="{ row }">
+          <code>{{ row.endpoint }}</code>
+        </template>
+      </el-table-column>
+      <el-table-column prop="status" :label="$t('G2_FIELD_STATUS', '状态')" width="140">
         <template #default="{ row }">
           <StatusSwitch
             :model-value="row.status"
-            v-permission="'mcp_external_service:edit'"
+            permission="mcp_external_service:edit"
             active-value="ACTIVE"
             inactive-value="INACTIVE"
-            :options="STATUS_OPTIONS"
-            :api-method="({ nextValue }) => McpExternalServiceApi.updateStatus(row.id, String(nextValue))"
+            usage-code="ENABLE_STATUS"
+            :api-method="changeStatus(row)"
             @update:model-value="(value) => (row.status = String(value))"
             @success="notifyStatusSwitchSuccess"
             @error="(p) => notifyStatusSwitchError(p)"
@@ -58,8 +62,9 @@
         </template>
       </el-table-column>
       <TableColumn prop="updateTime" :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')" width="180" sortable="custom" />
-      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="200">
+      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="280">
         <template #default="{ row }">
+          <el-button type="primary" link size="small" @click="toolsService = row">{{ $t('AGENT_BTN_TOOL_MANAGE', '工具管理') }}</el-button>
           <el-button type="primary" link size="small" @click="handleView(row)">{{ $t('G2_BTN_DETAIL', '详情') }}</el-button>
           <el-button type="primary" v-permission="'mcp_external_service:edit'" link size="small" @click="handleEdit(row)">{{ $t('G2_BTN_EDIT', '编辑') }}</el-button>
           <el-button type="danger" v-permission="'mcp_external_service:delete'" link size="small" @click="handleDelete(row)">{{ $t('G2_BTN_DELETE', '删除') }}</el-button>
@@ -85,25 +90,19 @@
       />
     </div>
 
-    <el-dialog v-model="editDialogVisible" :title="isEdit ? '编辑服务' : '新增服务'" width="520px">
+    <el-dialog v-model="editDialogVisible" :title="isEdit ? $t('AGENT_BTN_EDIT', '修改') : $t('AGENT_BTN_ADD', '新增')" width="520px">
       <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="100px">
-        <el-form-item v-if="!isEdit || editForm.organId != null" label="所属机构" prop="organId">
+        <el-form-item v-if="!isEdit || editForm.organId != null" :label="$t('G2_FIELD_ORGAN', '所属机构')" prop="organId">
           <OrganSelect v-model="editForm.organId" :disabled="isEdit" width="100%" />
         </el-form-item>
-        <el-form-item label="服务编码" prop="code">
-          <el-input v-model="editForm.code" placeholder="请输入服务编码" :disabled="isEdit" />
+        <el-form-item :label="$t('G2_FIELD_SERVICE_NAME', '服务名称')" prop="name">
+          <el-input v-model="editForm.name" :placeholder="$t('G2_FIELD_SERVICE_NAME', '服务名称')" />
         </el-form-item>
-        <el-form-item label="服务名称" prop="name">
-          <el-input v-model="editForm.name" placeholder="请输入服务名称" />
+        <el-form-item :label="$t('AGENT_FIELD_BASE_URL', '调用基址')" prop="endpoint">
+          <el-input v-model="editForm.endpoint" :placeholder="$t('AGENT_FIELD_BASE_URL', '调用基址')" />
         </el-form-item>
-        <el-form-item label="调用基址" prop="endpoint">
-          <el-input v-model="editForm.endpoint" placeholder="https://api.example.com" />
-        </el-form-item>
-        <el-form-item label="上下文路径" prop="contextPath">
-          <el-input v-model="editForm.contextPath" placeholder="/v1（可空）" />
-        </el-form-item>
-        <el-form-item label="说明" prop="description">
-          <el-input v-model="editForm.description" type="textarea" :rows="2" placeholder="请输入说明" />
+        <el-form-item :label="$t('G2_FIELD_DESCRIPTION', '说明')" prop="description">
+          <el-input v-model="editForm.description" type="textarea" :rows="2" :placeholder="$t('G2_FIELD_DESCRIPTION', '说明')" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -114,16 +113,17 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="detailDialogVisible" title="服务明细" width="520px">
+    <el-dialog v-model="detailDialogVisible" :title="$t('G2_BTN_DETAIL', '详情')" width="520px">
       <el-descriptions :column="1" border>
         <el-descriptions-item :label="$t('G2_FIELD_ID', 'ID')">{{ currentRow?.id }}</el-descriptions-item>
-        <el-descriptions-item label="所属机构">{{ currentRow?.organId }}</el-descriptions-item>
-        <el-descriptions-item label="服务编码">{{ currentRow?.code }}</el-descriptions-item>
-        <el-descriptions-item label="服务名称">{{ currentRow?.name }}</el-descriptions-item>
-        <el-descriptions-item label="调用地址">{{ currentRow ? callUrl(currentRow) : '' }}</el-descriptions-item>
-        <el-descriptions-item label="资源类型">{{ pageTitle }}</el-descriptions-item>
-        <el-descriptions-item label="状态">{{ optionLabel(STATUS_OPTIONS, currentRow?.status) }}</el-descriptions-item>
-        <el-descriptions-item label="说明">{{ currentRow?.description }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('G2_FIELD_ORGAN', '所属机构')">{{ currentRow?.organName || currentRow?.organId }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('G2_FIELD_SERVICE_NAME', '服务名称')">{{ currentRow?.name }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_BASE_URL', '调用基址')">{{ currentRow?.endpoint }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('AGENT_FIELD_RESOURCE_TYPE', '资源类型')">{{ pageTitle }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('G2_FIELD_STATUS', '状态')">
+          <DictText :value="currentRow?.status" usage-code="ENABLE_STATUS" />
+        </el-descriptions-item>
+        <el-descriptions-item :label="$t('G2_FIELD_DESCRIPTION', '说明')">{{ currentRow?.description }}</el-descriptions-item>
         <el-descriptions-item :label="$t('G2_FIELD_CREATE_TIME', '创建时间')">{{ currentRow?.createTime }}</el-descriptions-item>
         <el-descriptions-item :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')">{{ currentRow?.updateTime }}</el-descriptions-item>
       </el-descriptions>
@@ -133,6 +133,15 @@
         </span>
       </template>
     </el-dialog>
+
+    <ServiceTools
+      v-if="toolsService"
+      visible
+      :resource-type="resourceType"
+      :service-id="toolsService.id"
+      :service-name="toolsService.name"
+      @close="toolsService = null"
+    />
   </div>
 </template>
 
@@ -144,23 +153,17 @@ import { ElMessageBox, ElMessage } from 'element-plus';
 import { t } from '@platform/i18n';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { SortableTable, TableColumn, SortManagerButton, QueryForm } from '@g2rain/ui';
-import { OrganSelect, StatusSwitch } from '@g2rain/ui/platform';
-import { RecordStatus, ResourceType } from '@runtime/console';
-import { showErrorMessage, notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
+import { OrganSelect, DictSelect, DictText, StatusSwitch } from '@g2rain/ui/platform';
+import { ResourceType } from '@runtime/console';
+import { notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
+import { ServiceTools } from '@/views/mcp_tool_profile';
 import { McpExternalServiceApi } from './api';
 import type { McpExternalService, McpExternalServicePayload, McpExternalServiceQuery } from './type';
 
-type EnumOption = { value: string; label: string };
-
-const STATUS_OPTIONS: EnumOption[] = [
-  { value: RecordStatus.ACTIVE, label: '启用' },
-  { value: RecordStatus.INACTIVE, label: '禁用' },
-];
-
-const optionLabel = (options: EnumOption[], value?: string | null): string => {
-  if (!value) return '';
-  return options.find((item) => item.value === value)?.label ?? value;
-};
+// 状态开关回调：放在 script 里，避免模板内直接引用类导致 IDE 类型误报
+const changeStatus = (row: McpExternalService) =>
+  ({ nextValue }: { nextValue: string | number | boolean }) =>
+    McpExternalServiceApi.updateStatus(row.id, String(nextValue));
 
 const route = useRoute();
 
@@ -171,8 +174,8 @@ const resourceType = computed(() =>
 
 const pageTitle = computed(() =>
   resourceType.value === ResourceType.EXTENSION
-    ? t('AGENT_MENU_EXTENSION_SERVICE', '扩展系统接入')
-    : t('AGENT_MENU_CUSTOMER_SERVICE', '租户系统接入'),
+    ? t('AGENT_MENU_EXTENSION_TOOL', '平台扩展工具')
+    : t('AGENT_MENU_CUSTOMER_TOOL', '租户系统工具'),
 );
 
 const queryFormRef = ref<InstanceType<typeof QueryForm> | null>(null);
@@ -186,7 +189,6 @@ const baseQueryForm = ref<BaseSelectListDto>({
 
 const queryForm = reactive({
   organId: undefined as number | null | undefined,
-  code: '',
   name: '',
   status: '',
 });
@@ -198,13 +200,6 @@ const pagination = reactive({
 });
 
 const tableData = ref<McpExternalService[]>([]);
-
-function callUrl(row: McpExternalService): string {
-  const path = (row.contextPath || '').trim();
-  if (!row.endpoint) return '';
-  if (!path) return row.endpoint;
-  return `${row.endpoint.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
-}
 
 async function loadData(): Promise<void> {
   try {
@@ -218,8 +213,8 @@ async function loadData(): Promise<void> {
     } as PageSelectListDto & McpExternalServiceQuery);
     tableData.value = pageData.records.map((row) => ({ ...row }));
     pagination.total = pageData.total;
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败'));
+  } catch {
+    // 请求失败已由 http 层统一提示
   }
 }
 
@@ -236,9 +231,7 @@ function handleReset(): void {
   baseQueryForm.value.id = undefined;
   baseQueryForm.value.createTime = undefined;
   baseQueryForm.value.updateTime = undefined;
-  baseQueryForm.value.sorts = undefined;
   queryForm.organId = undefined;
-  queryForm.code = '';
   queryForm.name = '';
   queryForm.status = '';
   pagination.pageNum = 1;
@@ -257,6 +250,8 @@ function handlePageChange(page: number): void {
 }
 
 const currentRow = ref<McpExternalService | null>(null);
+/** 正在管理工具的服务 */
+const toolsService = ref<McpExternalService | null>(null);
 const detailDialogVisible = ref(false);
 
 function handleView(row: McpExternalService): void {
@@ -265,20 +260,16 @@ function handleView(row: McpExternalService): void {
 }
 
 function handleDelete(row: McpExternalService): void {
-  ElMessageBox.confirm(`确认删除服务「${row.name}」吗？`, t('G2_LBL_TIP', '提示'), {
+  ElMessageBox.confirm(t('AGENT_DEL_CONFIRM_SERVICE', { name: row.name }, '确认删除服务「{name}」吗？'), t('G2_LBL_TIP', '提示'), {
     type: 'warning',
   })
     .then(async () => {
-      try {
-        await McpExternalServiceApi.remove(row.id);
-        if (tableData.value.length === 1 && pagination.pageNum > 1) {
-          pagination.pageNum--;
-        }
-        await loadData();
-        ElMessage.success(t('G2_MSG_DELETE_OK', '删除成功'));
-      } catch (error: unknown) {
-        showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_DELETE_FAIL', '删除失败'));
+      await McpExternalServiceApi.remove(row.id);
+      if (tableData.value.length === 1 && pagination.pageNum > 1) {
+        pagination.pageNum--;
       }
+      await loadData();
+      ElMessage.success(t('G2_MSG_DELETE_OK', '删除成功'));
     })
     .catch(() => {});
 }
@@ -290,10 +281,8 @@ const editFormRef = ref<FormInstance | null>(null);
 const editForm = reactive({
   id: undefined as number | undefined,
   organId: undefined as number | null | undefined,
-  code: '',
   name: '',
   endpoint: '',
-  contextPath: '',
   description: '',
 });
 
@@ -305,7 +294,6 @@ const editRules: FormRules = {
     },
     trigger: 'change',
   }],
-  code: [{ required: true, message: '请输入服务编码', trigger: 'blur' }],
   name: [{ required: true, message: '请输入服务名称', trigger: 'blur' }],
   endpoint: [{ required: true, message: '请输入调用基址', trigger: 'blur' }],
 };
@@ -315,10 +303,8 @@ function handleCreate(): void {
   editFormRef.value?.clearValidate();
   editForm.id = undefined;
   editForm.organId = undefined;
-  editForm.code = '';
   editForm.name = '';
   editForm.endpoint = '';
-  editForm.contextPath = '';
   editForm.description = '';
   editDialogVisible.value = true;
 }
@@ -328,10 +314,8 @@ function handleEdit(row: McpExternalService): void {
   editFormRef.value?.clearValidate();
   editForm.id = row.id;
   editForm.organId = row.organId ?? undefined;
-  editForm.code = row.code;
   editForm.name = row.name;
   editForm.endpoint = row.endpoint;
-  editForm.contextPath = row.contextPath ?? '';
   editForm.description = row.description ?? '';
   editDialogVisible.value = true;
 }
@@ -343,24 +327,18 @@ async function submitEdit(): Promise<void> {
 
   const payload: McpExternalServicePayload = {
     organId: editForm.organId ?? undefined,
-    code: editForm.code.trim(),
     name: editForm.name.trim(),
     endpoint: editForm.endpoint.trim(),
-    contextPath: editForm.contextPath.trim() || '/',
     description: editForm.description,
   };
   if (isEdit.value) {
     payload.id = editForm.id;
   }
 
-  try {
-    await McpExternalServiceApi.save(resourceType.value, payload);
-    ElMessage.success(isEdit.value ? t('G2_MSG_UPDATE_OK', '更新成功') : t('G2_MSG_ADD_OK', '新增成功'));
-    await loadData();
-    editDialogVisible.value = false;
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败'));
-  }
+  await McpExternalServiceApi.save(resourceType.value, payload);
+  ElMessage.success(isEdit.value ? t('G2_MSG_UPDATE_OK', '更新成功') : t('G2_MSG_ADD_OK', '新增成功'));
+  await loadData();
+  editDialogVisible.value = false;
 }
 
 watch(

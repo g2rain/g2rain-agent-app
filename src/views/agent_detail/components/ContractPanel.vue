@@ -108,7 +108,7 @@ import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { t } from '@platform/i18n';
 import { EMPTY } from '@runtime/console';
-import type { McpToolProfileVo } from '@/views/mcp_tool_profile';
+import type { McpToolMetaVo } from '@/views/mcp_tool_profile';
 import { isWriteTool, parseContract, stringifyContract, toolSkeleton, type SkillContract } from '../contract';
 import { issueUnder, toDiagnostics, type ContractIssue, type ContractPath } from '../contract-lint';
 
@@ -118,7 +118,7 @@ const JsonEditor = defineAsyncComponent(() => import('@/components/json-editor')
  * 执行契约：结构视图逐个工具查看参数与规则，源码视图编辑整份 JSON；两种视图编辑同一份文本。
  * 契约不是合法 JSON 时只显示源码视图。
  */
-const props = defineProps<{ toolNames: string[]; tools: McpToolProfileVo[]; issues: ContractIssue[] }>();
+const props = defineProps<{ toolNames: string[]; tools: McpToolMetaVo[]; issues: ContractIssue[] }>();
 const model = defineModel<string>({ required: true });
 
 const ROOT = '__root';
@@ -155,7 +155,7 @@ const toolGroups = computed(() => {
     };
   });
   return [
-    { title: t('AGENT_CONTRACT_QUERY_TOOLS', '查询'), tools: items.filter((i) => !i.write) },
+    { title: t('G2_BTN_QUERY', '查询'), tools: items.filter((i) => !i.write) },
     { title: t('AGENT_CONTRACT_WRITE_TOOLS', '写入'), tools: items.filter((i) => i.write) },
   ].filter((group) => group.tools.length > 0);
 });

@@ -42,13 +42,13 @@
               <span v-if="row.sideEffect === SideEffect.WRITE" class="node-detail__write">{{ $t('AGENT_TRACE_WRITE', '写') }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('AGENT_TRACE_CALL_RESULT', '结果')" width="140">
+          <el-table-column :label="$t('G2_FIELD_RESULT', '结果')" width="140">
             <template #default="{ row }">
               <span v-if="isReused(row)" class="node-detail__muted">{{ $t('AGENT_TRACE_OUTCOME_REUSED', '复用') }}</span>
               <StatusDot v-else v-bind="describeStatus(row.callStatus)" />
             </template>
           </el-table-column>
-          <el-table-column :label="$t('AGENT_TRACE_DURATION', '耗时')" width="100">
+          <el-table-column :label="$t('G2_FIELD_DURATION', '耗时')" width="100">
             <template #default="{ row }">{{ formatDuration(row.durationMs) }}</template>
           </el-table-column>
         </el-table>

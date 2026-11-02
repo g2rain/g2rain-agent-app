@@ -9,6 +9,7 @@ import type { BaseSelectListDto, BaseVo } from '@platform/types/api.type';
  */
 export interface AgentProfile extends BaseVo {
   organId: number;
+  organName?: string;
   agentCode: string;
   agentName: string;
   resourceType: string;

@@ -35,6 +35,15 @@ RUN if [ -n "$VITE_BUILD_MODE" ]; then \
 # ------------------------------------------------------------
 FROM openresty/openresty:alpine
 
+ARG IMAGE_VERSION=1.0.0
+ARG VCS_REF=unknown
+LABEL org.opencontainers.image.title="g2rain-agent-app" \
+      org.opencontainers.image.source="https://github.com/g2rain/g2rain-agent-app" \
+      org.opencontainers.image.url="https://github.com/g2rain/g2rain-agent-app" \
+      org.opencontainers.image.version="${IMAGE_VERSION}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.licenses="Apache-2.0"
+
 RUN set -eux; \
     sed -i 's|dl-cdn.alpinelinux.org|mirrors.aliyun.com|g' /etc/apk/repositories; \
     apk update; \
@@ -65,14 +74,13 @@ RUN set -eux; \
     /usr/local/openresty/luajit/bin/luajit -e 'local ok, m = pcall(require, "openssl"); print("luaossl load:", ok, m)'
 
 COPY --from=builder /app/dist /usr/local/openresty/nginx/html
-COPY lua/ /usr/local/openresty/nginx/lua/
-COPY nginx/default.conf.template /etc/nginx/conf.d/
-COPY nginx/docker-entrypoint.sh /
-RUN chmod +x /docker-entrypoint.sh || true
-
-RUN if [ ! -f /usr/local/openresty/nginx/lua/keys/private-key.der ] || [ ! -f /usr/local/openresty/nginx/lua/keys/public-key.der ]; then \
-        echo "⚠️ Warning: missing key files under lua/keys (ignored in dev)"; \
-    fi
+COPY lua/sign.lua lua/sign_api.lua lua/config.lua /usr/local/openresty/nginx/lua/
+RUN mkdir -p /usr/local/openresty/nginx/lua/keys
+COPY nginx/default.conf.template /etc/nginx/conf.d/default.conf.template
+COPY nginx/docker-entrypoint.sh /docker-entrypoint.sh
+# CRLF shebangs fail in Linux containers; normalize the tracked entrypoint.
+RUN sed -i 's/\r$//' /docker-entrypoint.sh \
+ && chmod +x /docker-entrypoint.sh
 
 EXPOSE 8080
 ENTRYPOINT ["/docker-entrypoint.sh"]

@@ -19,8 +19,8 @@
       <header class="conversation-detail__head">
         <h2 class="conversation-detail__title">{{ conversation.title || $t('AGENT_CONVERSATION_UNTITLED', '未命名会话') }}</h2>
         <div class="conversation-detail__meta">
-          <CopyText :text="conversation.conversationId" :length="8" :copied-text="$t('AGENT_COPIED', '已复制')" />
-          <span>{{ $t('AGENT_CONVERSATION_USER', '用户') }} {{ conversation.userId }}</span>
+          <CopyText :text="conversation.conversationId" :length="8" :copied-text="$t('G2_MSG_COPIED', '已复制')" />
+          <span>{{ $t('G2_FIELD_USER', '用户') }} {{ conversation.userId }}</span>
           <span v-if="span">{{ span }}</span>
           <span class="conversation-detail__spacer" />
           <div class="conversation-detail__actions">
@@ -128,7 +128,7 @@ import { Bottom, Top } from '@element-plus/icons-vue';
 import { useRoute, useRouter } from 'vue-router';
 import { t } from '@platform/i18n';
 import { useLocaleStore } from '@platform/stores/locale.store';
-import { CopyText, StatusDot, showErrorMessage, useFitHeight } from '@/components';
+import { CopyText, StatusDot, useFitHeight } from '@/components';
 import { EMPTY, MessageRole, ResumeAction, describeStatus, formatClock } from '@runtime/console';
 import TurnList from './components/TurnList.vue';
 import TaskSummary from './components/TaskSummary.vue';
@@ -228,8 +228,8 @@ async function loadTasks(messages: ChatMessageVo[]): Promise<void> {
     tasks.value = nextTasks;
     resumes.value = groupByTask(nextResumes);
     pruneDetails();
-  } catch (error: unknown) {
-    if (seq === taskSeq) showErrorMessage(messageOf(error));
+  } catch {
+    // 请求失败已由 http 层统一提示
   }
 }
 
@@ -359,8 +359,8 @@ async function refresh(): Promise<void> {
     await nextTick();
     restoreAnchors(anchors);
     updateEdges();
-  } catch (error: unknown) {
-    showErrorMessage(messageOf(error));
+  } catch {
+    // 请求失败已由 http 层统一提示
   } finally {
     refreshing.value = false;
   }
@@ -472,8 +472,6 @@ async function jump(kind: 'start' | 'latest', reopen: () => Promise<void>, targe
       el.scrollTo({ top: target(el), behavior: 'smooth' });
     }
     if (needsReopen) ensureSelection(kind === 'latest' ? 'last' : 'first');
-  } catch (error: unknown) {
-    showErrorMessage(messageOf(error));
   } finally {
     jumping.value = null;
     await nextTick();

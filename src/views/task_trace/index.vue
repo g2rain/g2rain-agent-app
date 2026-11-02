@@ -77,7 +77,7 @@ import { computed, defineAsyncComponent, onBeforeUnmount, ref, watch } from 'vue
 import { useRoute, useRouter } from 'vue-router';
 import { t } from '@platform/i18n';
 import { useLocaleStore } from '@platform/stores/locale.store';
-import { CopyText, StatusDot, showErrorMessage } from '@/components';
+import { CopyText, StatusDot } from '@/components';
 import {
   SideEffect,
   TERMINAL_TASK_STATUSES,
@@ -109,7 +109,7 @@ const localeStore = useLocaleStore();
 const taskId = computed(() => (typeof route.query.taskId === 'string' ? route.query.taskId : ''));
 const embed = computed(() => route.query.embed === '1');
 const locale = computed(() => localeStore.locale || 'zh-CN');
-const copiedText = computed(() => t('AGENT_COPIED', '已复制'));
+const copiedText = computed(() => t('G2_MSG_COPIED', '已复制'));
 
 const bundle = ref<TraceBundle | null>(null);
 const agentName = ref('');
@@ -186,7 +186,6 @@ async function load(refresh?: 'manual' | 'auto'): Promise<void> {
     if (seq !== loadSeq) return;
     const message = error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载失败');
     if (!refresh || !bundle.value) failure.value = message;
-    else if (refresh === 'manual') showErrorMessage(message);
   } finally {
     if (seq === loadSeq) loading.value = false;
   }

@@ -30,16 +30,16 @@
         <div class="skill-list__actions" @click.stop>
           <StatusSwitch
             :model-value="row.skill.status"
-            v-permission="'skill:edit'"
+            permission="skill:edit"
             active-value="ACTIVE"
             inactive-value="INACTIVE"
-            :options="STATUS_OPTIONS"
-            :api-method="({ nextValue }) => AgentDetailApi.updateSkillStatus(row.skill, String(nextValue))"
+            usage-code="ENABLE_STATUS"
+            :api-method="changeStatus(row)"
             @update:model-value="(value) => (row.skill.status = String(value))"
             @success="notifyStatusSwitchSuccess"
             @error="(p) => notifyStatusSwitchError(p)"
           />
-          <el-button link type="primary" @click="emit('open', row.skill.id)">修改</el-button>
+          <el-button link type="primary" @click="emit('open', row.skill.id)">{{ $t('AGENT_BTN_EDIT', '修改') }}</el-button>
           <el-button link type="danger" @click="emit('remove', row.skill)">{{ $t('G2_BTN_DELETE', '删除') }}</el-button>
         </div>
       </li>
@@ -55,17 +55,16 @@ import { notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components
 import { AgentDetailApi } from '../api';
 import type { SkillProfileVo, SkillRow } from '../type';
 
-const STATUS_OPTIONS = [
-  { value: RecordStatus.ACTIVE, label: t('AGENT_STATUS_ACTIVE', '启用') },
-  { value: RecordStatus.INACTIVE, label: t('AGENT_STATUS_INACTIVE', '禁用') },
-];
-
 defineProps<{ rows: SkillRow[] }>();
 const emit = defineEmits<{
   create: [];
   open: [skillId: number];
   remove: [skill: SkillProfileVo];
 }>();
+
+const changeStatus = (row: SkillRow) =>
+  ({ nextValue }: { nextValue: string | number | boolean }) =>
+    AgentDetailApi.updateSkillStatus(row.skill, String(nextValue));
 
 function resourceText(type: string): string {
   return type === ResourceType.PLATFORM ? t('AGENT_RESOURCE_PLATFORM', '平台') : t('AGENT_RESOURCE_CUSTOM', '私有');

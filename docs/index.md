@@ -34,6 +34,11 @@
 - [故障排查](operations/troubleshooting.md)
 - [安全边界](security/security-boundaries.md)
 
+## 发布
+
+- [发布记录](releases/README.md)
+- [v1.0.0](releases/v1.0.0.md)
+
 ## 需求与决策
 
 - [数字员工控制台功能需求](requirements/20261014-agent-console.md)

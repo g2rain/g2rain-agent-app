@@ -2,7 +2,7 @@
   <div class="chat_conversation-page">
     <el-card class="chat_conversation-page__search" shadow="never">
       <QueryForm ref="queryFormRef" v-model="baseQueryForm" @search="handleSearch">
-        <el-form-item label="所属机构">
+        <el-form-item :label="$t('G2_FIELD_ORGAN', '所属机构')">
           <OrganSelect v-model="queryForm.organId" />
         </el-form-item>
         <el-form-item :label="$t('AGENT_CONVERSATION_COLUMN', '会话')">
@@ -39,8 +39,12 @@
           <CopyText :text="row.conversationId" :length="8" :copied-text="copiedText" />
         </template>
       </el-table-column>
-      <el-table-column prop="organId" label="所属机构" width="110" />
-      <el-table-column :label="$t('AGENT_CONVERSATION_USER', '用户')" prop="userId" width="120" />
+      <el-table-column :label="$t('G2_FIELD_ORGAN', '所属机构')" width="120">
+        <template #default="{ row }">
+          {{ row.organName || row.organId }}
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('G2_FIELD_USER', '用户')" prop="userId" width="120" />
       <el-table-column :label="$t('AGENT_CONVERSATION_CURRENT', '当前任务')" width="140">
         <template #default="{ row }">
           <StatusDot v-if="row.activeTaskId && row.activeTaskStatus" v-bind="describeStatus(row.activeTaskStatus)" />
@@ -55,7 +59,7 @@
         </template>
       </el-table-column>
       <TableColumn prop="createTime" :label="$t('G2_FIELD_CREATE_TIME', '创建时间')" width="180" sortable="custom" />
-      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="120">
+      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="150">
         <template #default="{ row }">
           <el-button type="primary" link size="small" @click="openDetail(row)">
             {{ $t('AGENT_PAGE_CONVERSATION_DETAIL', '会话详情') }}
@@ -94,14 +98,14 @@ import { t } from '@platform/i18n';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { QueryForm, SortableTable, TableColumn, SortManagerButton } from '@g2rain/ui';
 import { OrganSelect } from '@g2rain/ui/platform';
-import { CopyText, StatusDot, showErrorMessage } from '@/components';
+import { CopyText, StatusDot } from '@/components';
 import { EMPTY, describeStatus, fromNow } from '@runtime/console';
 import { conversationDetailRoute } from '@/views/conversation_detail';
 import { ChatConversationApi } from './api';
 import type { ChatConversation, ChatConversationQuery } from './type';
 
 const router = useRouter();
-const copiedText = computed(() => t('AGENT_COPIED', '已复制'));
+const copiedText = computed(() => t('G2_MSG_COPIED', '已复制'));
 
 const queryFormRef = ref<InstanceType<typeof QueryForm> | null>(null);
 
@@ -134,8 +138,8 @@ const loadData = async () => {
     } as PageSelectListDto & ChatConversationQuery);
     tableData.value = pageData.records;
     pagination.total = pageData.total;
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载列表失败'));
+  } catch {
+    // 请求失败已由 http 层统一提示
   } finally {
     loading.value = false;
   }
@@ -154,7 +158,6 @@ const handleReset = () => {
   baseQueryForm.value.id = undefined;
   baseQueryForm.value.createTime = undefined;
   baseQueryForm.value.updateTime = undefined;
-  baseQueryForm.value.sorts = undefined;
   queryForm.organId = undefined;
   queryForm.title = '';
   pagination.pageNum = 1;

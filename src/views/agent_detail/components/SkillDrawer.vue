@@ -29,7 +29,7 @@
             <el-form-item :label="$t('AGENT_SKILL_KEY', '技能键')" required>
               <el-input v-model="form.skillKey" maxlength="128" :disabled="!!skillId" />
             </el-form-item>
-            <el-form-item :label="$t('AGENT_SKILL_NAME', '名称')" required>
+            <el-form-item :label="$t('G2_FIELD_NAME', '名称')" required>
               <el-input v-model="form.skillName" maxlength="128" />
             </el-form-item>
             <el-form-item :label="$t('AGENT_SKILL_SEMANTIC', '语义描述')" class="skill-drawer__wide">
@@ -70,13 +70,13 @@
                 <span v-if="isWriteName(row.toolName)" class="skill-drawer__write">{{ $t('AGENT_TRACE_WRITE', '写') }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('AGENT_TOOL_TITLE', '标题')" min-width="160">
+            <el-table-column :label="$t('G2_FIELD_TITLE', '标题')" min-width="160">
               <template #default="{ row }">{{ toolMeta.find((m) => m.name === row.toolName)?.title ?? EMPTY }}</template>
             </el-table-column>
             <el-table-column :label="$t('AGENT_SKILL_TAB_CONTRACT', '执行契约')" width="110">
               <template #default="{ row }">
-                <StatusDot v-if="configuredTools.has(row.toolName)" tone="success" :label="$t('AGENT_CONTRACT_CONFIGURED', '已配置')" />
-                <StatusDot v-else tone="waiting" :label="$t('AGENT_CONTRACT_NOT_CONFIGURED', '未配置')" />
+                <StatusDot v-if="configuredTools.has(row.toolName)" tone="success" :label="$t('G2_LBL_CONFIGURED', '已配置')" />
+                <StatusDot v-else tone="waiting" :label="$t('G2_LBL_UNCONFIGURED', '未配置')" />
               </template>
             </el-table-column>
             <el-table-column :label="$t('AGENT_FIELD_ENABLED', '启用')" width="80">
@@ -85,7 +85,7 @@
                   @change="(on: string | number | boolean) => toggleTool(row, !!on)" />
               </template>
             </el-table-column>
-            <el-table-column :label="$t('AGENT_FIELD_REMARK', '备注')" min-width="200">
+            <el-table-column :label="$t('G2_FIELD_REMARK', '备注')" min-width="200">
               <template #default="{ row }">
                 <el-input v-model="row.description" size="small" @change="saveTool(row)" />
               </template>
@@ -108,7 +108,7 @@
       :search-placeholder="$t('AGENT_TOOL_SEARCH', '搜索工具名或标题')"
       :empty-text="$t('AGENT_TOOL_EMPTY', '没有可用的工具')"
       :cancel-text="$t('G2_BTN_CANCEL', '取消')"
-      :confirm-text="$t('AGENT_SKILL_ADD_CONFIRM', '添加')"
+      :confirm-text="$t('G2_BTN_ADD', '添加')"
       @confirm="addTools"
       @close="pickerOpen = false"
     />
@@ -119,9 +119,9 @@
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { t } from '@platform/i18n';
-import { StatusDot, showErrorMessage } from '@/components';
+import { StatusDot } from '@/components';
 import { EMPTY, ResourceType } from '@runtime/console';
-import { McpToolProfileApi, ToolPicker, type McpToolProfileVo } from '@/views/mcp_tool_profile';
+import { McpToolProfileApi, ToolPicker, type McpToolMetaVo, type McpToolOptionVo } from '@/views/mcp_tool_profile';
 import ContractPanel from './ContractPanel.vue';
 import { AgentDetailApi } from '../api';
 import { parseContract } from '../contract';
@@ -158,7 +158,7 @@ const manual = ref('');
 const contract = ref('');
 const snapshot = ref('');
 const toolBindings = ref<SkillToolBindingVo[]>([]);
-const toolMeta = ref<McpToolProfileVo[]>([]);
+const toolMeta = ref<McpToolMetaVo[]>([]);
 
 const isPlatform = computed(() => form.value.resourceType === ResourceType.PLATFORM);
 
@@ -181,7 +181,7 @@ async function load(): Promise<void> {
   loading.value = true;
   tab.value = props.initialTab ?? 'basic';
   try {
-    toolMeta.value = await McpToolProfileApi.listAll().catch(() => []);
+    toolMeta.value = [];
     if (props.skillId) {
       const [skill, tools] = await Promise.all([
         AgentDetailApi.skill(props.skillId),
@@ -191,6 +191,7 @@ async function load(): Promise<void> {
       manual.value = skill?.skillManual ?? '';
       contract.value = skill?.skillContract ?? '{}';
       toolBindings.value = tools;
+      await loadMeta();
     } else {
       form.value = {
         agentId: props.agentId,
@@ -201,8 +202,8 @@ async function load(): Promise<void> {
       contract.value = JSON.stringify({ mode: 'REACT', delegatable: false, outputs: {}, tools: {} }, null, 2);
       toolBindings.value = [];
     }
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_LOAD_FAIL', '加载失败'));
+  } catch {
+    // 请求失败已由 http 层统一提示
   } finally {
     loading.value = false;
     snapshot.value = current();
@@ -240,18 +241,27 @@ async function save(): Promise<void> {
     snapshot.value = current();
     ElMessage.success(t('G2_MSG_SAVE_OK', '保存成功'));
     emit('saved', id);
-  } catch (error: unknown) {
-    showErrorMessage(error instanceof Error ? error.message : t('G2_MSG_SAVE_FAIL', '保存失败'));
   } finally {
     saving.value = false;
   }
 }
 
-async function refreshTools(): Promise<void> {
-  if (props.skillId) toolBindings.value = await AgentDetailApi.skillTools(props.skillId);
+/** 补查尚未取过元数据的已绑定工具 */
+async function loadMeta(): Promise<void> {
+  const known = new Set(toolMeta.value.map((m) => m.name));
+  const missing = [...new Set(toolBindings.value.map((b) => b.toolName))].filter((name) => !known.has(name));
+  if (missing.length === 0) return;
+  const metas = await McpToolProfileApi.metas(missing).catch(() => []);
+  toolMeta.value = [...toolMeta.value, ...metas];
 }
 
-async function addTools(tools: McpToolProfileVo[]): Promise<void> {
+async function refreshTools(): Promise<void> {
+  if (!props.skillId) return;
+  toolBindings.value = await AgentDetailApi.skillTools(props.skillId);
+  await loadMeta();
+}
+
+async function addTools(tools: McpToolOptionVo[]): Promise<void> {
   pickerOpen.value = false;
   if (!props.skillId) return;
   // 新增后端固定启用，不必传 enabledFlag

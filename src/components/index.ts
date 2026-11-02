@@ -6,7 +6,6 @@
  */
 
 export * from './ErrorMessage';
-export * from './permission';
 export * from './status-dot';
 export * from './copy-text';
 export * from './secret-input';

@@ -12,10 +12,10 @@
         <el-empty v-if="prior.length === 0" :image-size="64" :description="$t('AGENT_TRACE_NO_PRIOR', '没有前序任务')" />
         <el-table v-else :data="prior" size="small">
           <el-table-column :label="$t('AGENT_TRACE_GOAL', '目标')" prop="goal" min-width="240" show-overflow-tooltip />
-          <el-table-column :label="$t('AGENT_TRACE_STATUS', '状态')" width="110">
+          <el-table-column :label="$t('G2_FIELD_STATUS', '状态')" width="110">
             <template #default="{ row }"><StatusDot v-bind="describeStatus(row.status)" /></template>
           </el-table-column>
-          <el-table-column :label="$t('AGENT_TRACE_SUMMARY', '摘要')" prop="summary" min-width="240" show-overflow-tooltip />
+          <el-table-column :label="$t('G2_FIELD_SUMMARY', '摘要')" prop="summary" min-width="240" show-overflow-tooltip />
         </el-table>
       </el-tab-pane>
       <el-tab-pane :label="$t('AGENT_TRACE_TAB_SHARED', '共享值')" name="shared">

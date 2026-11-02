@@ -5,7 +5,7 @@
   </div>
 
   <div v-else-if="card.kind === 'result'" class="node-card node-card--edge" :class="{ 'is-selected': selected }">
-    <div class="node-card__title">■ {{ $t('AGENT_TRACE_RESULT', '结果') }}</div>
+    <div class="node-card__title">■ {{ $t('G2_FIELD_RESULT', '结果') }}</div>
     <StatusDot v-bind="describeStatus(card.status)" />
   </div>
 

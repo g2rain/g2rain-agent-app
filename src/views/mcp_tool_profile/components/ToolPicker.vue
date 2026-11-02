@@ -20,8 +20,8 @@
       <el-skeleton v-if="loading" :rows="6" animated />
       <el-empty v-else-if="groups.length === 0" :image-size="64" :description="emptyText" />
       <template v-else>
-        <section v-for="group in groups" :key="group.service" class="tool-picker__group">
-          <h4>{{ group.service }}</h4>
+        <section v-for="group in groups" :key="group.serviceId" class="tool-picker__group">
+          <h4>{{ group.serviceName }}</h4>
           <div
             v-for="tool in group.tools"
             :key="tool.name"
@@ -64,9 +64,9 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { RecordStatus, ResourceType } from '@runtime/console';
+import { ResourceType } from '@runtime/console';
 import { McpToolProfileApi } from '../api';
-import type { McpToolProfileVo } from '../type';
+import type { McpToolOptionVo } from '../type';
 
 /**
  * 按类型 Tab + 分页选工具；勾选跨 Tab 累加。平台技能可隐藏租户 Tab。
@@ -82,7 +82,7 @@ const props = withDefaults(
     emptyText?: string;
     cancelText?: string;
     confirmText?: string;
-    builtInLabel?: string;
+    nativeLabel?: string;
     extensionLabel?: string;
     customerLabel?: string;
   }>(),
@@ -94,16 +94,16 @@ const props = withDefaults(
     emptyText: '',
     cancelText: 'Cancel',
     confirmText: 'Add',
-    builtInLabel: '平台原生',
+    nativeLabel: '平台原生',
     extensionLabel: '平台扩展',
     customerLabel: '租户系统',
   },
 );
-const emit = defineEmits<{ confirm: [tools: McpToolProfileVo[]]; close: [] }>();
+const emit = defineEmits<{ confirm: [tools: McpToolOptionVo[]]; close: [] }>();
 
 const tabs = computed(() => {
   const list = [
-    { value: ResourceType.BUILT_IN, label: props.builtInLabel },
+    { value: ResourceType.NATIVE, label: props.nativeLabel },
     { value: ResourceType.EXTENSION, label: props.extensionLabel },
   ];
   if (!props.hideCustomer) {
@@ -112,8 +112,8 @@ const tabs = computed(() => {
   return list;
 });
 
-const activeKind = ref(ResourceType.BUILT_IN);
-const tools = ref<McpToolProfileVo[]>([]);
+const activeKind = ref<string>(ResourceType.NATIVE);
+const tools = ref<McpToolOptionVo[]>([]);
 const loading = ref(false);
 const keyword = ref('');
 const pageNum = ref(1);
@@ -122,24 +122,28 @@ const total = ref(0);
 /** 跨 Tab 勾选名 */
 const selected = ref(new Set<string>());
 /** 已勾选工具详情（跨页/跨 Tab 确认时用） */
-const selectedTools = ref(new Map<string, McpToolProfileVo>());
+const selectedTools = ref(new Map<string, McpToolOptionVo>());
 
+/** 按服务分组，服务端已按 serviceId 排序 */
 const groups = computed(() => {
-  const byService = new Map<string, McpToolProfileVo[]>();
+  const byService = new Map<number, { serviceId: number; serviceName: string; tools: McpToolOptionVo[] }>();
   for (const tool of tools.value) {
-    byService.set(tool.serviceCode, [...(byService.get(tool.serviceCode) ?? []), tool]);
+    const group = byService.get(tool.serviceId)
+      ?? { serviceId: tool.serviceId, serviceName: tool.serviceName || String(tool.serviceId), tools: [] };
+    group.tools.push(tool);
+    byService.set(tool.serviceId, group);
   }
-  return [...byService].map(([service, list]) => ({ service, tools: list }));
+  return [...byService.values()];
 });
 
 async function loadPage(): Promise<void> {
   loading.value = true;
   try {
-    const page = await McpToolProfileApi.page(activeKind.value, {
+    const page = await McpToolProfileApi.optionPage({
       pageNum: pageNum.value,
       pageSize: pageSize.value,
-      name: keyword.value.trim() || undefined,
-      status: RecordStatus.ACTIVE,
+      resourceType: activeKind.value,
+      keyword: keyword.value.trim() || undefined,
     });
     tools.value = page?.records ?? [];
     total.value = page?.total ?? 0;
@@ -164,7 +168,7 @@ function onSizeChange(): void {
   void loadPage();
 }
 
-function toggle(tool: McpToolProfileVo): void {
+function toggle(tool: McpToolOptionVo): void {
   if (props.excluded.includes(tool.name)) return;
   const next = new Set(selected.value);
   const map = new Map(selectedTools.value);
@@ -191,7 +195,7 @@ watch(
     selectedTools.value = new Map();
     keyword.value = '';
     pageNum.value = 1;
-    activeKind.value = ResourceType.BUILT_IN;
+    activeKind.value = ResourceType.NATIVE;
     await loadPage();
   },
 );
@@ -200,7 +204,7 @@ watch(
   () => props.hideCustomer,
   (hide) => {
     if (hide && activeKind.value === ResourceType.CUSTOMER) {
-      activeKind.value = ResourceType.BUILT_IN;
+      activeKind.value = ResourceType.NATIVE;
     }
   },
 );

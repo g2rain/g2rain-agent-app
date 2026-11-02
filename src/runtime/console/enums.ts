@@ -80,7 +80,7 @@ export enum ResourceType {
   MARKET = 'MARKET',
   CUSTOM = 'CUSTOM',
   PLATFORM = 'PLATFORM',
-  BUILT_IN = 'BUILT_IN',
+  NATIVE = 'NATIVE',
   EXTENSION = 'EXTENSION',
   CUSTOMER = 'CUSTOMER',
 }

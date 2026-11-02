@@ -1,8 +1,8 @@
 <template>
   <div class="progress-summary">
     <div class="progress-summary__head">
-      <span class="progress-summary__label">{{ $t('AGENT_CONVERSATION_PROGRESS', '执行过程') }}</span>
-      <CopyText :text="traceId" :length="12" :copied-text="$t('AGENT_COPIED', '已复制')" />
+      <span class="progress-summary__label">{{ $t('G2_LBL_PROGRESS', '执行过程') }}</span>
+      <CopyText :text="traceId" :length="12" :copied-text="$t('G2_MSG_COPIED', '已复制')" />
     </div>
 
     <div v-if="error" class="progress-summary__muted">
