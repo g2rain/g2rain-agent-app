@@ -9,7 +9,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 
-g2rain-agent-app 是 g2rain Vue 3 微前端子应用，提供 qiankun 集成、独立运行、SSO/Token、动态资源路由、权限、国际化、HTTP、Mock、业务页面代码生成、资源配置生成和 OpenResty 部署能力。
+G2rain（谷雨）是面向企业的开源智能体平台，连接模型、知识与业务工具，并以 SaaS 基座和应用开发工具链支撑智能应用落地；组件是否已发布、接入范围和验证状态以各责任仓库为准。`g2rain-agent-app` 是其中的 Vue 3 数字员工控制台微前端业务应用，不代表或替代整个平台、Gateway、IAM、模型服务或智能体运行时能力。它提供 qiankun 集成、独立运行、SSO/Token、动态资源路由、权限、国际化、HTTP、Mock、业务页面代码生成、资源配置生成和 OpenResty 部署能力。
 
 本仓库是“被生成的应用模板”源仓，不是 CLI 本身。[g2rain-app-cli](https://github.com/g2rain/g2rain-app-cli)（npm：`create-g2rain-app`）在发布时通过 `npm run sync:template` 将本仓快照嵌入包内 `template/`，再负责复制、替换 `g2rain-agent-app` 与 `agent`，并将包信息和项目文档转换为业务 App 身份；生成后的应用继续使用本仓库约定的命令开发页面和生成资源配置。
 
@@ -126,7 +126,7 @@ flowchart LR
 - `SSO_BASE_URL` 在容器启动时写入 `env-config.js`。
 
 ```bash
-docker build --build-arg VITE_BUILD_MODE=production -t g2rain/your-app:latest .
+docker build --build-arg VITE_BUILD_MODE=production -t ghcr.io/g2rain/g2rain-agent-app:1.0.0 .
 docker run --rm -p 8080:8080 \
   -e SERVER_PORT=8080 \
   -e CONTEXT_PATH=/your-app \
@@ -135,10 +135,19 @@ docker run --rm -p 8080:8080 \
   -e IAM_HOST=iam \
   -e IAM_PORT=8080 \
   -e SSO_BASE_URL=https://example.com \
-  g2rain/your-app:latest
+  ghcr.io/g2rain/g2rain-agent-app:1.0.0
 ```
 
 完整变量和安全要求见[配置](docs/operations/configuration.md)、[构建与部署](docs/operations/deployment.md)和[安全边界](docs/security/security-boundaries.md)。
+
+## GHCR 镜像
+
+- 镜像地址：`ghcr.io/g2rain/g2rain-agent-app`。
+- 稳定版发布 `1.0.0` 这类版本标签，并同时发布 `sha-<完整提交 SHA>` 可追溯标签；不会更新 `latest`。
+- 包设为公开后可匿名拉取：`docker pull ghcr.io/g2rain/g2rain-agent-app:1.0.0`。
+- 仅推送精确格式的 `v<major>.<minor>.<patch>` Git tag 才会触发；tag 提交必须已进入 `main`，并包含同名发布说明。
+
+完整的 GHCR 权限、首次公开、发布顺序、容器内容与部署验证说明见[构建与部署](docs/operations/deployment.md#ghcr-镜像发布)。
 
 ## 文档导航
 
@@ -150,6 +159,7 @@ docker run --rm -p 8080:8080 \
 | 页面和复用能力 | [Views 规范](docs/development/views-conventions.md) · [Components 与 Platform](docs/development/components-and-platform.md) |
 | 生成能力 | [代码生成](docs/development/code-generation.md) · [资源配置生成](docs/development/resource-generation.md) |
 | 开发和交付 | [本地开发](docs/development/local-development.md) · [完成定义](docs/development/definition-of-done.md) · [部署](docs/operations/deployment.md) |
+| 发布记录 | [v1.0.0](docs/releases/v1.0.0.md) · [发布索引](docs/releases/README.md) |
 
 ## 参与贡献
 

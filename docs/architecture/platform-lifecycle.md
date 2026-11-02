@@ -2,7 +2,7 @@
 
 - 状态：拟实施
 - 日期：2026-09-20
-- 范围：`g2rain-app-template` 的组合根、qiankun 入口与应用级运行资源
+- 范围：`g2rain-agent-app` 的组合根、qiankun 入口与应用级运行资源
 - 依据：[Appkit Platform Framework](../../../g2rain-appkit/docs/architecture/platform-framework.md)、[Main Shell 与子应用开发手册](../../../g2rain-appkit/docs/integration/README.md)、[运行时流程](runtime-flows.md)
 
 ## 1. 决策摘要

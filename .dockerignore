@@ -23,10 +23,14 @@ README.md
 coverage
 .nyc_output
 
-# 环境变量文件
+# 环境变量文件：仅保留受版本控制、用于生产构建的 .env.production。
 .env
 .env.local
 .env.*.local
+!.env.production
+
+# 运行时密钥只能由部署环境挂载；不进入 Docker 构建上下文或镜像层。
+lua/keys/
 
 # 日志文件
 logs

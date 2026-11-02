@@ -2,7 +2,7 @@
 
 本项目试点采用 g2rain [`frontend-app 1.0.0-draft`](https://github.com/g2rain/g2rain/tree/feature/g2rain-architectur-init/docs/architecture/profiles/frontend-app)。中央 Profile 管理跨 App 的分层、运行、生成与安全规则；本页描述本模板的具体落地。
 
-g2rain-app-template 是官方 Vue 3 微前端子应用工程模板。本仓库负责模板运行架构、平台能力、示例页面、生成工具和部署配置。相对中央基线的当前偏差见[架构偏差](deviations.md)。
+`g2rain-agent-app` 是平台的 Vue 3 数字员工控制台微前端业务应用。本仓库负责其运行架构、页面、平台接入、生成工具和部署配置；它不是整个平台能力的替代品。相对中央基线的当前偏差见[架构偏差](deviations.md)。
 
 ## 系统关系
 
