@@ -19,6 +19,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { Editor } from '@bytemd/vue-next';
 import 'bytemd/dist/index.css';
 import 'highlight.js/styles/github.css';
+import './bytemd-theme.css';
 import MarkdownViewer from './MarkdownViewer.vue';
 import { editorLocale, markdownPlugins } from './markdown-plugins';
 

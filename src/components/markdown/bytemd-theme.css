@@ -1,0 +1,112 @@
+/**
+ * bytemd 与代码高亮的主题适配：颜色全部取 --g2-* 变量，随明暗主题切换。
+ * 浮层（tippy）挂在 body 下，因此不加作用域。
+ */
+
+/* 编辑器外框、工具栏、状态栏 */
+.bytemd {
+  color: var(--g2-text-primary);
+  border-color: var(--g2-border-color-light);
+  background-color: var(--g2-bg-container);
+}
+.bytemd-toolbar {
+  border-bottom-color: var(--g2-border-color-light);
+  background-color: var(--g2-fill-light);
+  color: var(--g2-text-regular);
+}
+.bytemd-toolbar-icon:hover { background-color: var(--g2-bg-muted); }
+.bytemd-toolbar-tab-active,
+.bytemd-toolbar-icon-active,
+.bytemd-sidebar-close:hover,
+.bytemd-status-right span:hover { color: var(--g2-color-primary); }
+.bytemd-status {
+  border-top-color: var(--g2-border-color-light);
+  color: var(--g2-text-secondary);
+}
+.bytemd-status-error { color: var(--g2-color-danger); }
+.bytemd-split .bytemd-preview,
+.bytemd-sidebar { border-left-color: var(--g2-border-color-light); }
+.bytemd-sidebar ul { color: var(--g2-text-secondary); }
+.bytemd-toc-active {
+  color: var(--g2-color-primary);
+  background-color: var(--g2-fill-light);
+}
+
+/* 下拉与提示浮层 */
+.tippy-box[data-theme~='light-border'] {
+  background-color: var(--g2-bg-overlay);
+  border-color: var(--g2-border-color-light);
+  color: var(--g2-text-regular);
+}
+.tippy-box[data-theme~='light-border'] > .tippy-backdrop { background-color: var(--g2-bg-overlay); }
+.tippy-box[data-theme~='light-border'] > .tippy-svg-arrow { fill: var(--g2-bg-overlay); }
+.tippy-box[data-theme~='light-border'][data-placement^='top'] > .tippy-arrow::before { border-top-color: var(--g2-bg-overlay); }
+.tippy-box[data-theme~='light-border'][data-placement^='bottom'] > .tippy-arrow::before { border-bottom-color: var(--g2-bg-overlay); }
+.tippy-box[data-theme~='light-border'][data-placement^='left'] > .tippy-arrow::before { border-left-color: var(--g2-bg-overlay); }
+.tippy-box[data-theme~='light-border'][data-placement^='right'] > .tippy-arrow::before { border-right-color: var(--g2-bg-overlay); }
+.bytemd-dropdown-title {
+  border-bottom-color: var(--g2-border-color-light);
+  color: var(--g2-text-primary);
+}
+.bytemd-dropdown-item:hover { background-color: var(--g2-fill-light); }
+
+/* 编辑区（CodeMirror） */
+.bytemd .CodeMirror {
+  color: var(--g2-text-primary);
+  background: var(--g2-bg-container);
+}
+.bytemd .CodeMirror-cursor { border-left-color: var(--g2-text-primary); }
+.bytemd .CodeMirror-selected { background: var(--g2-bg-muted); }
+.bytemd .CodeMirror-focused .CodeMirror-selected {
+  background: color-mix(in srgb, var(--g2-color-primary) 25%, transparent);
+}
+.bytemd .CodeMirror-scrollbar-filler,
+.bytemd .CodeMirror-gutter-filler { background-color: var(--g2-bg-container); }
+.bytemd-editor .CodeMirror pre.CodeMirror-placeholder { color: var(--g2-text-placeholder); }
+.bytemd .cm-s-default .cm-header,
+.bytemd .cm-s-default .cm-def,
+.bytemd .cm-s-default .cm-link,
+.bytemd .cm-s-default .cm-attribute { color: var(--g2-color-primary); }
+.bytemd .cm-s-default .cm-quote,
+.bytemd .cm-s-default .cm-tag { color: var(--g2-color-success); }
+.bytemd .cm-s-default .cm-comment,
+.bytemd .cm-s-default .cm-string-2 { color: var(--g2-color-warning); }
+.bytemd .cm-s-default .cm-string { color: var(--g2-color-danger); }
+.bytemd .cm-s-default .cm-keyword,
+.bytemd .cm-s-default .cm-atom,
+.bytemd .cm-s-default .cm-number,
+.bytemd .cm-s-default .cm-builtin,
+.bytemd .cm-s-default .cm-variable-2,
+.bytemd .cm-s-default .cm-variable-3,
+.bytemd .cm-s-default .cm-type { color: var(--g2-text-regular); }
+.bytemd .cm-s-default .cm-url,
+.bytemd .cm-s-default .cm-meta,
+.bytemd .cm-s-default .cm-qualifier,
+.bytemd .cm-s-default .cm-bracket,
+.bytemd .cm-s-default .cm-hr { color: var(--g2-text-secondary); }
+
+/* 渲染内容（预览区与只读视图） */
+.markdown-body { color: var(--g2-text-primary); }
+.markdown-body a { color: var(--g2-color-primary); }
+.markdown-body blockquote {
+  color: var(--g2-text-secondary);
+  border-left: 3px solid var(--g2-border-color);
+}
+.markdown-body hr { border-color: var(--g2-border-color-light); }
+.markdown-body table th,
+.markdown-body table td { border: 1px solid var(--g2-border-color-light); }
+.markdown-body table th { background-color: var(--g2-fill-light); }
+.markdown-body :not(pre) > code {
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  background-color: var(--g2-fill-light);
+}
+.markdown-body pre {
+  border-radius: 4px;
+  background-color: var(--g2-fill-light);
+}
+.markdown-body pre .hljs,
+.markdown-body pre code {
+  color: var(--g2-text-primary);
+  background: var(--g2-fill-light);
+}

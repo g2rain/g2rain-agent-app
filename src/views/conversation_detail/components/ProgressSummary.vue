@@ -149,7 +149,7 @@ function iconOf(step: ChatProgressVo): string {
   margin: 2px 0 6px;
   padding: 6px 10px;
   border-left: 2px solid var(--g2-border-color-light);
-  background: var(--g2-fill-color-light, #f5f7fa);
+  background: var(--g2-fill-light);
   font-size: var(--g2-font-size-sm);
 }
 .progress-summary__extra dt { color: var(--g2-text-placeholder); }
