@@ -9,6 +9,7 @@ import { computed } from 'vue';
 import { Viewer } from '@bytemd/vue-next';
 import 'bytemd/dist/index.css';
 import 'highlight.js/styles/github.css';
+import './bytemd-theme.css';
 import { markdownPlugins } from './markdown-plugins';
 
 /**
