@@ -62,9 +62,10 @@
         </template>
       </el-table-column>
       <TableColumn prop="updateTime" :label="$t('G2_FIELD_UPDATE_TIME', '更新时间')" width="180" sortable="custom" />
-      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="180">
+      <el-table-column :label="$t('G2_FIELD_ACTION', '操作')" fixed="right" width="240">
         <template #default="{ row }">
           <el-button type="primary" v-permission="'agent_profile:edit'" link size="small" @click="handleEdit(row)">{{ $t('AGENT_BTN_EDIT', '修改') }}</el-button>
+          <el-button type="primary" v-permission="'agent_profile:access_grant'" link size="small" @click="accessGrantRef?.open(row)">{{ $t('AGENT_BTN_ACCESS_GRANT', '访问授权') }}</el-button>
           <el-button type="danger" v-permission="'agent_profile:delete'" link size="small" @click="handleDelete(row)">{{ $t('G2_BTN_DELETE', '删除') }}</el-button>
         </template>
         <template #header>
@@ -87,6 +88,8 @@
         @current-change="handlePageChange"
       />
     </div>
+
+    <AccessGrantDialog ref="accessGrantRef" />
   </div>
 </template>
 
@@ -102,6 +105,7 @@ import { ResourceType } from '@runtime/console';
 import { notifyStatusSwitchSuccess, notifyStatusSwitchError } from '@/components';
 import { agentDetailRoute } from '@/views/agent_detail';
 import { AgentProfileApi } from './api';
+import AccessGrantDialog from './AccessGrantDialog.vue';
 import type { AgentProfile, AgentProfileQuery } from './type';
 
 // 状态开关回调：放在 script 里，避免模板内直接引用类导致 IDE 类型误报
@@ -124,6 +128,7 @@ const pageTitle = computed(() =>
 );
 
 const queryFormRef = ref<InstanceType<typeof QueryForm> | null>(null);
+const accessGrantRef = ref<InstanceType<typeof AccessGrantDialog> | null>(null);
 
 const baseQueryForm = ref<BaseSelectListDto>({
   id: undefined,
