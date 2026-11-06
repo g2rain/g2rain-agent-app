@@ -84,6 +84,14 @@
   "pageElements": [
     {
       "parentId": null,
+      "pageElementName": "access_grant",
+      "pageElementCode": "agent_profile:access_grant",
+      "pageElementType": "button",
+      "pageCode": "agent_profile",
+      "status": "ENABLED"
+    },
+    {
+      "parentId": null,
       "pageElementName": "新增",
       "pageElementCode": "agent_profile:add",
       "pageElementType": "button",
