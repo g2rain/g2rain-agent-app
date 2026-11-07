@@ -36,8 +36,6 @@ export interface TaskGraphNodeVo {
   delegateDepth: number;
   status: string;
   result: string | null;
-  inputs: string | null;
-  outputs: string | null;
   state: string | null;
   errorCode: string | null;
   errorMessage: string | null;

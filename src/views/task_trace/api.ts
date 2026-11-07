@@ -47,8 +47,8 @@ export class TaskTraceApi {
 
   /** 智能体名称；查不到时返回空串 */
   static async agentName(agentId: number): Promise<string> {
-    const res = await http().get<{ agentName?: string }>(`${Gateway.STUDIO}/agent_profile/${agentId}/resolve`);
-    return res.data?.agentName ?? '';
+    const res = await http().get<string | null>(`${Gateway.STUDIO}/agent_profile/${agentId}/name`);
+    return res.data ?? '';
   }
 
   /** 按需加载超长报文 */
