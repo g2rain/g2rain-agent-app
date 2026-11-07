@@ -67,11 +67,11 @@
         <div class="node-detail__io">
           <section>
             <h4>{{ $t('AGENT_TRACE_INPUTS', '输入') }}</h4>
-            <JsonViewer :value="node.inputs || '{}'" :collapsed-depth="2" />
+            <JsonViewer :value="state.inputs ?? {}" :collapsed-depth="2" />
           </section>
           <section>
             <h4>{{ $t('AGENT_TRACE_OUTPUTS', '输出') }}</h4>
-            <JsonViewer :value="node.outputs || '{}'" :collapsed-depth="2" />
+            <JsonViewer :value="state.outputs ?? {}" :collapsed-depth="2" />
           </section>
         </div>
       </el-tab-pane>
