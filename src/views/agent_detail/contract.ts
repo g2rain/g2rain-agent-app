@@ -15,7 +15,8 @@ export interface ArgContract {
   missing?: { action?: string; tool?: string; message?: string };
   sensitive?: boolean;
   label?: string;
-  fresh?: unknown;
+  /** 参数指向的实体类型，与抽取项 entity.type 同名（如 article） */
+  entity?: string;
 }
 
 /** 工具契约（tools.<name>） */

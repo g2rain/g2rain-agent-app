@@ -68,6 +68,9 @@
             <el-table-column :label="$t('AGENT_CONTRACT_SOURCE_COL', '来源')" min-width="200">
               <template #default="{ row }">{{ row.source }}</template>
             </el-table-column>
+            <el-table-column :label="$t('AGENT_CONTRACT_ENTITY', '实体')" min-width="120">
+              <template #default="{ row }">{{ row.entity }}</template>
+            </el-table-column>
             <el-table-column :label="$t('AGENT_CONTRACT_REQUIRED', '必填')" width="70">
               <template #default="{ row }">{{ row.required ? $t('G2_LBL_YES', '是') : $t('G2_LBL_NO', '否') }}</template>
             </el-table-column>
@@ -206,6 +209,7 @@ const argRows = computed(() =>
   Object.entries(selectedTool.value?.args ?? {}).map(([name, spec]) => ({
     name,
     source: spec.from ?? (spec.const !== undefined ? `const ${JSON.stringify(spec.const)}` : (spec.sources ?? []).map((s) => label(SOURCE_TEXT, s)).join(' · ') || EMPTY),
+    entity: spec.entity ?? EMPTY,
     required: spec.required !== false,
     missing: spec.missing?.action ? [label(MISSING_TEXT, spec.missing.action), spec.missing.tool].filter(Boolean).join(' ') : EMPTY,
   })),
