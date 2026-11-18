@@ -36,7 +36,7 @@
           <div class="chat_conversation-page__title">
             {{ row.title || $t('AGENT_CONVERSATION_UNTITLED', '未命名会话') }}
           </div>
-          <CopyText :text="row.conversationId" :length="8" :copied-text="copiedText" />
+          <CopyText :text="row.conversationId" :length="8" />
         </template>
       </el-table-column>
       <el-table-column :label="$t('G2_FIELD_ORGAN', '所属机构')" width="120">
@@ -92,9 +92,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { t } from '@platform/i18n';
 import type { BaseSelectListDto, PageSelectListDto } from '@platform/types/api.type';
 import { QueryForm, SortableTable, TableColumn, SortManagerButton } from '@g2rain/ui';
 import { OrganSelect } from '@g2rain/ui/platform';
@@ -105,7 +104,6 @@ import { ChatConversationApi } from './api';
 import type { ChatConversation, ChatConversationQuery } from './type';
 
 const router = useRouter();
-const copiedText = computed(() => t('G2_MSG_COPIED', '已复制'));
 
 const queryFormRef = ref<InstanceType<typeof QueryForm> | null>(null);
 

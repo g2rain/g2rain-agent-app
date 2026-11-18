@@ -83,14 +83,51 @@ function lintTools(contract: SkillContract, issues: ContractIssue[]): void {
   }
 }
 
-function lintRoot(contract: SkillContract, issues: ContractIssue[]): void {
+function isStringMap(value: unknown): boolean {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+  return Object.entries(value as Record<string, unknown>).every(
+    ([key, item]) => typeof key === 'string' && typeof item === 'string',
+  );
+}
+
+/** 本体模式下的 source 字段检查；并提示契约自带 tools 不会生效 */
+function lintSource(contract: SkillContract, issues: ContractIssue[]): void {
+  const source = contract.source!;
+  const ontology = typeof source.ontology === 'string' ? source.ontology.trim() : '';
+  if (!ontology) {
+    issues.push({
+      path: ['source', 'ontology'],
+      severity: 'error',
+      message: msg('AGENT_LINT_SOURCE_ONTOLOGY', 'source.ontology 不能为空'),
+    });
+  }
+  if (source.usages !== undefined && !isStringMap(source.usages)) {
+    issues.push({
+      path: ['source', 'usages'],
+      severity: 'error',
+      message: msg('AGENT_LINT_SOURCE_USAGES', 'source.usages 必须是 工具名 → 用法编码 的映射'),
+    });
+  }
+  const tools = contract.tools;
+  if (tools !== undefined && Object.keys(tools).length > 0) {
+    issues.push({
+      path: ['tools'],
+      severity: 'warning',
+      message: msg('AGENT_LINT_SOURCE_TOOLS', '已声明 source，契约中的 tools 不会生效'),
+    });
+  }
+}
+
+function lintRoot(contract: SkillContract, issues: ContractIssue[], ontologyMode: boolean): void {
   const tools = contract.tools ?? {};
   checkEnum(issues, ['mode'], contract.mode, CONTRACT_ENUMS.mode);
-  if (contract.target !== undefined && !isWriteTool(tools[contract.target])) {
-    issues.push({ path: ['target'], severity: 'error', message: msg('AGENT_LINT_TARGET', 'target 必须是契约中的写工具') });
-  }
-  if (contract.delegatable === true && Object.values(tools).some(isWriteTool)) {
-    issues.push({ path: ['delegatable'], severity: 'error', message: msg('AGENT_LINT_DELEGATABLE', '可委派的技能不能包含写工具') });
+  if (!ontologyMode) {
+    if (contract.target !== undefined && !isWriteTool(tools[contract.target])) {
+      issues.push({ path: ['target'], severity: 'error', message: msg('AGENT_LINT_TARGET', 'target 必须是契约中的写工具') });
+    }
+    if (contract.delegatable === true && Object.values(tools).some(isWriteTool)) {
+      issues.push({ path: ['delegatable'], severity: 'error', message: msg('AGENT_LINT_DELEGATABLE', '可委派的技能不能包含写工具') });
+    }
   }
   for (const [name, output] of Object.entries(contract.outputs ?? {})) {
     const path: ContractPath = ['outputs', name];
@@ -125,9 +162,13 @@ export function lintContract(text: string, toolNames: readonly string[]): Contra
     return [{ path: [], severity: 'error', message: msg('AGENT_LINT_INVALID', '契约不是合法的 JSON 对象') }];
   }
   const issues: ContractIssue[] = [];
-  lintRoot(parsed.contract, issues);
-  lintTools(parsed.contract, issues);
-  lintBindings(parsed.contract, toolNames, issues);
+  const ontologyMode = parsed.contract.source !== undefined;
+  if (ontologyMode) lintSource(parsed.contract, issues);
+  lintRoot(parsed.contract, issues, ontologyMode);
+  if (!ontologyMode) {
+    lintTools(parsed.contract, issues);
+    lintBindings(parsed.contract, toolNames, issues);
+  }
   return issues;
 }
 

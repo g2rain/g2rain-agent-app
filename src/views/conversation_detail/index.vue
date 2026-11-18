@@ -19,7 +19,7 @@
       <header class="conversation-detail__head">
         <h2 class="conversation-detail__title">{{ conversation.title || $t('AGENT_CONVERSATION_UNTITLED', '未命名会话') }}</h2>
         <div class="conversation-detail__meta">
-          <CopyText :text="conversation.conversationId" :length="8" :copied-text="$t('G2_MSG_COPIED', '已复制')" />
+          <CopyText :text="conversation.conversationId" :length="8" />
           <span>{{ $t('G2_FIELD_USER', '用户') }} {{ conversation.userId }}</span>
           <span v-if="span">{{ span }}</span>
           <span class="conversation-detail__spacer" />

@@ -2,7 +2,7 @@
   <div class="task-summary">
     <div class="task-summary__head">
       <span class="task-summary__label">{{ $t('AGENT_CONVERSATION_TASK', '任务') }}</span>
-      <CopyText :text="task.taskId" :length="8" :copied-text="$t('G2_MSG_COPIED', '已复制')" />
+      <CopyText :text="task.taskId" :length="8" />
     </div>
     <div class="task-summary__status">
       <StatusDot v-bind="describeStatus(task.status)" />

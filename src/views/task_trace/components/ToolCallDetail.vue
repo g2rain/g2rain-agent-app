@@ -6,7 +6,7 @@
         <span v-if="call.sideEffect === SideEffect.WRITE" class="call-detail__write">{{ $t('AGENT_TRACE_WRITE', '写') }}</span>
         <span>{{ formatDuration(call.durationMs) }}</span>
         <span v-if="call.round !== null">· {{ $t('AGENT_TRACE_ROUND', { n: call.round }, '第 {n} 轮') }}</span>
-        <CopyText :text="call.callId" :length="8" :copied-text="$t('G2_MSG_COPIED', '已复制')" />
+        <CopyText :text="call.callId" :length="8" />
       </div>
       <el-tabs v-model="tab">
         <el-tab-pane :label="$t('AGENT_TRACE_TAB_OVERVIEW', '概要')" name="overview">

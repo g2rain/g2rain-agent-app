@@ -30,10 +30,10 @@
           <span>{{ formatDuration(elapsed(bundle.task.startedTime, bundle.task.finishedTime)) }}</span>
           <span>
             {{ $t('AGENT_TRACE_CONVERSATION', '会话') }}
-            <CopyText :text="bundle.task.conversationId" :length="8" :copied-text="copiedText" />
+            <CopyText :text="bundle.task.conversationId" :length="8" />
           </span>
           <span v-if="bundle.task.traceId">
-            trace <CopyText :text="bundle.task.traceId" :length="8" :copied-text="copiedText" />
+            trace <CopyText :text="bundle.task.traceId" :length="8" />
           </span>
           <span class="task-trace__spacer" />
           <div class="task-trace__actions">
@@ -113,8 +113,6 @@ const localeStore = useLocaleStore();
 const taskId = computed(() => (typeof route.query.taskId === 'string' ? route.query.taskId : ''));
 const embed = computed(() => route.query.embed === '1');
 const locale = computed(() => localeStore.locale || 'zh-CN');
-const copiedText = computed(() => t('G2_MSG_COPIED', '已复制'));
-
 const bundle = ref<TraceBundle | null>(null);
 const agentName = ref('');
 const loading = ref(false);

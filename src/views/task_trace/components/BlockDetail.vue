@@ -5,7 +5,7 @@
         <span class="block-detail__tag">{{ $t('AGENT_TRACE_OUTCOME_BLOCKED', '被拦截') }}</span>
         <span>{{ block.blockedBy }}</span>
         <span v-if="block.round !== null">· {{ $t('AGENT_TRACE_ROUND', { n: block.round }, '第 {n} 轮') }}</span>
-        <CopyText :text="block.callId" :length="8" :copied-text="$t('G2_MSG_COPIED', '已复制')" />
+        <CopyText :text="block.callId" :length="8" />
       </div>
       <el-tabs v-model="tab">
         <el-tab-pane :label="$t('AGENT_TRACE_TAB_OVERVIEW', '概要')" name="overview">

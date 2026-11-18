@@ -14,6 +14,8 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { ElMessage } from 'element-plus';
+import { t } from '@platform/i18n';
 import JsonTree from './JsonTree.vue';
 
 /**
@@ -51,6 +53,7 @@ const parsed = computed<{ ok: true; value: unknown } | { ok: false }>(() => {
 async function copy(): Promise<void> {
   try {
     await navigator.clipboard.writeText(raw.value);
+    ElMessage.success(t('G2_MSG_COPIED', '已复制'));
   } catch {
     // 剪贴板不可用时静默
   }

@@ -24,13 +24,16 @@
         <button type="button" :class="navClass(OUTPUTS)" @click="select(OUTPUTS)">
           {{ $t('AGENT_CONTRACT_OUTPUTS', '产出') }} <em>{{ count(contract.outputs) }}</em>
         </button>
-        <template v-for="group in toolGroups" :key="group.title">
-          <h5>{{ group.title }}</h5>
-          <button v-for="tool in group.tools" :key="tool.name" type="button" :class="navClass(tool.name)" @click="select(tool.name)">
-            <i class="contract__mark" :class="`is-${tool.state}`" />
-            <span class="contract__tool-name">{{ tool.label }}</span>
-            <span v-if="tool.issues" class="contract__issue">⚠ {{ tool.issues }}</span>
-          </button>
+        <p v-if="hasSource" class="contract__semantic-hint">{{ $t('AGENT_CONTRACT_SEMANTIC_HINT', '动作语义由本体提供') }}</p>
+        <template v-else>
+          <template v-for="group in toolGroups" :key="group.title">
+            <h5>{{ group.title }}</h5>
+            <button v-for="tool in group.tools" :key="tool.name" type="button" :class="navClass(tool.name)" @click="select(tool.name)">
+              <i class="contract__mark" :class="`is-${tool.state}`" />
+              <span class="contract__tool-name">{{ tool.label }}</span>
+              <span v-if="tool.issues" class="contract__issue">⚠ {{ tool.issues }}</span>
+            </button>
+          </template>
         </template>
       </nav>
 
@@ -44,6 +47,14 @@
             <el-descriptions-item label="mode">{{ contract.mode ?? 'REACT' }}</el-descriptions-item>
             <el-descriptions-item label="delegatable">{{ contract.delegatable ? 'true' : 'false' }}</el-descriptions-item>
             <el-descriptions-item label="target">{{ contract.target ?? EMPTY }}</el-descriptions-item>
+            <el-descriptions-item v-if="hasSource" :label="$t('AGENT_CONTRACT_SEMANTIC', '动作语义来源')">
+              {{ semanticOntologyText }}
+            </el-descriptions-item>
+            <el-descriptions-item v-if="usageLines.length" :label="$t('AGENT_CONTRACT_SEMANTIC_USAGES', '用法')">
+              <div class="contract__usages">
+                <div v-for="line in usageLines" :key="line">{{ line }}</div>
+              </div>
+            </el-descriptions-item>
           </el-descriptions>
         </template>
 
@@ -112,7 +123,14 @@ import { ElMessage } from 'element-plus';
 import { t } from '@platform/i18n';
 import { EMPTY } from '@runtime/console';
 import type { McpToolMetaVo } from '@/views/mcp_tool_profile';
-import { isWriteTool, parseContract, stringifyContract, toolSkeleton, type SkillContract } from '../contract';
+import {
+  isWriteTool,
+  ontologyOf,
+  parseContract,
+  stringifyContract,
+  toolSkeleton,
+  type SkillContract,
+} from '../contract';
 import { issueUnder, toDiagnostics, type ContractIssue, type ContractPath } from '../contract-lint';
 
 const JsonEditor = defineAsyncComponent(() => import('@/components/json-editor').then((m) => m.JsonEditor));
@@ -133,9 +151,20 @@ const selected = ref<string>(ROOT);
 
 const parsed = computed(() => parseContract(model.value));
 const contract = computed<SkillContract>(() => (parsed.value.ok ? parsed.value.contract : {}));
+const hasSource = computed(() => contract.value.source !== undefined);
 const diagnostics = computed(() => toDiagnostics(model.value, props.issues));
 const errorCount = computed(() => props.issues.filter((i) => i.severity === 'error').length);
 const warningCount = computed(() => props.issues.filter((i) => i.severity === 'warning').length);
+
+const semanticOntologyText = computed(() =>
+  t('AGENT_CONTRACT_SEMANTIC_ONTOLOGY', { ontology: ontologyOf(contract.value) ?? '' }, '本体：{ontology}'),
+);
+
+const usageLines = computed(() => {
+  const usages = contract.value.source?.usages;
+  if (!usages) return [] as string[];
+  return Object.entries(usages).map(([tool, usage]) => `${tool} → ${usage}`);
+});
 
 const count = (map: object | undefined) => Object.keys(map ?? {}).length;
 const entries = (map: Record<string, unknown> | undefined) => Object.entries(map ?? {}).map(([key, value]) => ({ key, value }));
@@ -179,11 +208,23 @@ const selectedPath = computed<ContractPath>(() => {
 const ROOT_KEYS = new Set<string | number>(['mode', 'delegatable', 'target']);
 
 /** 当前选中项的问题：根属性取整体与根字段的问题，其余取该路径下的问题 */
-const selectedIssues = computed(() =>
-  selected.value === ROOT
-    ? props.issues.filter((i) => i.path.length === 0 || ROOT_KEYS.has(i.path[0]))
-    : props.issues.filter((i) => issueUnder(i, selectedPath.value)),
-);
+const selectedIssues = computed(() => {
+  if (selected.value !== ROOT) {
+    return props.issues.filter((i) => issueUnder(i, selectedPath.value));
+  }
+  return props.issues.filter((i) => {
+    if (i.path.length === 0) return true;
+    const head = i.path[0];
+    if (ROOT_KEYS.has(head) || head === 'source') return true;
+    return hasSource.value && head === 'tools';
+  });
+});
+
+watch(hasSource, (enabled) => {
+  if (!enabled) return;
+  if (selected.value === ROOT || selected.value === INPUTS || selected.value === OUTPUTS) return;
+  selected.value = ROOT;
+});
 
 const SOURCE_TEXT: Record<string, [string, string]> = {
   USER: ['AGENT_SOURCE_USER', '用户'],
@@ -328,6 +369,16 @@ watch(
 .contract__structure { display: grid; grid-template-columns: 240px minmax(0, 1fr); border: 1px solid var(--g2-border-color-light); border-radius: var(--g2-border-radius-lg); min-height: 520px; }
 .contract__nav { padding: 8px; border-right: 1px solid var(--g2-border-color-light); overflow: auto; max-height: 640px; }
 .contract__nav h5 { margin: 12px 8px 4px; font-size: 11px; font-weight: 600; color: var(--g2-text-placeholder); }
+.contract__semantic-hint {
+  margin: 12px 8px;
+  padding: 8px;
+  border-radius: var(--g2-border-radius-base);
+  background: var(--g2-fill-light);
+  color: var(--g2-text-secondary);
+  font-size: var(--g2-font-size-sm);
+  line-height: 1.5;
+}
+.contract__usages { display: flex; flex-direction: column; gap: 4px; }
 .contract__nav-item {
   display: flex;
   align-items: center;

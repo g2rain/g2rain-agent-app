@@ -49,13 +49,32 @@ export interface InputContract {
   provider?: string;
 }
 
+/**
+ * 动作语义来源（本体模式）。
+ * 有 `source` 时 `tools` 由本体提供，契约自带的 `tools` 不生效。
+ */
+export interface ContractSource {
+  /** 本体编码 */
+  ontology?: string;
+  /** 工具名 → 用法编码 */
+  usages?: Record<string, string>;
+}
+
 export interface SkillContract {
   mode?: string;
   delegatable?: boolean;
   target?: string;
+  /** 动作语义来源；有则由本体提供 tools */
+  source?: ContractSource;
   inputs?: Record<string, InputContract>;
   outputs?: Record<string, OutputContract>;
   tools?: Record<string, ToolContract>;
+}
+
+/** `source.ontology` 去空白后非空则返回，否则 undefined */
+export function ontologyOf(contract: SkillContract): string | undefined {
+  const value = contract.source?.ontology?.trim();
+  return value ? value : undefined;
 }
 
 /** 枚举取值（区分大小写），见 CONTRACT_SPEC 第 18 节 */
