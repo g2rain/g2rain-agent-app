@@ -17,7 +17,7 @@ import {
 } from '@runtime/console';
 import { redundantEdges, edgeKey, type DirectedEdge } from '@shared/graph.util';
 import type { DagEdge, DagNode } from '@/components/dag-canvas';
-import type { TaskGraphNodeVo, ToolCallRecordVo, TraceBundle } from './type';
+import type { TaskGraphNodeVo, ToolBlockRecordVo, ToolCallRecordVo, TraceBundle } from './type';
 
 /** 虚拟节点：用户请求与结果 */
 export const REQUEST_ID = '__request';
@@ -159,6 +159,8 @@ export interface TimelineStep {
   detail: string;
   outcome: StepOutcome;
   call?: ToolCallRecordVo;
+  /** 匹配到的拦截记录；仅 blocked 步骤可能有 */
+  block?: ToolBlockRecordVo;
   repeat: number;
   /** 折叠后最后一次出现的轮次 */
   lastRound: number | null;
@@ -240,19 +242,48 @@ function callStep(call: ToolCallRecordVo): TimelineStep {
 }
 
 function sameStep(a: TimelineStep, b: TimelineStep): boolean {
-  return !a.call && !b.call && a.toolName === b.toolName && a.summary === b.summary && a.detail === b.detail;
+  return (
+    !a.call &&
+    !b.call &&
+    !a.block &&
+    !b.block &&
+    a.toolName === b.toolName &&
+    a.summary === b.summary &&
+    a.detail === b.detail
+  );
+}
+
+/** 把拦截记录按 createTime 依次挂到同节点、同轮次、同工具名的 blocked 步骤上 */
+function attachBlocks(steps: TimelineStep[], nodeId: string, blocks: readonly ToolBlockRecordVo[]): void {
+  const remaining = blocks
+    .filter((b) => b.nodeId === nodeId)
+    .sort((a, b) => a.createTime.localeCompare(b.createTime) || a.id - b.id);
+  for (const step of steps) {
+    if (step.outcome !== 'blocked' || !step.toolName) continue;
+    const index = remaining.findIndex(
+      (b) => b.toolName === step.toolName && (b.round ?? null) === (step.round ?? null),
+    );
+    if (index < 0) continue;
+    step.block = remaining.splice(index, 1)[0];
+  }
 }
 
 /**
  * 合并节点的执行轨迹：内置动作与被拦下的调用来自节点状态，真实业务调用来自工具调用记录；
- * 按轮次排序，连续相同的动作折叠为一行。
+ * 拦截记录按同节点、同轮次、同工具名依次匹配到 blocked 步骤；按轮次排序，连续相同的动作折叠为一行。
  */
-export function buildTimeline(node: TaskGraphNodeVo, calls: readonly ToolCallRecordVo[]): TimelineStep[] {
+export function buildTimeline(
+  node: TaskGraphNodeVo,
+  calls: readonly ToolCallRecordVo[],
+  blocks: readonly ToolBlockRecordVo[],
+): TimelineStep[] {
   const actions = parseNodeState(node).actions ?? [];
   const steps = [
     ...actions.map(actionStep),
     ...calls.filter((c) => c.nodeId === node.nodeId).map(callStep),
   ].sort((a, b) => (a.round ?? 0) - (b.round ?? 0));
+
+  attachBlocks(steps, node.nodeId, blocks);
 
   const merged: TimelineStep[] = [];
   for (const step of steps) {

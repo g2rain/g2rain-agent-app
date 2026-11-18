@@ -13,6 +13,12 @@
           <el-button v-if="step.call" link type="primary" size="small" @click="emit('open-call', step.call)">
             {{ $t('G2_BTN_DETAIL', '详情') }}
           </el-button>
+          <el-button v-else-if="step.block" link type="primary" size="small" @click="emit('open-block', step.block)">
+            {{ $t('G2_BTN_DETAIL', '详情') }}
+          </el-button>
+        </div>
+        <div v-if="step.block" class="timeline__block">
+          {{ step.block.blockedBy }} · {{ step.block.reasonCode || step.block.errorCode }}
         </div>
         <div v-if="step.summary" class="timeline__summary">{{ step.summary }}</div>
         <div v-if="step.detail" class="timeline__detail">{{ step.detail }}</div>
@@ -25,11 +31,14 @@
 import { t } from '@platform/i18n';
 import { isBuiltinAction } from '@runtime/console';
 import type { TimelineStep } from '../trace';
-import type { ToolCallRecordVo } from '../type';
+import type { ToolBlockRecordVo, ToolCallRecordVo } from '../type';
 
 /** 节点执行轨迹：一轮一行，拦截与拒绝高亮，连续相同动作已在 trace.ts 中折叠 */
 defineProps<{ steps: TimelineStep[] }>();
-const emit = defineEmits<{ 'open-call': [call: ToolCallRecordVo] }>();
+const emit = defineEmits<{
+  'open-call': [call: ToolCallRecordVo];
+  'open-block': [block: ToolBlockRecordVo];
+}>();
 
 const OUTCOME_TEXT: Partial<Record<TimelineStep['outcome'], [string, string]>> = {
   blocked: ['AGENT_TRACE_OUTCOME_BLOCKED', '被拦截'],
@@ -84,6 +93,7 @@ function roundText(step: TimelineStep, index: number): string {
   border-color: var(--g2-color-warning);
 }
 .timeline__tag.is-rejected, .timeline__tag.is-failed { color: var(--g2-color-danger); border-color: var(--g2-color-danger); }
+.timeline__block { margin-top: 4px; font-size: var(--g2-font-size-sm); color: var(--g2-color-warning); word-break: break-word; }
 .timeline__summary { margin-top: 4px; color: var(--g2-text-regular); word-break: break-word; }
 .timeline__detail { margin-top: 2px; font-size: var(--g2-font-size-sm); color: var(--g2-text-secondary); word-break: break-word; }
 .timeline__step.is-rejected .timeline__detail,

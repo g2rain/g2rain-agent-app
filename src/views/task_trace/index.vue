@@ -60,14 +60,17 @@
           :nodes="bundle.nodes"
           :edges="bundle.edges"
           :calls="selectedCalls"
+          :blocks="selectedBlocks"
           :messages="selectedMessages"
           :locale="locale"
           @open-call="openCall = $event"
+          @open-block="openBlock = $event"
         />
         <TaskDetail v-else :bundle="bundle" :agent-name="agentName" :locale="locale" />
       </section>
 
       <ToolCallDetail :call="openCall" @close="openCall = null" />
+      <BlockDetail :block="openBlock" @close="openBlock = null" />
     </template>
   </div>
 </template>
@@ -90,9 +93,10 @@ import NodeDetail from './components/NodeDetail.vue';
 import TaskDetail from './components/TaskDetail.vue';
 import RequestDetail from './components/RequestDetail.vue';
 import ToolCallDetail from './components/ToolCallDetail.vue';
+import BlockDetail from './components/BlockDetail.vue';
 import { TaskTraceApi } from './api';
 import { REQUEST_ID, defaultSelection, isReused } from './trace';
-import type { ToolCallRecordVo, TraceBundle } from './type';
+import type { ToolBlockRecordVo, ToolCallRecordVo, TraceBundle } from './type';
 
 const TaskGraph = defineAsyncComponent(() => import('./components/TaskGraph.vue'));
 
@@ -118,6 +122,7 @@ const failure = ref('');
 const selectedId = ref<string | null>(null);
 const nodeTab = ref('timeline');
 const openCall = ref<ToolCallRecordVo | null>(null);
+const openBlock = ref<ToolBlockRecordVo | null>(null);
 const autoRefresh = ref(false);
 
 const terminal = computed(() => !!bundle.value && TERMINAL_TASK_STATUSES.has(bundle.value.task.status));
@@ -129,6 +134,7 @@ const showFinalAlert = computed(
 
 const selectedNode = computed(() => bundle.value?.nodes.find((n) => n.nodeId === selectedId.value) ?? null);
 const selectedCalls = computed(() => bundle.value?.calls.filter((c) => c.nodeId === selectedId.value) ?? []);
+const selectedBlocks = computed(() => bundle.value?.blocks.filter((b) => b.nodeId === selectedId.value) ?? []);
 const selectedMessages = computed(() => bundle.value?.messages.filter((m) => m.nodeId === selectedId.value) ?? []);
 
 const metricsText = computed(() => {

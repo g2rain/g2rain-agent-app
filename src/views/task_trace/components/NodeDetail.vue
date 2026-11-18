@@ -30,7 +30,11 @@
       </el-tab-pane>
 
       <el-tab-pane :label="$t('AGENT_TRACE_TAB_TIMELINE', '执行轨迹')" name="timeline">
-        <ActionTimeline :steps="timeline" @open-call="emit('open-call', $event)" />
+        <ActionTimeline
+          :steps="timeline"
+          @open-call="emit('open-call', $event)"
+          @open-block="emit('open-block', $event)"
+        />
       </el-tab-pane>
 
       <el-tab-pane :label="`${$t('AGENT_TRACE_TAB_CALLS', '工具调用')} ${calls.length}`" name="calls">
@@ -51,6 +55,24 @@
           <el-table-column :label="$t('G2_FIELD_DURATION', '耗时')" width="100">
             <template #default="{ row }">{{ formatDuration(row.durationMs) }}</template>
           </el-table-column>
+        </el-table>
+      </el-tab-pane>
+
+      <el-tab-pane
+        v-if="blocks.length > 0"
+        :label="`${$t('AGENT_TRACE_TAB_BLOCKS', '拦截')} ${blocks.length}`"
+        name="blocks"
+      >
+        <el-table :data="blocks" size="small" @row-click="(row: ToolBlockRecordVo) => emit('open-block', row)">
+          <el-table-column :label="$t('AGENT_TRACE_ROUND_SHORT', '轮次')" prop="round" width="64" />
+          <el-table-column :label="$t('AGENT_TRACE_TOOL', '工具')" min-width="180">
+            <template #default="{ row }"><code>{{ row.toolName }}</code></template>
+          </el-table-column>
+          <el-table-column :label="$t('AGENT_TRACE_BLOCKED_BY', '拦截器')" prop="blockedBy" min-width="140" show-overflow-tooltip />
+          <el-table-column :label="$t('AGENT_TRACE_REASON_CODE', '原因编码')" min-width="140" show-overflow-tooltip>
+            <template #default="{ row }">{{ row.reasonCode || row.errorCode }}</template>
+          </el-table-column>
+          <el-table-column :label="$t('AGENT_TRACE_BLOCK_MESSAGE', '拒绝说明')" prop="message" min-width="200" show-overflow-tooltip />
         </el-table>
       </el-tab-pane>
 
@@ -92,7 +114,7 @@ import { JsonViewer, StatusDot } from '@/components';
 import { EMPTY, SideEffect, describeStatus, elapsed, formatClock, formatDuration } from '@runtime/console';
 import ActionTimeline from './ActionTimeline.vue';
 import { buildTimeline, isReused, parseNodeState } from '../trace';
-import type { ChatMessageVo, TaskGraphEdgeVo, TaskGraphNodeVo, ToolCallRecordVo } from '../type';
+import type { ChatMessageVo, TaskGraphEdgeVo, TaskGraphNodeVo, ToolBlockRecordVo, ToolCallRecordVo } from '../type';
 
 const MarkdownViewer = defineAsyncComponent(() => import('@/components/markdown').then((m) => m.MarkdownViewer));
 
@@ -102,14 +124,18 @@ const props = defineProps<{
   nodes: TaskGraphNodeVo[];
   edges: TaskGraphEdgeVo[];
   calls: ToolCallRecordVo[];
+  blocks: ToolBlockRecordVo[];
   messages: ChatMessageVo[];
   locale: string;
 }>();
-const emit = defineEmits<{ 'open-call': [call: ToolCallRecordVo] }>();
+const emit = defineEmits<{
+  'open-call': [call: ToolCallRecordVo];
+  'open-block': [block: ToolBlockRecordVo];
+}>();
 const tab = defineModel<string>('tab', { default: 'timeline' });
 
 const state = computed(() => parseNodeState(props.node));
-const timeline = computed(() => buildTimeline(props.node, props.calls));
+const timeline = computed(() => buildTimeline(props.node, props.calls, props.blocks));
 const scratchKeys = computed(() => Object.keys(state.value.state ?? {}));
 
 const dependsText = computed(() => {

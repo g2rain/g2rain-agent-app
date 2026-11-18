@@ -104,6 +104,26 @@ export interface ToolCallRecordVo {
   createTime: string;
 }
 
+/** 工具调用拦截（tool_block_record） */
+export interface ToolBlockRecordVo {
+  id: number;
+  taskId: string;
+  nodeId: string;
+  round: number | null;
+  callId: string;
+  skillKey: string;
+  skillPin: string | null;
+  toolName: string;
+  blockedBy: string;
+  errorCode: string;
+  reasonCode: string | null;
+  message: string | null;
+  nextStep: string | null;
+  args: string | null;
+  traceId: string | null;
+  createTime: string;
+}
+
 /** 超长报文（task_node_payload） */
 export interface TaskNodePayloadVo {
   id: number;
@@ -141,5 +161,6 @@ export interface TraceBundle {
   checkpoints: TaskCheckpointVo[];
   resumes: TaskResumeRecordVo[];
   calls: ToolCallRecordVo[];
+  blocks: ToolBlockRecordVo[];
   messages: ChatMessageVo[];
 }

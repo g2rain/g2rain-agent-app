@@ -11,6 +11,7 @@ import type {
   TaskInstanceVo,
   TaskNodePayloadVo,
   TaskResumeRecordVo,
+  ToolBlockRecordVo,
   ToolCallRecordVo,
   TraceBundle,
 } from './type';
@@ -27,16 +28,17 @@ export class TaskTraceApi {
   /** 一次取齐任务追踪所需数据；任务不存在时返回 null */
   static async load(taskId: string): Promise<TraceBundle | null> {
     const query = { taskId };
-    const [task, nodes, edges, checkpoints, resumes, calls, messages] = await Promise.all([
+    const [task, nodes, edges, checkpoints, resumes, calls, blocks, messages] = await Promise.all([
       TaskTraceApi.task(taskId),
       list<TaskGraphNodeVo>('task_graph_node', query),
       list<TaskGraphEdgeVo>('task_graph_edge', query),
       list<TaskCheckpointVo>('task_checkpoint', query),
       list<TaskResumeRecordVo>('task_resume_record', query),
       list<ToolCallRecordVo>('tool_call_record', query),
+      list<ToolBlockRecordVo>('tool_block_record', query),
       list<ChatMessageVo>('chat_message', query),
     ]);
-    return task ? { task, nodes, edges, checkpoints, resumes, calls, messages } : null;
+    return task ? { task, nodes, edges, checkpoints, resumes, calls, blocks, messages } : null;
   }
 
   /** 任务详情（含大字段）；不存在时返回 null */
