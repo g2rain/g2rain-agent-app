@@ -2,7 +2,7 @@
   <div ref="root" class="dag-canvas" :class="{ 'is-fullscreen': fullscreen }">
     <div class="dag-canvas__toolbar">
       <el-button-group size="small">
-        <el-button :title="labels.fit" @click="fit">⤢</el-button>
+        <el-button :title="labels.fit" @click="fit()">⤢</el-button>
         <el-button :title="labels.zoomOut" @click="zoomOut()">－</el-button>
         <el-button :title="labels.zoomIn" @click="zoomIn()">＋</el-button>
         <el-button :title="labels.fullscreen" @click="toggleFullscreen">⛶</el-button>
@@ -35,7 +35,7 @@
 
 <script setup lang="ts" generic="T">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from 'vue';
-import { Handle, MarkerType, Position, VueFlow, useVueFlow, type Edge, type Node } from '@vue-flow/core';
+import { Handle, MarkerType, Position, VueFlow, getRectOfNodes, useVueFlow, type Edge, type Node } from '@vue-flow/core';
 import '@vue-flow/core/dist/style.css';
 import { edgeKey } from '@shared/graph.util';
 import { layoutDag, type DagPositions } from './layout';
@@ -74,7 +74,7 @@ defineSlots<{ node(props: { node: T; selected: boolean }): unknown; toolbar(): u
 
 /** 每个组件实例独立的画布 ID，避免多个 Tab 共享图状态 */
 const flowId = `dag-${useId()}`;
-const { fitView, zoomIn, zoomOut } = useVueFlow(flowId);
+const { fitView, zoomIn, zoomOut, getViewport, setViewport, getNodes, onMoveEnd } = useVueFlow(flowId);
 
 const root = ref<HTMLDivElement>();
 const positions = shallowRef<DagPositions>(new Map());
@@ -125,11 +125,43 @@ async function relayout(): Promise<void> {
   });
   laidOut = current;
   await nextTick();
-  fit();
+  await fitReadable();
 }
 
-function fit(): void {
-  void fitView({ padding: 0.15, maxZoom: 1 });
+/** 自动适应时的最低可读缩放：整图在此比例下放不下时，不再继续缩小 */
+const READABLE_ZOOM = 0.75;
+
+/** 按可读缩放显示时，图左上角与画布边缘的留白（像素） */
+const READABLE_INSET = 24;
+
+/** 视口平移取整到像素，避免文字落在半像素上发虚 */
+function snap(): void {
+  const { x, y, zoom } = getViewport();
+  const snappedX = Math.round(x);
+  const snappedY = Math.round(y);
+  if (snappedX !== x || snappedY !== y) void setViewport({ x: snappedX, y: snappedY, zoom });
+}
+
+/** 整图适应（工具栏「适应」）：不设下限，可缩小到看全貌 */
+async function fit(): Promise<void> {
+  await fitView({ padding: 0.15, maxZoom: 1 });
+  snap();
+}
+
+/** 自动适应（初次展示、尺寸变化、重新布局）：缩放低于可读下限时，按下限从图的左上角显示 */
+async function fitReadable(): Promise<void> {
+  await fitView({ padding: 0.15, maxZoom: 1 });
+  if (getViewport().zoom >= READABLE_ZOOM) {
+    snap();
+    return;
+  }
+
+  const bounds = getRectOfNodes(getNodes.value);
+  await setViewport({
+    x: Math.round(READABLE_INSET - bounds.x * READABLE_ZOOM),
+    y: Math.round(READABLE_INSET - bounds.y * READABLE_ZOOM),
+    zoom: READABLE_ZOOM,
+  });
 }
 
 async function toggleFullscreen(): Promise<void> {
@@ -149,9 +181,10 @@ function onFullscreenChange(): void {
 let resizeTimer: ReturnType<typeof setTimeout> | undefined;
 const resizeObserver = new ResizeObserver(() => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(fit, 120);
+  resizeTimer = setTimeout(() => void fitReadable(), 120);
 });
 
+onMoveEnd(snap);
 watch(signature, () => void relayout());
 onMounted(() => {
   document.addEventListener('fullscreenchange', onFullscreenChange);
