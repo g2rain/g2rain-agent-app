@@ -124,7 +124,7 @@ import { EMPTY, ResourceType } from '@runtime/console';
 import { McpToolProfileApi, ToolPicker, type McpToolMetaVo, type McpToolOptionVo } from '@/views/mcp_tool_profile';
 import ContractPanel from './ContractPanel.vue';
 import { AgentDetailApi } from '../api';
-import { parseContract } from '../contract';
+import { parseContract, SOURCE_TYPE } from '../contract';
 import { lintContract } from '../contract-lint';
 import type { SkillProfilePayload, SkillToolBindingVo } from '../type';
 
@@ -199,7 +199,11 @@ async function load(): Promise<void> {
         resourceType: props.agentResourceType || ResourceType.CUSTOM,
       };
       manual.value = MANUAL_TEMPLATE;
-      contract.value = JSON.stringify({ mode: 'REACT', delegatable: false, outputs: {}, tools: {} }, null, 2);
+      contract.value = JSON.stringify(
+        { source: { type: SOURCE_TYPE.CONTRACT }, mode: 'REACT', delegatable: false, outputs: {}, tools: {} },
+        null,
+        2,
+      );
       toolBindings.value = [];
     }
   } catch {

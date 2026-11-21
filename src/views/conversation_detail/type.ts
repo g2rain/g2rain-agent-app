@@ -29,7 +29,8 @@ export interface ChatProgressVo {
   parentStepId: string | null;
   seq: number;
   stage: 'ROUTE' | 'PLAN' | 'NODE' | 'ROUND' | 'MODEL' | 'TOOL' | 'VERIFY';
-  status: 'RUNNING' | 'DONE' | 'FAILED';
+  /** WARN：已完成，但附带警告（detail 为警告说明） */
+  status: 'RUNNING' | 'DONE' | 'WARN' | 'FAILED';
   title: string;
   detail: string | null;
   nodeId: string | null;

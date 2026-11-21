@@ -49,12 +49,17 @@ export interface InputContract {
   provider?: string;
 }
 
+/** 动作语义来源类型：CONTRACT 取契约自身的 tools；ONTOLOGY 由本体提供 tools */
+export const SOURCE_TYPE = { CONTRACT: 'CONTRACT', ONTOLOGY: 'ONTOLOGY' } as const;
+
 /**
- * 动作语义来源（本体模式）。
- * 有 `source` 时 `tools` 由本体提供，契约自带的 `tools` 不生效。
+ * 动作语义来源，`type` 必填。
+ * `type` 为 ONTOLOGY 时 `tools` 由本体提供，契约自带的 `tools` 不生效。
  */
 export interface ContractSource {
-  /** 本体编码 */
+  /** 来源类型，见 {@link SOURCE_TYPE} */
+  type?: string;
+  /** 本体编码；仅 ONTOLOGY */
   ontology?: string;
   /** 工具名 → 用法编码 */
   usages?: Record<string, string>;
@@ -64,11 +69,16 @@ export interface SkillContract {
   mode?: string;
   delegatable?: boolean;
   target?: string;
-  /** 动作语义来源；有则由本体提供 tools */
+  /** 动作语义来源；必填 */
   source?: ContractSource;
   inputs?: Record<string, InputContract>;
   outputs?: Record<string, OutputContract>;
   tools?: Record<string, ToolContract>;
+}
+
+/** 来源为本体时为 true */
+export function isOntologySource(contract: SkillContract): boolean {
+  return contract.source?.type === SOURCE_TYPE.ONTOLOGY;
 }
 
 /** `source.ontology` 去空白后非空则返回，否则 undefined */
@@ -80,6 +90,7 @@ export function ontologyOf(contract: SkillContract): string | undefined {
 /** 枚举取值（区分大小写），见 CONTRACT_SPEC 第 18 节 */
 export const CONTRACT_ENUMS = {
   mode: ['REACT', 'PLAN'],
+  sourceType: [SOURCE_TYPE.CONTRACT, SOURCE_TYPE.ONTOLOGY],
   sideEffect: [SideEffect.NONE, SideEffect.WRITE],
   when: ['ALWAYS', 'UNIQUE'],
   sources: ['USER', 'EVIDENCE', 'NODE_OUTPUT', 'SHARED', 'SESSION', 'PRIOR_TASK', 'MODEL', 'CONTRACT', 'PLATFORM'],

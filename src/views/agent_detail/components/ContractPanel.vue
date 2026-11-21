@@ -24,7 +24,7 @@
         <button type="button" :class="navClass(OUTPUTS)" @click="select(OUTPUTS)">
           {{ $t('AGENT_CONTRACT_OUTPUTS', '产出') }} <em>{{ count(contract.outputs) }}</em>
         </button>
-        <p v-if="hasSource" class="contract__semantic-hint">{{ $t('AGENT_CONTRACT_SEMANTIC_HINT', '动作语义由本体提供') }}</p>
+        <p v-if="ontologySource" class="contract__semantic-hint">{{ $t('AGENT_CONTRACT_SEMANTIC_HINT', '动作语义由本体提供') }}</p>
         <template v-else>
           <template v-for="group in toolGroups" :key="group.title">
             <h5>{{ group.title }}</h5>
@@ -47,8 +47,8 @@
             <el-descriptions-item label="mode">{{ contract.mode ?? 'REACT' }}</el-descriptions-item>
             <el-descriptions-item label="delegatable">{{ contract.delegatable ? 'true' : 'false' }}</el-descriptions-item>
             <el-descriptions-item label="target">{{ contract.target ?? EMPTY }}</el-descriptions-item>
-            <el-descriptions-item v-if="hasSource" :label="$t('AGENT_CONTRACT_SEMANTIC', '动作语义来源')">
-              {{ semanticOntologyText }}
+            <el-descriptions-item :label="$t('AGENT_CONTRACT_SEMANTIC', '动作语义来源')">
+              {{ sourceText }}
             </el-descriptions-item>
             <el-descriptions-item v-if="usageLines.length" :label="$t('AGENT_CONTRACT_SEMANTIC_USAGES', '用法')">
               <div class="contract__usages">
@@ -124,8 +124,10 @@ import { t } from '@platform/i18n';
 import { EMPTY } from '@runtime/console';
 import type { McpToolMetaVo } from '@/views/mcp_tool_profile';
 import {
+  isOntologySource,
   isWriteTool,
   ontologyOf,
+  SOURCE_TYPE,
   parseContract,
   stringifyContract,
   toolSkeleton,
@@ -151,14 +153,20 @@ const selected = ref<string>(ROOT);
 
 const parsed = computed(() => parseContract(model.value));
 const contract = computed<SkillContract>(() => (parsed.value.ok ? parsed.value.contract : {}));
-const hasSource = computed(() => contract.value.source !== undefined);
+const ontologySource = computed(() => isOntologySource(contract.value));
 const diagnostics = computed(() => toDiagnostics(model.value, props.issues));
 const errorCount = computed(() => props.issues.filter((i) => i.severity === 'error').length);
 const warningCount = computed(() => props.issues.filter((i) => i.severity === 'warning').length);
 
-const semanticOntologyText = computed(() =>
-  t('AGENT_CONTRACT_SEMANTIC_ONTOLOGY', { ontology: ontologyOf(contract.value) ?? '' }, '本体：{ontology}'),
-);
+/** 动作语义来源的展示文本：契约自身、本体（带编码），未声明时为空占位 */
+const sourceText = computed(() => {
+  const type = contract.value.source?.type;
+  if (type === SOURCE_TYPE.ONTOLOGY) {
+    return t('AGENT_CONTRACT_SEMANTIC_ONTOLOGY', { ontology: ontologyOf(contract.value) ?? '' }, '本体：{ontology}');
+  }
+  if (type === SOURCE_TYPE.CONTRACT) return t('AGENT_CONTRACT_SEMANTIC_CONTRACT', '契约自身');
+  return type ?? EMPTY;
+});
 
 const usageLines = computed(() => {
   const usages = contract.value.source?.usages;
@@ -205,7 +213,7 @@ const selectedPath = computed<ContractPath>(() => {
   return ['tools', selected.value];
 });
 
-const ROOT_KEYS = new Set<string | number>(['mode', 'delegatable', 'target']);
+const ROOT_KEYS = new Set<string | number>(['mode', 'delegatable', 'target', 'source']);
 
 /** 当前选中项的问题：根属性取整体与根字段的问题，其余取该路径下的问题 */
 const selectedIssues = computed(() => {
@@ -215,12 +223,12 @@ const selectedIssues = computed(() => {
   return props.issues.filter((i) => {
     if (i.path.length === 0) return true;
     const head = i.path[0];
-    if (ROOT_KEYS.has(head) || head === 'source') return true;
-    return hasSource.value && head === 'tools';
+    if (ROOT_KEYS.has(head)) return true;
+    return ontologySource.value && head === 'tools';
   });
 });
 
-watch(hasSource, (enabled) => {
+watch(ontologySource, (enabled) => {
   if (!enabled) return;
   if (selected.value === ROOT || selected.value === INPUTS || selected.value === OUTPUTS) return;
   selected.value = ROOT;
@@ -274,12 +282,12 @@ const extractText = computed(() => {
 const segmentOpen = ref(false);
 const segmentText = ref('');
 
-/** 可单独编辑的片段路径：根属性编辑 mode / delegatable / target，其余编辑对应对象 */
+/** 可单独编辑的片段路径：根属性编辑 mode / delegatable / target / source，其余编辑对应对象 */
 const segmentPath = computed<ContractPath | null>(() => (selected.value === ROOT || selectedTool.value || selected.value === INPUTS || selected.value === OUTPUTS ? selectedPath.value : null));
 
 function segmentValue(): unknown {
   const c = contract.value;
-  if (selected.value === ROOT) return { mode: c.mode, delegatable: c.delegatable, target: c.target };
+  if (selected.value === ROOT) return { mode: c.mode, delegatable: c.delegatable, target: c.target, source: c.source };
   if (selected.value === INPUTS) return c.inputs ?? {};
   if (selected.value === OUTPUTS) return c.outputs ?? {};
   return c.tools?.[selected.value] ?? {};
@@ -304,8 +312,8 @@ function applySegment(): void {
   }
   const next: SkillContract = { ...contract.value };
   if (selected.value === ROOT) {
-    const root = (value ?? {}) as Pick<SkillContract, 'mode' | 'delegatable' | 'target'>;
-    Object.assign(next, { mode: root.mode, delegatable: root.delegatable, target: root.target });
+    const root = (value ?? {}) as Pick<SkillContract, 'mode' | 'delegatable' | 'target' | 'source'>;
+    Object.assign(next, { mode: root.mode, delegatable: root.delegatable, target: root.target, source: root.source });
   } else if (selected.value === INPUTS) {
     next.inputs = value as SkillContract['inputs'];
   } else if (selected.value === OUTPUTS) {

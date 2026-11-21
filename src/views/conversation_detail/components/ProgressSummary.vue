@@ -95,7 +95,7 @@ function parseExtra(raw: string | null): Record<string, unknown> | null {
 }
 
 function isOpen(row: { step: ChatProgressVo }): boolean {
-  return toggled[row.step.stepId] ?? row.step.status === 'FAILED';
+  return toggled[row.step.stepId] ?? (row.step.status === 'FAILED' || row.step.status === 'WARN');
 }
 
 function toggle(stepId: string): void {
@@ -106,6 +106,7 @@ function toggle(stepId: string): void {
 function iconOf(step: ChatProgressVo): string {
   if (step.status === 'FAILED') return '✗';
   if (step.status === 'DONE') return '✓';
+  if (step.status === 'WARN') return '⚠';
   return '•';
 }
 </script>
@@ -138,6 +139,8 @@ function iconOf(step: ChatProgressVo): string {
 .is-failed .progress-summary__row, .is-failed .progress-summary__icon { color: var(--g2-color-danger); }
 .progress-summary__title { flex-shrink: 0; color: var(--g2-text-primary); }
 .is-failed .progress-summary__title { color: inherit; }
+.is-warn .progress-summary__row, .is-warn .progress-summary__icon { color: var(--g2-color-warning); }
+.is-warn .progress-summary__title { color: inherit; }
 .progress-summary__detail { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--g2-text-secondary); }
 .progress-summary__elapsed { margin-left: auto; flex-shrink: 0; color: var(--g2-text-placeholder); font-variant-numeric: tabular-nums; }
 .progress-summary__arrow { flex-shrink: 0; color: var(--g2-text-placeholder); transition: transform 0.15s ease; }

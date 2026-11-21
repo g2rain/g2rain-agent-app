@@ -8,7 +8,7 @@
 import { t } from '@platform/i18n';
 import { locateJsonPath } from '@shared/json-path.util';
 import type { JsonDiagnostic } from '@/components/json-editor';
-import { CONTRACT_ENUMS, isWriteTool, parseContract, type SkillContract } from './contract';
+import { CONTRACT_ENUMS, isOntologySource, isWriteTool, parseContract, SOURCE_TYPE, type SkillContract } from './contract';
 
 export type ContractPath = (string | number)[];
 
@@ -90,9 +90,25 @@ function isStringMap(value: unknown): boolean {
   );
 }
 
-/** 本体模式下的 source 字段检查；并提示契约自带 tools 不会生效 */
+/** source 字段检查：type 必填且合法；契约来源不得带本体字段；本体来源检查本体字段，并提示契约自带 tools 不会生效 */
 function lintSource(contract: SkillContract, issues: ContractIssue[]): void {
-  const source = contract.source!;
+  const source = contract.source;
+  if (!source || typeof source.type !== 'string' || !source.type.trim()) {
+    issues.push({ path: ['source', 'type'], severity: 'error', message: msg('AGENT_LINT_SOURCE_TYPE', 'source.type 不能为空') });
+    return;
+  }
+  checkEnum(issues, ['source', 'type'], source.type, CONTRACT_ENUMS.sourceType);
+  if (source.type === SOURCE_TYPE.CONTRACT) {
+    if (source.ontology !== undefined || source.usages !== undefined) {
+      issues.push({
+        path: ['source'],
+        severity: 'error',
+        message: msg('AGENT_LINT_SOURCE_CONTRACT', '来源为契约自身时不能配置 ontology、usages'),
+      });
+    }
+    return;
+  }
+  if (source.type !== SOURCE_TYPE.ONTOLOGY) return;
   const ontology = typeof source.ontology === 'string' ? source.ontology.trim() : '';
   if (!ontology) {
     issues.push({
@@ -162,8 +178,8 @@ export function lintContract(text: string, toolNames: readonly string[]): Contra
     return [{ path: [], severity: 'error', message: msg('AGENT_LINT_INVALID', '契约不是合法的 JSON 对象') }];
   }
   const issues: ContractIssue[] = [];
-  const ontologyMode = parsed.contract.source !== undefined;
-  if (ontologyMode) lintSource(parsed.contract, issues);
+  const ontologyMode = isOntologySource(parsed.contract);
+  lintSource(parsed.contract, issues);
   lintRoot(parsed.contract, issues, ontologyMode);
   if (!ontologyMode) {
     lintTools(parsed.contract, issues);
