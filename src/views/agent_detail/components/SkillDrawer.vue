@@ -97,6 +97,20 @@
             </el-table-column>
           </el-table>
         </el-tab-pane>
+
+        <el-tab-pane
+          :label="$t('AGENT_SKILL_TAB_REVISIONS', '修订记录')"
+          name="revisions"
+          :disabled="!skillId"
+        >
+          <SkillRevisions
+            v-if="tab === 'revisions' && skillId"
+            :key="skillId"
+            :skill-id="skillId"
+            :locale="locale"
+            @published="reloadAfterRevision"
+          />
+        </el-tab-pane>
       </el-tabs>
     </div>
 
@@ -123,6 +137,7 @@ import { StatusDot } from '@/components';
 import { EMPTY, ResourceType } from '@runtime/console';
 import { McpToolProfileApi, ToolPicker, type McpToolMetaVo, type McpToolOptionVo } from '@/views/mcp_tool_profile';
 import ContractPanel from './ContractPanel.vue';
+import SkillRevisions from './SkillRevisions.vue';
 import { AgentDetailApi } from '../api';
 import { parseContract, SOURCE_TYPE } from '../contract';
 import { lintContract } from '../contract-lint';
@@ -212,6 +227,12 @@ async function load(): Promise<void> {
     loading.value = false;
     snapshot.value = current();
   }
+}
+
+async function reloadAfterRevision(): Promise<void> {
+  const currentTab = tab.value;
+  await load();
+  tab.value = currentTab;
 }
 
 watch(

@@ -5,10 +5,12 @@ import { getHttpClient } from '@runtime/http';
 import { Gateway, ResourceType } from '@runtime/console';
 import { AgentProfileApi } from '@/views/agent_profile';
 import type { AgentProfile, AgentProfilePayload } from '@/views/agent_profile';
+import type { PageData, PageSelectListDto } from '@platform/types/api.type';
 import type {
   SkillProfilePayload,
   SkillProfileVo,
   SkillToolBindingVo,
+  SkillRevisionVo,
 } from './type';
 
 const base = Gateway.STUDIO;
@@ -84,6 +86,32 @@ export class AgentDetailApi {
 
   static removeSkillTool(id: number): Promise<void> {
     return remove('skill_tool_binding', id);
+  }
+
+  static async skillRevisions(skillId: number, params: PageSelectListDto): Promise<PageData<SkillRevisionVo>> {
+    const res = await http().get<PageData<SkillRevisionVo>>(`${base}/skill_revision/page`, {
+      ...params,
+      skillId,
+      sorts: ['id,desc'],
+    });
+    return res.data;
+  }
+
+  static async skillRevision(id: number): Promise<SkillRevisionVo> {
+    const res = await http().get<SkillRevisionVo>(`${base}/skill_revision/${id}`);
+    return res.data;
+  }
+
+  static async publishSkillRevision(id: number, expectedRevisionNo: number): Promise<void> {
+    await http().post(`${base}/skill_revision/${id}/publish`, { expectedRevisionNo });
+  }
+
+  static async discardSkillRevision(id: number): Promise<void> {
+    await http().post(`${base}/skill_revision/${id}/discard`);
+  }
+
+  static async rollbackSkillRevision(id: number): Promise<void> {
+    await http().post(`${base}/skill_revision/${id}/rollback`);
   }
 
 }

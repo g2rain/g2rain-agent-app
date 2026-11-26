@@ -21,6 +21,25 @@ export interface SkillProfileVo {
 
 export type SkillProfilePayload = Partial<Omit<SkillProfileVo, 'updateTime'>>;
 
+export type RevisionStatus = 'DRAFT' | 'PUBLISHED' | 'SUPERSEDED' | 'DISCARDED';
+export type RevisionOrigin = 'MANUAL' | 'CANDIDATE' | 'ROLLBACK';
+
+export interface SkillRevisionVo {
+  id: number;
+  skillId: number;
+  revisionNo: number;
+  skillName: string;
+  semanticDesc: string | null;
+  status: RevisionStatus;
+  origin: RevisionOrigin;
+  baseRevisionNo: number | null;
+  note: string | null;
+  skillManual: string | null;
+  skillContract: string | null;
+  toolNames: string | null;
+  createTime: string;
+}
+
 /** 技能 ↔ 工具（skill_tool_binding） */
 export interface SkillToolBindingVo {
   id: number;
