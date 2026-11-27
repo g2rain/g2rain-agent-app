@@ -44,6 +44,7 @@
 
         <template v-if="selected === ROOT">
           <el-descriptions :column="1" border size="small">
+            <el-descriptions-item label="version">{{ contract.version ?? EMPTY }}</el-descriptions-item>
             <el-descriptions-item label="mode">{{ contract.mode ?? 'REACT' }}</el-descriptions-item>
             <el-descriptions-item label="delegatable">{{ contract.delegatable ? 'true' : 'false' }}</el-descriptions-item>
             <el-descriptions-item label="target">{{ contract.target ?? EMPTY }}</el-descriptions-item>

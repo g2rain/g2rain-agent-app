@@ -66,6 +66,8 @@ export interface ContractSource {
 }
 
 export interface SkillContract {
+  /** 契约格式版本，由 Runtime 校验是否支持 */
+  version?: string;
   mode?: string;
   delegatable?: boolean;
   target?: string;
