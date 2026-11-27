@@ -21,6 +21,19 @@ export interface ChatConversationVo {
 export type TaskDetail = { task: TaskInstanceVo | null; nodes: TaskGraphNodeVo[] } | 'error';
 
 /** 执行过程步骤（chat_progress）；extra 为排查信息 JSON */
+/** 工具种类 */
+export type ToolKind =
+  | 'CONTROL'
+  | 'ENV'
+  | 'SESSION'
+  | 'NODE'
+  | 'SEARCH'
+  | 'FETCH'
+  | 'IMPORT'
+  | 'ANALYZE'
+  | 'REPORT'
+  | 'BUSINESS';
+
 export interface ChatProgressVo {
   id: number;
   traceId: string;
@@ -29,6 +42,8 @@ export interface ChatProgressVo {
   parentStepId: string | null;
   seq: number;
   stage: 'ROUTE' | 'PLAN' | 'NODE' | 'ROUND' | 'MODEL' | 'TOOL' | 'VERIFY';
+  /** 工具种类；仅 TOOL 环节有值，决定步骤图标 */
+  toolKind: ToolKind | null;
   /** WARN：已完成，但附带警告（detail 为警告说明） */
   status: 'RUNNING' | 'DONE' | 'WARN' | 'FAILED';
   title: string;

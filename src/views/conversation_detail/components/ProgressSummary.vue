@@ -22,7 +22,10 @@
           :disabled="!row.extra"
           @click="toggle(row.step.stepId)"
         >
-          <span class="progress-summary__icon" aria-hidden="true">{{ iconOf(row.step) }}</span>
+          <span class="progress-summary__icon" aria-hidden="true">
+            <component :is="KIND_ICONS[row.step.toolKind]" v-if="row.step.toolKind && KIND_ICONS[row.step.toolKind]" />
+            <template v-else>{{ iconOf(row.step) }}</template>
+          </span>
           <span class="progress-summary__title">{{ row.step.title }}</span>
           <span v-if="row.step.detail" class="progress-summary__detail">{{ row.step.detail }}</span>
           <span class="progress-summary__elapsed">{{ formatDuration(row.step.elapsedMs) }}</span>
@@ -44,10 +47,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
+import { computed, reactive, type Component } from 'vue';
+import { DataAnalysis, Search } from '@element-plus/icons-vue';
 import { CopyText } from '@/components';
 import { formatDuration } from '@runtime/console';
-import type { ChatProgressVo } from '../type';
+import type { ChatProgressVo, ToolKind } from '../type';
 
 /**
  * 一轮的执行过程：按层级展开步骤，可展开查看排查信息（实际模型、token、工具参数摘要、上游原文）。
@@ -103,6 +107,9 @@ function toggle(stepId: string): void {
   if (row) toggled[stepId] = !isOpen(row);
 }
 
+/** 有专属图标的工具种类；状态改由颜色区分，其余仍按状态显示符号 */
+const KIND_ICONS: Partial<Record<ToolKind, Component>> = { SEARCH: Search, REPORT: DataAnalysis };
+
 function iconOf(step: ChatProgressVo): string {
   if (step.status === 'FAILED') return '✗';
   if (step.status === 'DONE') return '✓';
@@ -135,6 +142,7 @@ function iconOf(step: ChatProgressVo): string {
 .progress-summary__row:disabled { cursor: default; }
 .progress-summary__row:not(:disabled):hover .progress-summary__title { color: var(--g2-color-primary); }
 .progress-summary__icon { width: 12px; flex-shrink: 0; text-align: center; color: var(--g2-text-placeholder); }
+.progress-summary__icon svg { width: 12px; height: 12px; vertical-align: -1px; }
 .is-done .progress-summary__icon { color: var(--g2-color-success); }
 .is-failed .progress-summary__row, .is-failed .progress-summary__icon { color: var(--g2-color-danger); }
 .progress-summary__title { flex-shrink: 0; color: var(--g2-text-primary); }
